@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { ArrowUp } from 'lucide-react';
 
 interface Message {
   id: number;
@@ -171,7 +172,7 @@ export default function SquarePage() {
                   onClick={() => handleUpvote(message.id)}
                   className="w-12 h-12 rounded-xl border border-outline-variant/30 flex flex-col items-center justify-center hover:bg-surface-container-high transition-colors active:scale-95"
                 >
-                  <span className="material-symbols-outlined text-lg">arrow_upward</span>
+                  <ArrowUp size={18} />
                   <span className="text-xs font-bold">{message.upvote_count}</span>
                 </button>
               </div>

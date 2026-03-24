@@ -90,7 +90,7 @@ export default function SubmitModal({ onClose }: SubmitModalProps) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center p-8 bg-on-surface/5 backdrop-blur-md">
         <div className="bg-surface-container-lowest rounded-xl shadow-lg p-16 text-center">
-          <span className="material-symbols-outlined text-5xl text-secondary mb-4" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
+          <CheckCircle size={48} className="text-secondary mx-auto mb-4" />
           <h2 className="font-headline text-3xl mb-2">Submitted!</h2>
           <p className="text-on-surface-variant">Your evolution is now in the archive.</p>
         </div>
@@ -112,14 +112,14 @@ export default function SubmitModal({ onClose }: SubmitModalProps) {
           </div>
           <div className="mt-auto space-y-6">
             <div className="flex items-start gap-3">
-              <span className="material-symbols-outlined text-secondary text-lg mt-0.5">bolt</span>
+              <Zap size={20} className="text-secondary mt-0.5" />
               <div>
                 <p className="text-sm font-bold text-on-surface">Optimizer</p>
                 <p className="text-xs text-on-surface-variant">Solo only. The efficiency warrior.</p>
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <span className="material-symbols-outlined text-tertiary text-lg mt-0.5">construction</span>
+              <Hammer size={20} className="text-tertiary mt-0.5" />
               <div>
                 <p className="text-sm font-bold text-on-surface">Builder</p>
                 <p className="text-xs text-on-surface-variant">Duo or solo. The product visionary.</p>
@@ -136,7 +136,7 @@ export default function SubmitModal({ onClose }: SubmitModalProps) {
               <div className="h-0.5 w-8 bg-secondary" />
             </div>
             <button onClick={onClose} className="p-2 hover:bg-surface-container rounded-full transition-colors">
-              <span className="material-symbols-outlined">close</span>
+              <X size={20} />
             </button>
           </div>
 
@@ -342,12 +342,12 @@ export default function SubmitModal({ onClose }: SubmitModalProps) {
                   <p className="text-sm text-on-surface-variant">上传中...</p>
                 ) : mediaFiles.length > 0 ? (
                   <div className="flex flex-wrap gap-2 items-center">
-                    <span className="material-symbols-outlined text-primary">check_circle</span>
+                    <CheckCircle size={16} className="text-primary" />
                     <span className="text-sm text-on-surface-variant">已上传 {mediaFiles.length} 个文件</span>
                   </div>
                 ) : (
                   <>
-                    <span className="material-symbols-outlined text-3xl text-outline-variant group-hover:text-primary mb-3">upload_file</span>
+                    <Upload size={32} className="text-outline-variant group-hover:text-primary mb-3" />
                     <p className="text-sm font-medium text-on-surface-variant">拖拽或点击上传图片/视频</p>
                   </>
                 )}

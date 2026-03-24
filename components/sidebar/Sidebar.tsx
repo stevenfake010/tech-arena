@@ -3,6 +3,7 @@
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { Compass, LayoutGrid, Trophy, MessageSquare, Plus } from 'lucide-react';
 
 interface User {
   id: number;
@@ -12,10 +13,10 @@ interface User {
 }
 
 const NAV_ITEMS = [
-  { href: '/guide', label: 'Guide', icon: 'explore' },
-  { href: '/gallery', label: 'Gallery', icon: 'grid_view' },
-  { href: '/leaderboard', label: 'Leaderboard', icon: 'leaderboard' },
-  { href: '/square', label: 'Square', icon: 'grid_guides' },
+  { href: '/guide', label: 'Guide', icon: Compass },
+  { href: '/gallery', label: 'Gallery', icon: LayoutGrid },
+  { href: '/leaderboard', label: 'Leaderboard', icon: Trophy },
+  { href: '/square', label: 'Square', icon: MessageSquare },
 ];
 
 export default function Sidebar({ onSubmitClick }: { onSubmitClick: () => void }) {
@@ -46,6 +47,7 @@ export default function Sidebar({ onSubmitClick }: { onSubmitClick: () => void }
       <nav className="flex flex-col gap-y-1 flex-1">
         {NAV_ITEMS.map(item => {
           const isActive = pathname === item.href;
+          const Icon = item.icon;
           return (
             <Link
               key={item.href}
@@ -56,12 +58,7 @@ export default function Sidebar({ onSubmitClick }: { onSubmitClick: () => void }
                   : 'text-[#5f5e5e] font-medium opacity-80 hover:bg-[#ecefe7]'
               }`}
             >
-              <span
-                className="material-symbols-outlined text-[20px]"
-                style={isActive ? { fontVariationSettings: "'FILL' 1, 'wght' 400" } : { fontVariationSettings: "'FILL' 0, 'wght' 400" }}
-              >
-                {item.icon}
-              </span>
+              <Icon size={20} strokeWidth={isActive ? 2.5 : 2} />
               <span className="font-headline font-bold tracking-tight text-base">{item.label}</span>
             </Link>
           );
@@ -74,7 +71,7 @@ export default function Sidebar({ onSubmitClick }: { onSubmitClick: () => void }
           onClick={onSubmitClick}
           className="w-full flex items-center justify-center gap-2 bg-[#1A1A1A] text-white py-3 px-4 rounded-lg hover:opacity-90 transition-all shadow-sm group active:scale-95"
         >
-          <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1, 'wght' 400" }}>add</span>
+          <Plus size={16} strokeWidth={2.5} />
           <span className="font-headline italic tracking-tight text-base">Submit Proposal</span>
         </button>
       </div>

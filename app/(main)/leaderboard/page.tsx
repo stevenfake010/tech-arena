@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { Loader2, Star, CheckCircle, AlertCircle } from 'lucide-react';
 
 interface LeaderboardItem {
   id: number;
@@ -148,7 +149,7 @@ export default function LeaderboardPage() {
       >
         {isLoading ? (
           <span className="flex items-center gap-1">
-            <span className="material-symbols-outlined text-sm animate-spin">sync</span>
+            <Loader2 size={16} className="animate-spin" />
           </span>
         ) : isVoted ? (
           '已投'
@@ -223,7 +224,7 @@ export default function LeaderboardPage() {
                           {String(index + 1).padStart(2, '0')}
                         </span>
                         {index === 0 && (
-                          <span className="material-symbols-outlined text-secondary text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
+                          <Star size={16} className="text-secondary fill-secondary" />
                         )}
                       </div>
                     </td>
@@ -272,9 +273,7 @@ export default function LeaderboardPage() {
         <div className={`mb-6 p-4 rounded-lg flex items-center gap-3 ${
           message.type === 'success' ? 'bg-secondary-container text-on-secondary-container' : 'bg-error-container text-on-error-container'
         }`}>
-          <span className="material-symbols-outlined">
-            {message.type === 'success' ? 'check_circle' : 'error'}
-          </span>
+          {message.type === 'success' ? <CheckCircle size={20} /> : <AlertCircle size={20} />}
           <span className="text-sm font-medium">{message.text}</span>
         </div>
       )}
@@ -309,7 +308,7 @@ export default function LeaderboardPage() {
             <span>可投票</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-secondary text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
+            <Star size={16} className="text-secondary fill-secondary" />
             <span>当前第一名</span>
           </div>
         </div>

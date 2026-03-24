@@ -87,9 +87,7 @@ export default function AdminPage() {
           result.type === 'success' ? 'bg-secondary-container text-on-secondary-container' : 'bg-error-container text-on-error-container'
         }`}>
           <div className="flex items-center gap-2">
-            <span className="material-symbols-outlined">
-              {result.type === 'success' ? 'check_circle' : 'error'}
-            </span>
+            {result.type === 'success' ? <CheckCircle size={20} /> : <AlertCircle size={20} />}
             <span>{result.message}</span>
           </div>
         </div>
@@ -104,15 +102,15 @@ export default function AdminPage() {
           </p>
           <ul className="text-sm text-on-surface-variant space-y-2 mb-8">
             <li className="flex items-center gap-2">
-              <span className="material-symbols-outlined text-secondary text-sm">check</span>
+              <Check size={16} className="text-secondary" />
               10 个 Optimizer 赛道项目
             </li>
             <li className="flex items-center gap-2">
-              <span className="material-symbols-outlined text-secondary text-sm">check</span>
+              <Check size={16} className="text-secondary" />
               10 个 Builder 赛道项目
             </li>
             <li className="flex items-center gap-2">
-              <span className="material-symbols-outlined text-secondary text-sm">check</span>
+              <Check size={16} className="text-secondary" />
               8 条测试留言
             </li>
           </ul>
@@ -123,12 +121,12 @@ export default function AdminPage() {
           >
             {seedLoading ? (
               <>
-                <span className="material-symbols-outlined animate-spin">sync</span>
+                <Loader2 size={16} className="animate-spin" />
                 生成中...
               </>
             ) : (
               <>
-                <span className="material-symbols-outlined">add_circle</span>
+                <PlusCircle size={16} />
                 生成测试数据
               </>
             )}
@@ -143,15 +141,15 @@ export default function AdminPage() {
           </p>
           <ul className="text-sm text-on-surface-variant space-y-2 mb-8">
             <li className="flex items-center gap-2">
-              <span className="material-symbols-outlined text-error text-sm">delete</span>
+              <Trash2 size={16} className="text-error" />
               所有 Demo 项目
             </li>
             <li className="flex items-center gap-2">
-              <span className="material-symbols-outlined text-error text-sm">delete</span>
+              <Trash2 size={16} className="text-error" />
               所有投票记录
             </li>
             <li className="flex items-center gap-2">
-              <span className="material-symbols-outlined text-error text-sm">delete</span>
+              <Trash2 size={16} className="text-error" />
               所有留言和点赞
             </li>
           </ul>
@@ -162,12 +160,12 @@ export default function AdminPage() {
           >
             {clearLoading ? (
               <>
-                <span className="material-symbols-outlined animate-spin">sync</span>
+                <Loader2 size={16} className="animate-spin" />
                 清理中...
               </>
             ) : (
               <>
-                <span className="material-symbols-outlined">delete_forever</span>
+                <Trash size={16} />
                 一键清理
               </>
             )}
@@ -180,15 +178,15 @@ export default function AdminPage() {
         <h4 className="font-headline text-xl font-bold mb-4 text-on-surface">快捷导航</h4>
         <div className="flex gap-4">
           <a href="/gallery" className="px-6 py-3 bg-surface-container-high rounded-lg hover:bg-surface-container-highest transition-colors flex items-center gap-2">
-            <span className="material-symbols-outlined">grid_view</span>
+            <LayoutGrid size={16} />
             查看 Gallery
           </a>
           <a href="/leaderboard" className="px-6 py-3 bg-surface-container-high rounded-lg hover:bg-surface-container-highest transition-colors flex items-center gap-2">
-            <span className="material-symbols-outlined">leaderboard</span>
+            <Trophy size={16} />
             查看排行榜
           </a>
           <a href="/square" className="px-6 py-3 bg-surface-container-high rounded-lg hover:bg-surface-container-highest transition-colors flex items-center gap-2">
-            <span className="material-symbols-outlined">grid_guides</span>
+            <MessageSquare size={16} />
             查看留言板
           </a>
         </div>

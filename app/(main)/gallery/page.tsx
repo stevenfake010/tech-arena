@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { Search, ChevronDown, ExternalLink } from 'lucide-react';
 
 interface Demo {
   id: number;
@@ -101,7 +102,7 @@ export default function GalleryPage() {
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
             />
-            <span className="material-symbols-outlined absolute right-3 top-3 text-outline text-sm">search</span>
+            <Search size={16} className="absolute right-3 top-3 text-outline" />
           </div>
 
           {/* Project List - 独立滚动区域 */}
@@ -115,9 +116,7 @@ export default function GalleryPage() {
                 <span className="text-xs font-bold tracking-[0.15em] uppercase text-on-surface opacity-80 chinese-text">
                   Optimizer ({filteredOptimizer.length})
                 </span>
-                <span className={`material-symbols-outlined text-outline text-lg transition-transform duration-300 ${optimizerExpanded ? '' : '-rotate-90'}`}>
-                  expand_more
-                </span>
+                <ChevronDown size={20} className={`text-outline transition-transform duration-300 ${optimizerExpanded ? '' : '-rotate-90'}`} />
               </button>
               {optimizerExpanded && (
                 <div className="space-y-2 pt-1">
@@ -167,9 +166,7 @@ export default function GalleryPage() {
                 <span className="text-xs font-bold tracking-[0.15em] uppercase text-on-surface opacity-80">
                   Builder ({filteredBuilder.length})
                 </span>
-                <span className={`material-symbols-outlined text-outline text-lg transition-transform duration-300 ${builderExpanded ? '' : '-rotate-90'}`}>
-                  expand_more
-                </span>
+                <ChevronDown size={20} className={`text-outline transition-transform duration-300 ${builderExpanded ? '' : '-rotate-90'}`} />
               </button>
               {builderExpanded && (
                 <div className="space-y-2 pt-1">
@@ -276,7 +273,7 @@ export default function GalleryPage() {
                           target="_blank"
                           rel="noopener noreferrer"
                         >
-                          <span className="material-symbols-outlined text-sm">open_in_new</span>
+                          <ExternalLink size={16} />
                           <span>View Demo / 查看演示</span>
                         </a>
                       </section>
