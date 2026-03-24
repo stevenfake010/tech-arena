@@ -17,15 +17,24 @@ export default function EntryPortal() {
   const [selectedUser, setSelectedUser] = useState<UserOption | null>(null);
   const [showDropdown, setShowDropdown] = useState(false);
   const [error, setError] = useState('');
+  const [apiError, setApiError] = useState('');
   const [loading, setLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  const [apiError, setApiError] = useState('');
+
   useEffect(() => {
     fetch('/api/auth/users')
       .then(r => r.json())
-      .then(d => setUsers(d.users || []))
-      .catch(() => {});
+      .then(d => {
+        if (d.error) {
+          setApiError('API Error: ' + d.error);
+        } else {
+          setUsers(d.users || []);
+        }
+      })
+      .catch(e => setApiError('Network Error: ' + e.message));
   }, []);
 
   useEffect(() => {
@@ -165,6 +174,14 @@ export default function EntryPortal() {
               readOnly
             />
           </div>
+
+          {/* API Error */}
+          {apiError && (
+            <div className="p-3 bg-red-50 border border-red-200 rounded">
+              <p className="text-red-600 text-sm font-medium">{apiError}</p>
+              <p className="text-red-500 text-xs mt-1">请检查网络连接或刷新页面</p>
+            </div>
+          )}
 
           {/* Error */}
           {error && <p className="text-error text-sm">{error}</p>}
