@@ -1,0 +1,209 @@
+@import "tailwindcss";
+
+@theme inline {
+  /* Surface Hierarchy */
+  --color-surface: #fafaf5;
+  --color-surface-dim: #d5dcd0;
+  --color-surface-bright: #fafaf5;
+  --color-surface-container: #ecefe7;
+  --color-surface-container-low: #f3f4ee;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-high: #e5eae0;
+  --color-surface-container-highest: #dee4da;
+  --color-surface-variant: #dee4da;
+  --color-surface-tint: #5f5e5e;
+
+  /* Primary */
+  --color-primary: #5f5e5e;
+  --color-primary-dim: #535252;
+  --color-primary-container: #e5e2e1;
+  --color-primary-fixed: #e5e2e1;
+  --color-primary-fixed-dim: #d6d4d3;
+  --color-on-primary: #faf7f6;
+  --color-on-primary-container: #525151;
+  --color-on-primary-fixed: #403f3f;
+  --color-on-primary-fixed-variant: #5c5b5b;
+  --color-inverse-primary: #ffffff;
+
+  /* Secondary (Crimson Accent) */
+  --color-secondary: #9d423f;
+  --color-secondary-dim: #8d3734;
+  --color-secondary-container: #ffdad7;
+  --color-secondary-fixed: #ffdad7;
+  --color-secondary-fixed-dim: #ffc7c3;
+  --color-on-secondary: #fff7f6;
+  --color-on-secondary-container: #8c3533;
+  --color-on-secondary-fixed: #732323;
+  --color-on-secondary-fixed-variant: #983f3c;
+
+  /* Tertiary */
+  --color-tertiary: #585d7e;
+  --color-tertiary-dim: #4c5171;
+  --color-tertiary-container: #c8ccf2;
+  --color-tertiary-fixed: #c8ccf2;
+  --color-tertiary-fixed-dim: #babfe4;
+  --color-on-tertiary: #faf8ff;
+  --color-on-tertiary-container: #3f4463;
+  --color-on-tertiary-fixed: #2b304e;
+  --color-on-tertiary-fixed-variant: #484d6c;
+
+  /* Neutral / Surface Text */
+  --color-on-surface: #2e342d;
+  --color-on-surface-variant: #5a6159;
+  --color-on-background: #2e342d;
+  --color-background: #fafaf5;
+  --color-inverse-surface: #0d0f0c;
+  --color-inverse-on-surface: #9c9d99;
+
+  /* Outline */
+  --color-outline: #767c74;
+  --color-outline-variant: #aeb4aa;
+
+  /* Error */
+  --color-error: #9f403d;
+  --color-error-dim: #4e0309;
+  --color-error-container: #fe8983;
+  --color-on-error: #fff7f6;
+  --color-on-error-container: #752121;
+
+  /* Fonts */
+  --font-headline: "Newsreader", "Noto Serif SC", "Songti SC", "STSong", "SimSun", serif;
+  --font-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  --font-label: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  --font-chinese: "Noto Serif SC", "Songti SC", "STSong", "PingFang SC", "Microsoft YaHei", sans-serif;
+
+  /* Border Radius */
+  --radius-sm: 0.125rem;
+  --radius-DEFAULT: 0.125rem;
+  --radius-md: 0.25rem;
+  --radius-lg: 0.25rem;
+  --radius-xl: 0.5rem;
+  --radius-2xl: 0.75rem;
+  --radius-full: 0.75rem;
+}
+
+/* Material Symbols */
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  display: inline-block;
+  line-height: 1;
+  text-transform: none;
+  letter-spacing: normal;
+  word-wrap: normal;
+  white-space: nowrap;
+  direction: ltr;
+}
+
+/* Serif Numbers */
+.serif-numbers {
+  font-family: 'Newsreader', serif;
+  font-variant-numeric: oldstyle-nums;
+}
+
+/* Text Caps */
+.text-xs-caps {
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* Ghost Border */
+.ghost-border {
+  border: 1px solid rgba(174, 180, 170, 0.15);
+}
+
+.ghost-border-bottom {
+  border-bottom: 1px solid rgba(174, 180, 170, 0.15);
+}
+
+.thin-border {
+  border-bottom: 0.5px solid rgba(118, 124, 116, 0.2);
+}
+
+/* Minimal Input */
+.minimal-input {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(118, 124, 116, 0.2);
+  padding: 1rem 0;
+  transition: border-color 0.3s ease;
+}
+.minimal-input:focus {
+  border-bottom-color: #2e342d;
+  box-shadow: none !important;
+  outline: none;
+}
+
+/* Custom Scrollbar - 更明显的滚动条 */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #d5dcd0 transparent;
+}
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #c5ccc0;
+  border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #aeb4aa;
+}
+
+/* No Scrollbar */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Accordion */
+.accordion-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease-out;
+}
+.accordion-open {
+  max-height: 2000px;
+}
+
+/* Base body font with Chinese support */
+body {
+  font-family: var(--font-body);
+  background-color: #fafaf5;
+  color: #2e342d;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Headline font - English serif + Chinese serif */
+.font-headline {
+  font-family: var(--font-headline);
+}
+
+/* Chinese text optimization */
+.chinese-text {
+  font-family: var(--font-chinese);
+  line-height: 1.8;
+}
+
+/* Better Chinese readability for small text */
+.text-sm, .text-xs, .text-\[10px\] {
+  line-height: 1.6;
+}
+
+/* Optimize Chinese font rendering */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+/* Chinese paragraph spacing */
+p {
+  line-height: 1.75;
+}

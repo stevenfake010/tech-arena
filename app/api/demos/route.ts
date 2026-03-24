@@ -1,0 +1,87 @@
+import { NextResponse } from 'next/server';
+import { getSupabaseAdmin } from '@/lib/supabase';
+import { cookies } from 'next/headers';
+
+async function getCurrentUser() {
+  const cookieStore = await cookies();
+  const userId = cookieStore.get('demo_day_user')?.value;
+  if (!userId) return null;
+  
+  const supabase = getSupabaseAdmin();
+  const { data: user } = await supabase
+    .from('users')
+    .select('id, name, department, role')
+    .eq('id', parseInt(userId))
+    .single();
+  
+  return user;
+}
+
+export async function GET() {
+  const supabase = getSupabaseAdmin();
+  
+  const { data: demos, error } = await supabase
+    .from('demos')
+    .select(`
+      *,
+      submitter:submitted_by(name, department)
+    `)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  // 格式化数据以兼容前端
+  const formattedDemos = demos?.map(d => ({
+    ...d,
+    submitter_name: d.submitter?.name,
+    submitter_department: d.submitter?.department,
+  })) || [];
+
+  return NextResponse.json({ demos: formattedDemos });
+}
+
+export async function POST(request: Request) {
+  const user = await getCurrentUser();
+  if (!user) {
+    return NextResponse.json({ error: '请先登录' }, { status: 401 });
+  }
+
+  const body = await request.json();
+  const { name, summary, track, demo_link, submitter1_name, submitter1_dept, submitter2_name, submitter2_dept, background, media_urls } = body;
+
+  if (!name || !summary || !track || !submitter1_name || !submitter1_dept) {
+    return NextResponse.json({ error: '请填写必填项' }, { status: 400 });
+  }
+
+  if (track === 'optimizer' && submitter2_name) {
+    return NextResponse.json({ error: 'Optimizer 赛道仅允许单人提报' }, { status: 400 });
+  }
+
+  const supabase = getSupabaseAdmin();
+  
+  const { data, error } = await supabase
+    .from('demos')
+    .insert({
+      name,
+      summary,
+      track,
+      demo_link: demo_link || null,
+      submitter1_name,
+      submitter1_dept,
+      submitter2_name: submitter2_name || null,
+      submitter2_dept: submitter2_dept || null,
+      background: background || null,
+      media_urls: media_urls || [],
+      submitted_by: user.id,
+    })
+    .select()
+    .single();
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  return NextResponse.json({ id: data.id }, { status: 201 });
+}
