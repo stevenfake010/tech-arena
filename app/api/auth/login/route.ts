@@ -15,7 +15,7 @@ export async function POST(request: Request) {
     .from('users')
     .select('id, name, department, role')
     .eq('name', name)
-    .single();
+    .single() as { data: { id: number; name: string; department: string; role: string } | null; error: any };
 
   if (error || !user) {
     return NextResponse.json({ error: '用户不存在' }, { status: 404 });
