@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { Loader2, Star, CheckCircle, AlertCircle, Lock, Search } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Loader2, Star, CheckCircle, AlertCircle, Lock, Search, ExternalLink } from 'lucide-react';
 import { BEST_DEMO_AWARDS, SPECIAL_AWARDS } from '@/lib/constants';
 
 interface LeaderboardItem {
@@ -30,6 +31,8 @@ interface SelectedVote {
 }
 
 export default function LeaderboardPage() {
+  const router = useRouter();
+  
   // 最佳Demo奖数据
   const [optimizerData, setOptimizerData] = useState<LeaderboardItem[]>([]);
   const [builderData, setBuilderData] = useState<LeaderboardItem[]>([]);
@@ -474,7 +477,14 @@ export default function LeaderboardPage() {
                   
                   {/* 项目名 + 一句话概括 */}
                   <td className="py-3 px-4">
-                    <div className="font-medium text-on-surface text-base truncate">{item.name}</div>
+                    <div 
+                      className="font-medium text-on-surface text-base truncate cursor-pointer hover:text-secondary transition-colors flex items-center gap-1"
+                      onClick={() => router.push(`/gallery?demo=${item.id}`)}
+                      title="点击查看详情"
+                    >
+                      {item.name}
+                      <ExternalLink size={12} className="opacity-0 hover:opacity-100 transition-opacity" />
+                    </div>
                     <div className="text-sm text-on-surface-variant/70 line-clamp-1 mt-0.5">{item.summary}</div>
                   </td>
                   

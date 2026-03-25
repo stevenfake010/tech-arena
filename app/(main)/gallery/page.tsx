@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { Search, ExternalLink } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
+import { Search, ExternalLink, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 
 interface Demo {
@@ -24,12 +25,19 @@ interface Demo {
 }
 
 export default function GalleryPage() {
+  const searchParams = useSearchParams();
+  const demoIdFromUrl = searchParams.get('demo');
+  
   const [demos, setDemos] = useState<Demo[]>([]);
   const [selectedDemo, setSelectedDemo] = useState<Demo | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [activeTrack, setActiveTrack] = useState<'optimizer' | 'builder'>('optimizer');
+  
+  // Lightbox 状态
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
 
   // 搜索防抖 - 300ms 延迟
   useEffect(() => {
@@ -43,14 +51,26 @@ export default function GalleryPage() {
     fetch('/api/demos')
       .then(r => r.json())
       .then(data => {
-        setDemos(data.demos || []);
-        if (data.demos?.length > 0) {
-          setSelectedDemo(data.demos[0]);
+        const demosList = data.demos || [];
+        setDemos(demosList);
+        
+        // 如果 URL 中有 demo 参数，自动选中对应项目
+        if (demoIdFromUrl && demosList.length > 0) {
+          const demoId = parseInt(demoIdFromUrl);
+          const foundDemo = demosList.find((d: Demo) => d.id === demoId);
+          if (foundDemo) {
+            setSelectedDemo(foundDemo);
+            setActiveTrack(foundDemo.track);
+          } else {
+            setSelectedDemo(demosList[0]);
+          }
+        } else if (demosList.length > 0) {
+          setSelectedDemo(demosList[0]);
         }
         setLoading(false);
       })
       .catch(() => setLoading(false));
-  }, []);
+  }, [demoIdFromUrl]);
 
   const optimizerDemos = demos.filter(d => d.track === 'optimizer');
   const builderDemos = demos.filter(d => d.track === 'builder');
@@ -355,12 +375,18 @@ export default function GalleryPage() {
                           {mediaUrls.map((url: string, i: number) => {
                             const isVideo = url.match(/\.(mp4|mov|webm|avi)$/i);
                             return (
-                              <div key={i} className="aspect-video bg-surface-container-highest rounded-lg overflow-hidden">
+                              <div 
+                                key={i} 
+                                className="aspect-video bg-surface-container-highest rounded-lg overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
+                                onClick={() => {
+                                  setLightboxIndex(i);
+                                  setLightboxOpen(true);
+                                }}
+                              >
                                 {isVideo ? (
                                   <video 
                                     src={url} 
-                                    controls
-                                    className="w-full h-full object-contain bg-black"
+                                    className="w-full h-full object-cover"
                                     preload="metadata"
                                   />
                                 ) : (
@@ -388,6 +414,107 @@ export default function GalleryPage() {
           )}
         </div>
       </section>
+      
+      {/* Lightbox 查看器 */}
+      {lightboxOpen && mediaUrls.length > 0 && (
+        <Lightbox 
+          urls={mediaUrls}
+          currentIndex={lightboxIndex}
+          onClose={() => setLightboxOpen(false)}
+          onPrev={() => setLightboxIndex(prev => prev > 0 ? prev - 1 : mediaUrls.length - 1)}
+          onNext={() => setLightboxIndex(prev => prev < mediaUrls.length - 1 ? prev + 1 : 0)}
+        />
+      )}
+    </div>
+  );
+}
+
+// Lightbox 组件
+function Lightbox({ 
+  urls, 
+  currentIndex, 
+  onClose, 
+  onPrev, 
+  onNext 
+}: { 
+  urls: string[]; 
+  currentIndex: number; 
+  onClose: () => void;
+  onPrev: () => void;
+  onNext: () => void;
+}) {
+  const currentUrl = urls[currentIndex];
+  const isVideo = currentUrl.match(/\.(mp4|mov|webm|avi)$/i);
+  
+  // 键盘导航
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+      if (e.key === 'ArrowLeft') onPrev();
+      if (e.key === 'ArrowRight') onNext();
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [onClose, onPrev, onNext]);
+  
+  return (
+    <div 
+      className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center"
+      onClick={onClose}
+    >
+      {/* 关闭按钮 */}
+      <button 
+        className="absolute top-4 right-4 p-2 text-white/80 hover:text-white hover:bg-white/10 rounded-full transition-colors z-50"
+        onClick={onClose}
+      >
+        <X size={24} />
+      </button>
+      
+      {/* 计数器 */}
+      <div className="absolute top-4 left-4 px-3 py-1 bg-white/10 rounded-full text-white/80 text-sm">
+        {currentIndex + 1} / {urls.length}
+      </div>
+      
+      {/* 上一张 */}
+      {urls.length > 1 && (
+        <button 
+          className="absolute left-4 top-1/2 -translate-y-1/2 p-2 text-white/80 hover:text-white hover:bg-white/10 rounded-full transition-colors"
+          onClick={(e) => { e.stopPropagation(); onPrev(); }}
+        >
+          <ChevronLeft size={32} />
+        </button>
+      )}
+      
+      {/* 下一张 */}
+      {urls.length > 1 && (
+        <button 
+          className="absolute right-4 top-1/2 -translate-y-1/2 p-2 text-white/80 hover:text-white hover:bg-white/10 rounded-full transition-colors"
+          onClick={(e) => { e.stopPropagation(); onNext(); }}
+        >
+          <ChevronRight size={32} />
+        </button>
+      )}
+      
+      {/* 内容区域 */}
+      <div 
+        className="max-w-[90vw] max-h-[90vh] flex items-center justify-center"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {isVideo ? (
+          <video 
+            src={currentUrl}
+            controls
+            autoPlay
+            className="max-w-full max-h-[90vh] object-contain"
+          />
+        ) : (
+          <img 
+            src={currentUrl}
+            alt={`Media ${currentIndex + 1}`}
+            className="max-w-full max-h-[90vh] object-contain"
+          />
+        )}
+      </div>
     </div>
   );
 }
