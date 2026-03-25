@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { Search, ChevronDown, ExternalLink } from 'lucide-react';
+import { Search, ExternalLink } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 
 interface Demo {
@@ -29,8 +29,7 @@ export default function GalleryPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [loading, setLoading] = useState(true);
-  const [optimizerExpanded, setOptimizerExpanded] = useState(true);
-  const [builderExpanded, setBuilderExpanded] = useState(true);
+  const [activeTrack, setActiveTrack] = useState<'optimizer' | 'builder'>('optimizer');
 
   // 搜索防抖 - 300ms 延迟
   useEffect(() => {
@@ -81,6 +80,15 @@ export default function GalleryPage() {
     );
   }, [builderDemos, debouncedQuery]);
 
+  const activeList = activeTrack === 'optimizer' ? filteredOptimizer : filteredBuilder;
+  const trackColor = activeTrack === 'optimizer' ? 'secondary' : 'tertiary';
+
+  const handleSwitchTrack = useCallback((track: 'optimizer' | 'builder') => {
+    setActiveTrack(track);
+    const list = track === 'optimizer' ? optimizerDemos : builderDemos;
+    if (list.length > 0) setSelectedDemo(list[0]);
+  }, [optimizerDemos, builderDemos]);
+
   // 安全解析 media_urls（可能是 JSONB 数组或字符串）
   function parseMediaUrls(mediaUrls: string | string[] | null | undefined): string[] {
     if (!mediaUrls) return [];
@@ -117,169 +125,125 @@ export default function GalleryPage() {
       </header>
 
       {/* Split Pane Layout - 独立滚动 */}
-      <section className="flex-1 flex gap-6 min-h-0 px-12 pb-12">
+      <section className="flex-1 flex gap-6 min-h-0 px-12 pb-4">
         {/* Left Pane: Project List - 独立滚动 */}
         <div className="w-1/3 flex flex-col h-full overflow-hidden">
-          {/* Search */}
-          <div className="relative mb-4 flex-shrink-0">
-            <input
-              className="w-full bg-surface-container-low border-none border-b border-outline/30 focus:ring-0 focus:border-primary text-sm px-4 py-3 rounded-lg transition-all"
-              placeholder="搜索项目、关键词或薯名..."
-              type="text"
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-            />
-            <Search size={16} className="absolute right-3 top-3 text-outline" />
+          {/* Tab Bar */}
+          <div className="flex-shrink-0 flex gap-1 p-1 bg-surface-container-low rounded-t-xl">
+            <button
+              onClick={() => handleSwitchTrack('optimizer')}
+              className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-headline text-base font-bold transition-all ${
+                activeTrack === 'optimizer'
+                  ? 'bg-secondary text-on-secondary shadow-sm'
+                  : 'text-on-surface-variant hover:bg-surface-container-high'
+              }`}
+            >
+              <span>⚡</span>
+              <span>Optimizer</span>
+              <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-normal ${
+                activeTrack === 'optimizer'
+                  ? 'bg-on-secondary/20 text-on-secondary'
+                  : 'bg-surface-container-high text-on-surface-variant'
+              }`}>
+                {filteredOptimizer.length}
+              </span>
+            </button>
+            <button
+              onClick={() => handleSwitchTrack('builder')}
+              className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-headline text-base font-bold transition-all ${
+                activeTrack === 'builder'
+                  ? 'bg-tertiary text-on-tertiary shadow-sm'
+                  : 'text-on-surface-variant hover:bg-surface-container-high'
+              }`}
+            >
+              <span>🛠️</span>
+              <span>Builder</span>
+              <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-normal ${
+                activeTrack === 'builder'
+                  ? 'bg-on-tertiary/20 text-on-tertiary'
+                  : 'bg-surface-container-high text-on-surface-variant'
+              }`}>
+                {filteredBuilder.length}
+              </span>
+            </button>
           </div>
 
-          {/* Project List - 独立滚动区域 */}
-          <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 border border-outline-variant/10 rounded-lg bg-surface-container-low/30">
-            {/* Optimizer Section */}
-            <div className="border-b border-outline-variant/30">
-              {/* 吸顶标题栏 */}
-              <button
-                className="sticky top-0 z-10 flex items-center justify-between w-full py-3 px-4 cursor-pointer group bg-surface-container-low/95 backdrop-blur-sm border-b border-outline-variant/20"
-                onClick={() => setOptimizerExpanded(!optimizerExpanded)}
-              >
-                <div className="flex items-center gap-2.5">
-                  <span className="w-0.5 h-4 rounded-full bg-secondary flex-shrink-0" />
-                  <span className="text-secondary text-sm">⚡️</span>
-                  <span className="font-headline text-base font-bold text-on-surface">
-                    Optimizer
-                  </span>
-                  <span className="text-[10px] text-on-surface-variant bg-surface-container-high px-2 py-0.5 rounded-full">
-                    {filteredOptimizer.length}
-                  </span>
-                </div>
-                <ChevronDown size={18} className={`text-outline transition-transform duration-300 ${optimizerExpanded ? '' : '-rotate-90'}`} />
-              </button>
-              {optimizerExpanded && (
-                <div className="space-y-1.5 p-2">
-                  {filteredOptimizer.map(demo => (
-                    <div
-                      key={demo.id}
-                      onClick={() => setSelectedDemo(demo)}
-                      className={`p-3 rounded-lg cursor-pointer transition-all group ${
-                        selectedDemo?.id === demo.id
-                          ? 'bg-surface-container-lowest shadow-sm border-l-2 border-secondary'
-                          : 'bg-surface-container-low hover:bg-surface-container-high'
-                      }`}
-                    >
-                      {/* 标题和简介 */}
-                      <div className="mb-2">
-                        <div className="flex items-start justify-between gap-2 mb-1">
-                          <h3 className={`text-base font-headline font-bold leading-tight ${
-                            selectedDemo?.id === demo.id ? '' : 'group-hover:text-primary'
-                          }`}>
-                            {demo.name}
-                          </h3>
-                          <span className="text-xs text-outline flex-shrink-0">
-                            {demo.submitter1_name}
-                          </span>
-                        </div>
-                        <p className="text-on-surface-variant text-sm line-clamp-1">
-                          {demo.summary}
-                        </p>
-                      </div>
-                      
-                      {/* 关键词 - 单独一行 */}
-                      {demo.keywords && (() => {
-                        const keywords = demo.keywords.split(/[、,，]/).map(kw => kw.trim()).filter(Boolean);
-                        const visibleKeywords = keywords.slice(0, 3);
-                        const hiddenCount = keywords.length - visibleKeywords.length;
-                        return (
-                          <div className="flex flex-wrap gap-1">
-                            {visibleKeywords.map((kw, i) => (
-                              <span key={i} className="text-[10px] px-1.5 py-0.5 bg-secondary/10 text-secondary rounded">
-                                {kw}
-                              </span>
-                            ))}
-                            {hiddenCount > 0 && (
-                              <span className="text-[10px] px-1.5 py-0.5 bg-surface-container-high text-on-surface-variant rounded">
-                                +{hiddenCount}
-                              </span>
-                            )}
-                          </div>
-                        );
-                      })()}
-                    </div>
-                  ))}
-                </div>
-              )}
+          {/* Search - inside the container, between tab and list */}
+          <div className={`flex-shrink-0 px-2 pt-2 border-x border-outline-variant/20 bg-surface-container-low/50 ${
+            activeTrack === 'optimizer' ? 'border-t-2 border-t-secondary/30' : 'border-t-2 border-t-tertiary/30'
+          }`}>
+            <div className="relative">
+              <input
+                className="w-full bg-surface-container-lowest border border-outline-variant/30 focus:border-primary focus:ring-0 text-sm px-3 py-2 pr-8 rounded-lg transition-all placeholder:text-outline/60"
+                placeholder="搜索项目、关键词或薯名..."
+                type="text"
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+              />
+              <Search size={14} className="absolute right-3 top-2.5 text-outline" />
             </div>
+          </div>
 
-            {/* Builder Section */}
-            <div className="border-b border-outline-variant/30">
-              {/* 吸顶标题栏 */}
-              <button
-                className="sticky top-0 z-10 flex items-center justify-between w-full py-3 px-4 cursor-pointer group bg-surface-container-low/95 backdrop-blur-sm border-b border-outline-variant/20"
-                onClick={() => setBuilderExpanded(!builderExpanded)}
-              >
-                <div className="flex items-center gap-2.5">
-                  <span className="w-0.5 h-4 rounded-full bg-tertiary flex-shrink-0" />
-                  <span className="text-tertiary text-sm">🛠️</span>
-                  <span className="font-headline text-base font-bold text-on-surface">
-                    Builder
-                  </span>
-                  <span className="text-[10px] text-on-surface-variant bg-surface-container-high px-2 py-0.5 rounded-full">
-                    {filteredBuilder.length}
-                  </span>
-                </div>
-                <ChevronDown size={18} className={`text-outline transition-transform duration-300 ${builderExpanded ? '' : '-rotate-90'}`} />
-              </button>
-              {builderExpanded && (
-                <div className="space-y-1.5 p-2">
-                  {filteredBuilder.map(demo => (
-                    <div
-                      key={demo.id}
-                      onClick={() => setSelectedDemo(demo)}
-                      className={`p-3 rounded-lg cursor-pointer transition-all group ${
-                        selectedDemo?.id === demo.id
-                          ? 'bg-surface-container-lowest shadow-sm border-l-2 border-tertiary'
-                          : 'bg-surface-container-low hover:bg-surface-container-high'
-                      }`}
-                    >
-                      {/* 标题和简介 */}
-                      <div className="mb-2">
-                        <div className="flex items-start justify-between gap-2 mb-1">
-                          <h3 className={`text-base font-headline font-bold leading-tight ${
-                            selectedDemo?.id === demo.id ? '' : 'group-hover:text-primary'
-                          }`}>
-                            {demo.name}
-                          </h3>
-                          <span className="text-xs text-outline flex-shrink-0">
-                            {demo.submitter1_name}{demo.submitter2_name ? ` + ${demo.submitter2_name}` : ''}
-                          </span>
-                        </div>
-                        <p className="text-on-surface-variant text-sm line-clamp-1">
-                          {demo.summary}
-                        </p>
+          {/* Project List - 独立滚动区域，和 Tab 共享容器色，形成视觉整体 */}
+          <div className="flex-1 overflow-y-auto custom-scrollbar border-x border-b border-outline-variant/20 rounded-b-xl bg-surface-container-low/50">
+            <div className="space-y-1 p-2">
+              {activeList.length === 0 ? (
+                <p className="text-center text-on-surface-variant text-sm py-8">暂无项目</p>
+              ) : activeList.map(demo => {
+                const keywords = demo.keywords
+                  ? demo.keywords.split(/[、,，]/).map(kw => kw.trim()).filter(Boolean)
+                  : [];
+                const visibleKeywords = keywords.slice(0, 3);
+                const hiddenCount = keywords.length - visibleKeywords.length;
+                const isSelected = selectedDemo?.id === demo.id;
+                return (
+                  <div
+                    key={demo.id}
+                    onClick={() => setSelectedDemo(demo)}
+                    className={`p-3 rounded-lg cursor-pointer transition-all group ${
+                      isSelected
+                        ? activeTrack === 'optimizer'
+                          ? 'bg-surface-container-lowest shadow-sm border-l-2 border-secondary'
+                          : 'bg-surface-container-lowest shadow-sm border-l-2 border-tertiary'
+                        : 'hover:bg-surface-container-high'
+                    }`}
+                  >
+                    <div className="mb-2">
+                      <div className="flex items-start justify-between gap-2 mb-1">
+                        <h3 className={`text-base font-headline font-bold leading-tight ${
+                          isSelected ? '' : 'group-hover:text-primary'
+                        }`}>
+                          {demo.name}
+                        </h3>
+                        <span className="text-xs text-outline flex-shrink-0">
+                          {demo.submitter1_name}{demo.submitter2_name ? ` + ${demo.submitter2_name}` : ''}
+                        </span>
                       </div>
-                      
-                      {/* 关键词 - 单独一行 */}
-                      {demo.keywords && (() => {
-                        const keywords = demo.keywords.split(/[、,，]/).map(kw => kw.trim()).filter(Boolean);
-                        const visibleKeywords = keywords.slice(0, 3);
-                        const hiddenCount = keywords.length - visibleKeywords.length;
-                        return (
-                          <div className="flex flex-wrap gap-1">
-                            {visibleKeywords.map((kw, i) => (
-                              <span key={i} className="text-[10px] px-1.5 py-0.5 bg-tertiary/10 text-tertiary rounded">
-                                {kw}
-                              </span>
-                            ))}
-                            {hiddenCount > 0 && (
-                              <span className="text-[10px] px-1.5 py-0.5 bg-surface-container-high text-on-surface-variant rounded">
-                                +{hiddenCount}
-                              </span>
-                            )}
-                          </div>
-                        );
-                      })()}
+                      <p className="text-on-surface-variant text-sm line-clamp-1">
+                        {demo.summary}
+                      </p>
                     </div>
-                  ))}
-                </div>
-              )}
+                    {visibleKeywords.length > 0 && (
+                      <div className="flex flex-wrap gap-1">
+                        {visibleKeywords.map((kw, i) => (
+                          <span key={i} className={`text-xs px-1.5 py-0.5 rounded ${
+                            activeTrack === 'optimizer'
+                              ? 'bg-secondary/10 text-secondary'
+                              : 'bg-tertiary/10 text-tertiary'
+                          }`}>
+                            {kw}
+                          </span>
+                        ))}
+                        {hiddenCount > 0 && (
+                          <span className="text-xs px-1.5 py-0.5 bg-surface-container-high text-on-surface-variant rounded">
+                            +{hiddenCount}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>

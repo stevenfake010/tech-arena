@@ -13,13 +13,14 @@ interface UserOption {
 
 interface SubmitModalProps {
   onClose: () => void;
+  initialTrack?: 'optimizer' | 'builder';
 }
 
-export default function SubmitModal({ onClose }: SubmitModalProps) {
+export default function SubmitModal({ onClose, initialTrack }: SubmitModalProps) {
   const [form, setForm] = useState({
     name: '',
     summary: '',
-    track: '',
+    track: initialTrack ?? '',
     demo_link: '',
     submitter1_name: '',
     submitter1_dept: '',

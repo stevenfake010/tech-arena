@@ -11,6 +11,7 @@ import { AlertCircle } from 'lucide-react';
 function MainLayoutContent({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const [showSubmit, setShowSubmit] = useState(false);
+  const [submitTrack, setSubmitTrack] = useState<'optimizer' | 'builder' | undefined>(undefined);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const [user, setUser] = useState<any>(null);
 
@@ -21,17 +22,19 @@ function MainLayoutContent({ children }: { children: React.ReactNode }) {
       .catch(() => {});
   }, []);
 
-  // 监听来自 my-demos 页面的提交 Demo 事件
+  // 监听来自页面的提交 Demo 事件，支持传入初始赛道
   useEffect(() => {
-    const handleOpenSubmit = () => {
-      handleSubmitClick();
+    const handleOpenSubmit = (e: Event) => {
+      const track = (e as CustomEvent).detail?.track as 'optimizer' | 'builder' | undefined;
+      handleSubmitClick(track);
     };
     window.addEventListener('openSubmit', handleOpenSubmit);
     return () => window.removeEventListener('openSubmit', handleOpenSubmit);
   }, [user]);
 
-  const handleSubmitClick = () => {
+  const handleSubmitClick = (track?: 'optimizer' | 'builder') => {
     if (user) {
+      setSubmitTrack(track);
       setShowSubmit(true);
     } else {
       setShowLoginPrompt(true);
@@ -40,7 +43,7 @@ function MainLayoutContent({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="h-screen overflow-hidden bg-surface">
-      <Sidebar onSubmitClick={handleSubmitClick} />
+      <Sidebar onSubmitClick={() => handleSubmitClick()} />
       <main className="ml-64 h-screen overflow-y-auto custom-scrollbar bg-surface relative">
         {/* 语言切换按钮 - 暂时隐藏 */}
         {/* <div className="absolute top-4 right-4 z-40">
@@ -52,7 +55,7 @@ function MainLayoutContent({ children }: { children: React.ReactNode }) {
       </main>
       
       {/* 提交弹窗 */}
-      {showSubmit && <SubmitModal onClose={() => setShowSubmit(false)} />}
+      {showSubmit && <SubmitModal onClose={() => setShowSubmit(false)} initialTrack={submitTrack} />}
       
       {/* 登录提示弹窗 */}
       {showLoginPrompt && (
