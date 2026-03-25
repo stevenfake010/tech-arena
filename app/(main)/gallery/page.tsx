@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Search, ChevronDown, ExternalLink } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 
 interface Demo {
   id: number;
@@ -319,9 +320,9 @@ export default function GalleryPage() {
                       {selectedDemo.background && (
                         <div>
                           <p className="text-xs uppercase tracking-widest text-secondary font-bold mb-3">Why / 为什么要做</p>
-                          <p className="text-on-surface-variant leading-relaxed text-base">
-                            {selectedDemo.background}
-                          </p>
+                          <div className="prose prose-sm max-w-none text-on-surface-variant">
+                            <ReactMarkdown>{selectedDemo.background}</ReactMarkdown>
+                          </div>
                         </div>
                       )}
                       
@@ -329,9 +330,9 @@ export default function GalleryPage() {
                       {selectedDemo.solution && (
                         <div>
                           <p className="text-xs uppercase tracking-widest text-tertiary font-bold mb-3">How / 怎么解决的</p>
-                          <p className="text-on-surface-variant leading-relaxed text-base">
-                            {selectedDemo.solution}
-                          </p>
+                          <div className="prose prose-sm max-w-none text-on-surface-variant">
+                            <ReactMarkdown>{selectedDemo.solution}</ReactMarkdown>
+                          </div>
                         </div>
                       )}
                       
