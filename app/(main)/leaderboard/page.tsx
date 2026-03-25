@@ -614,20 +614,20 @@ export default function LeaderboardPage() {
           <div className="flex gap-1 p-1 bg-surface-container-low rounded-xl">
             <button
               onClick={() => setActiveTab('optimizer')}
-              className={`px-5 py-2.5 rounded-lg text-sm font-bold transition-all ${
+              className={`px-5 py-2.5 rounded-lg font-headline text-base font-bold transition-all ${
                 activeTab === 'optimizer'
                   ? 'bg-primary text-on-primary shadow-sm'
-                  : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high'
+                  : 'text-on-surface hover:text-on-surface hover:bg-surface-container-high'
               }`}
             >
               ⚡ Optimizer
             </button>
             <button
               onClick={() => setActiveTab('builder')}
-              className={`px-5 py-2.5 rounded-lg text-sm font-bold transition-all ${
+              className={`px-5 py-2.5 rounded-lg font-headline text-base font-bold transition-all ${
                 activeTab === 'builder'
                   ? 'bg-primary text-on-primary shadow-sm'
-                  : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high'
+                  : 'text-on-surface hover:text-on-surface hover:bg-surface-container-high'
               }`}
             >
               🛠️ Builder
@@ -644,30 +644,30 @@ export default function LeaderboardPage() {
           <div className="flex gap-1 p-1 bg-surface-container-low rounded-xl">
             <button
               onClick={() => setActiveTab('special_brain')}
-              className={`px-5 py-2.5 rounded-lg text-sm font-bold transition-all ${
+              className={`px-5 py-2.5 rounded-lg font-headline text-base font-bold transition-all ${
                 activeTab === 'special_brain'
                   ? 'bg-primary text-on-primary shadow-sm'
-                  : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high'
+                  : 'text-on-surface hover:text-on-surface hover:bg-surface-container-high'
               }`}
             >
               🧠 最脑洞
             </button>
             <button
               onClick={() => setActiveTab('special_infectious')}
-              className={`px-5 py-2.5 rounded-lg text-sm font-bold transition-all ${
+              className={`px-5 py-2.5 rounded-lg font-headline text-base font-bold transition-all ${
                 activeTab === 'special_infectious'
                   ? 'bg-primary text-on-primary shadow-sm'
-                  : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high'
+                  : 'text-on-surface hover:text-on-surface hover:bg-surface-container-high'
               }`}
             >
               🔥 最感染力
             </button>
             <button
               onClick={() => setActiveTab('special_useful')}
-              className={`px-5 py-2.5 rounded-lg text-sm font-bold transition-all ${
+              className={`px-5 py-2.5 rounded-lg font-headline text-base font-bold transition-all ${
                 activeTab === 'special_useful'
                   ? 'bg-primary text-on-primary shadow-sm'
-                  : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high'
+                  : 'text-on-surface hover:text-on-surface hover:bg-surface-container-high'
               }`}
             >
               💎 最实用
