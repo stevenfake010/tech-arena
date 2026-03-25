@@ -21,6 +21,15 @@ function MainLayoutContent({ children }: { children: React.ReactNode }) {
       .catch(() => {});
   }, []);
 
+  // 监听来自 my-demos 页面的提交 Demo 事件
+  useEffect(() => {
+    const handleOpenSubmit = () => {
+      handleSubmitClick();
+    };
+    window.addEventListener('openSubmit', handleOpenSubmit);
+    return () => window.removeEventListener('openSubmit', handleOpenSubmit);
+  }, [user]);
+
   const handleSubmitClick = () => {
     if (user) {
       setShowSubmit(true);
