@@ -41,7 +41,7 @@ export default function GuidePage() {
           <section>
             <SectionTitle>活动背景</SectionTitle>
             <p className="text-sm text-on-surface-variant leading-relaxed">
-              第一届战略 × 用研 × 投资 Demo Day 正式开启。AI 时代已经到来——这里是展示你用 AI 做了什么的舞台。欢迎大家踊跃报名。
+              第一届小红书战略/投资/用户研究 AI Demo Day 正式开启。AI 时代已经到来——这里是展示你用 AI 做了什么的舞台。欢迎大家踊跃报名。
             </p>
           </section>
 
