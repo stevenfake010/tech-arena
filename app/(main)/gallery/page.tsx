@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Search, ChevronDown, ExternalLink } from 'lucide-react';
 
 interface Demo {
@@ -26,9 +26,18 @@ export default function GalleryPage() {
   const [demos, setDemos] = useState<Demo[]>([]);
   const [selectedDemo, setSelectedDemo] = useState<Demo | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedQuery, setDebouncedQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [optimizerExpanded, setOptimizerExpanded] = useState(true);
   const [builderExpanded, setBuilderExpanded] = useState(true);
+
+  // 搜索防抖 - 300ms 延迟
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedQuery(searchQuery);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   useEffect(() => {
     fetch('/api/demos')
@@ -46,26 +55,30 @@ export default function GalleryPage() {
   const optimizerDemos = demos.filter(d => d.track === 'optimizer');
   const builderDemos = demos.filter(d => d.track === 'builder');
 
-  const filteredOptimizer = optimizerDemos.filter(d => {
-    const q = searchQuery.toLowerCase();
-    return (
+  // 使用 useMemo 缓存过滤结果，避免重复计算
+  const filteredOptimizer = useMemo(() => {
+    const q = debouncedQuery.toLowerCase();
+    if (!q) return optimizerDemos;
+    return optimizerDemos.filter(d =>
       d.name.toLowerCase().includes(q) ||
       d.summary.toLowerCase().includes(q) ||
       d.submitter1_name.toLowerCase().includes(q) ||
       (d.submitter2_name && d.submitter2_name.toLowerCase().includes(q)) ||
       (d.keywords && d.keywords.toLowerCase().includes(q))
     );
-  });
-  const filteredBuilder = builderDemos.filter(d => {
-    const q = searchQuery.toLowerCase();
-    return (
+  }, [optimizerDemos, debouncedQuery]);
+
+  const filteredBuilder = useMemo(() => {
+    const q = debouncedQuery.toLowerCase();
+    if (!q) return builderDemos;
+    return builderDemos.filter(d =>
       d.name.toLowerCase().includes(q) ||
       d.summary.toLowerCase().includes(q) ||
       d.submitter1_name.toLowerCase().includes(q) ||
       (d.submitter2_name && d.submitter2_name.toLowerCase().includes(q)) ||
       (d.keywords && d.keywords.toLowerCase().includes(q))
     );
-  });
+  }, [builderDemos, debouncedQuery]);
 
   // 安全解析 media_urls（可能是 JSONB 数组或字符串）
   function parseMediaUrls(mediaUrls: string | string[] | null | undefined): string[] {
@@ -390,6 +403,7 @@ export default function GalleryPage() {
                                     src={url} 
                                     alt={`Media ${i + 1}`}
                                     className="w-full h-full object-cover"
+                                    loading="lazy"
                                   />
                                 )}
                               </div>

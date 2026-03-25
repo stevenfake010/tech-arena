@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Loader2, Star, CheckCircle, AlertCircle, Lock, Search } from 'lucide-react';
 import { BEST_DEMO_AWARDS, SPECIAL_AWARDS } from '@/lib/constants';
 
@@ -335,33 +335,42 @@ export default function LeaderboardPage() {
     // 是否在该奖项投过票（投过才显示票数）
     const showResults = hasVotedInType(voteType);
     
-    // 本地搜索状态
+    // 本地搜索状态 + 防抖
     const [localSearch, setLocalSearch] = useState('');
+    const [debouncedSearch, setDebouncedSearch] = useState('');
     
-    // 排序数据：投票后前10按票数排序并显示票数，其余不排序也不显示票数
-    const top10 = showResults
-      ? [...data].sort((a, b) => b.vote_count - a.vote_count).slice(0, 10)
-      : [];
-    const rankMap = new Map(top10.map((item, i) => [item.id, i + 1]));
-    const top10Ids = new Set(top10.map(item => item.id));
-    let displayData = showResults
-      ? [...top10, ...data.filter(item => !top10Ids.has(item.id))]
-      : data;
+    useEffect(() => {
+      const timer = setTimeout(() => setDebouncedSearch(localSearch), 200);
+      return () => clearTimeout(timer);
+    }, [localSearch]);
+    
+    // 使用 useMemo 缓存排序和过滤结果
+    const { filteredData, rankMap } = useMemo(() => {
+      // 排序数据：投票后前10按票数排序并显示票数
+      const top10 = showResults
+        ? [...data].sort((a, b) => b.vote_count - a.vote_count).slice(0, 10)
+        : [];
+      const rankMap = new Map(top10.map((item, i) => [item.id, i + 1]));
+      const top10Ids = new Set(top10.map(item => item.id));
+      let displayData = showResults
+        ? [...top10, ...data.filter(item => !top10Ids.has(item.id))]
+        : data;
 
-    // 搜索过滤
-    let filteredData = displayData;
-    if (localSearch.trim()) {
-      const query = localSearch.toLowerCase();
-      filteredData = displayData.filter(item => 
-        item.name.toLowerCase().includes(query) ||
-        item.summary.toLowerCase().includes(query) ||
-        (item.keywords && item.keywords.toLowerCase().includes(query)) ||
-        item.submitter1_name.toLowerCase().includes(query) ||
-        item.submitter1_dept.toLowerCase().includes(query) ||
-        (item.submitter2_name && item.submitter2_name.toLowerCase().includes(query)) ||
-        (item.submitter2_dept && item.submitter2_dept.toLowerCase().includes(query))
-      );
-    }
+      // 搜索过滤
+      if (debouncedSearch.trim()) {
+        const query = debouncedSearch.toLowerCase();
+        displayData = displayData.filter(item => 
+          item.name.toLowerCase().includes(query) ||
+          item.summary.toLowerCase().includes(query) ||
+          (item.keywords && item.keywords.toLowerCase().includes(query)) ||
+          item.submitter1_name.toLowerCase().includes(query) ||
+          item.submitter1_dept.toLowerCase().includes(query) ||
+          (item.submitter2_name && item.submitter2_name.toLowerCase().includes(query)) ||
+          (item.submitter2_dept && item.submitter2_dept.toLowerCase().includes(query))
+        );
+      }
+      return { filteredData: displayData, rankMap };
+    }, [data, debouncedSearch, showResults]);
 
     return (
       <section className="bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm border border-outline-variant/10">
