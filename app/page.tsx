@@ -1,8 +1,10 @@
-'use client'; // Force redeploy
+'use client';
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { pinyin } from 'pinyin-pro';
+import { LanguageProvider, useLanguage } from '@/components/LanguageProvider';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 
 interface UserOption {
   id: number;
@@ -10,8 +12,9 @@ interface UserOption {
   department: string;
 }
 
-export default function EntryPortal() {
+function EntryPortalContent() {
   const router = useRouter();
+  const { t } = useLanguage();
   const [users, setUsers] = useState<UserOption[]>([]);
   const [query, setQuery] = useState('');
   const [selectedUser, setSelectedUser] = useState<UserOption | null>(null);
@@ -49,9 +52,7 @@ export default function EntryPortal() {
   const filteredUsers = users.filter(u => {
     if (!query.trim()) return true;
     const q = query.trim().toLowerCase();
-    // Match by Chinese name
     if (u.name.includes(q)) return true;
-    // Match by pinyin
     const fullPinyin = pinyin(u.name, { toneType: 'none', type: 'array' }).join('').toLowerCase();
     const initials = pinyin(u.name, { pattern: 'first', toneType: 'none', type: 'array' }).join('').toLowerCase();
     return fullPinyin.includes(q) || initials.includes(q);
@@ -60,7 +61,7 @@ export default function EntryPortal() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!selectedUser) {
-      setError('请选择你的薯名');
+      setError(t.login.errorNoUser);
       return;
     }
     setLoading(true);
@@ -74,12 +75,12 @@ export default function EntryPortal() {
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error || '登录失败');
+        setError(data.error || t.login.errorNetwork);
         return;
       }
       router.push('/guide');
     } catch {
-      setError('网络错误，请重试');
+      setError(t.login.errorNetwork);
     } finally {
       setLoading(false);
     }
@@ -99,13 +100,14 @@ export default function EntryPortal() {
         <div className="w-full h-full" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, #767c74 1px, transparent 0)', backgroundSize: '48px 48px' }} />
       </div>
 
-      {/* Header - 与其他页面保持一致 */}
+      {/* Header */}
       <header className="absolute top-0 left-0 right-0 z-20 px-12 pt-8 pb-4">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-4xl font-headline font-bold tracking-tight text-on-surface">AI Demo Day</h1>
-            <p className="text-base text-on-surface-variant mt-1 chinese-text">Xiaohongshu Strategy / Investment / User Research</p>
+            <h1 className="text-4xl font-headline font-bold tracking-tight text-on-surface">{t.login.title}</h1>
+            <p className="text-base text-on-surface-variant mt-1">{t.login.subtitle}</p>
           </div>
+          <LanguageSwitcher />
         </div>
       </header>
 
@@ -113,19 +115,19 @@ export default function EntryPortal() {
       <div className="relative z-10 h-full flex items-center justify-center p-6 sm:p-12 pt-24">
         <div className="w-full max-w-md bg-white p-10 sm:p-12 flex flex-col gap-8 shadow-[0_40px_80px_-15px_rgba(0,0,0,0.08)] border border-surface-container-high/50">
           <header className="flex flex-col gap-3">
-            <h2 className="text-3xl font-headline font-bold leading-tight text-on-surface">Registration</h2>
-            <p className="text-base text-on-surface-variant chinese-text">请输入你的薯名和部门</p>
+            <h2 className="text-3xl font-headline font-bold leading-tight text-on-surface">{t.login.registration}</h2>
+            <p className="text-base text-on-surface-variant">{t.login.description}</p>
           </header>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-6">
             {/* Name Input with Autocomplete */}
             <div className="flex flex-col gap-2 relative">
-              <label className="text-sm font-semibold text-outline tracking-wide" htmlFor="username">薯名</label>
+              <label className="text-sm font-semibold text-outline tracking-wide" htmlFor="username">{t.login.nameLabel}</label>
               <input
                 ref={inputRef}
                 className="w-full px-0 py-3 text-lg text-on-surface bg-transparent border-0 border-b-2 border-outline/30 focus:border-primary focus:outline-none transition-colors placeholder:text-outline/40"
                 id="username"
-                placeholder="e.g. 恒宇"
+                placeholder={t.login.namePlaceholder}
                 type="text"
                 autoComplete="off"
                 value={query}
@@ -149,26 +151,26 @@ export default function EntryPortal() {
                       onClick={() => selectUser(u)}
                     >
                       <span className="text-base font-medium text-on-surface">{u.name}</span>
-                      <span className="text-xs text-outline chinese-text">{u.department}</span>
+                      <span className="text-xs text-outline">{u.department}</span>
                     </button>
                   ))}
                 </div>
               )}
               {showDropdown && query && filteredUsers.length === 0 && (
                 <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-surface-container-high shadow-xl z-50 rounded-lg px-4 py-3 text-sm text-outline">
-                  未找到匹配用户
+                  {t.login.notFound}
                 </div>
               )}
             </div>
 
             {/* Department (auto-filled) */}
             <div className="flex flex-col gap-2">
-              <label className="text-sm font-semibold text-outline tracking-wide" htmlFor="department">部门</label>
+              <label className="text-sm font-semibold text-outline tracking-wide" htmlFor="department">{t.login.deptLabel}</label>
               <input
-                className="w-full px-0 py-3 text-base text-on-surface bg-transparent border-0 border-b-2 border-outline/30 focus:outline-none chinese-text placeholder:text-outline/40"
+                className="w-full px-0 py-3 text-base text-on-surface bg-transparent border-0 border-b-2 border-outline/30 focus:outline-none placeholder:text-outline/40"
                 id="department"
                 value={selectedUser?.department || ''}
-                placeholder="选择薯名后自动填充"
+                placeholder={t.login.deptPlaceholder}
                 readOnly
               />
             </div>
@@ -177,7 +179,6 @@ export default function EntryPortal() {
             {apiError && (
               <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
                 <p className="text-red-600 text-sm font-medium">{apiError}</p>
-                <p className="text-red-500 text-xs mt-1">请检查网络连接或刷新页面</p>
               </div>
             )}
 
@@ -192,7 +193,7 @@ export default function EntryPortal() {
                 className="w-full bg-on-surface text-white py-4 px-8 flex items-center justify-center transition-all duration-300 hover:opacity-90 active:scale-[0.98] shadow-sm disabled:opacity-50 disabled:cursor-not-allowed rounded-sm"
               >
                 <span className="text-sm font-semibold tracking-wider">
-                  {loading ? 'ENTERING...' : 'ENTER'}
+                  {loading ? t.login.submitting : t.login.submit}
                 </span>
               </button>
             </div>
@@ -203,5 +204,13 @@ export default function EntryPortal() {
       {/* Left Edge Decoration */}
       <div className="fixed left-0 top-0 h-full w-1 bg-on-surface/5" />
     </main>
+  );
+}
+
+export default function EntryPortal() {
+  return (
+    <LanguageProvider>
+      <EntryPortalContent />
+    </LanguageProvider>
   );
 }

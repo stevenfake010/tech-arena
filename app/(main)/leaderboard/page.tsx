@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Loader2, Star, CheckCircle, AlertCircle } from 'lucide-react';
+import { Loader2, Star, CheckCircle, AlertCircle, Trophy } from 'lucide-react';
+import { BEST_DEMO_AWARDS, SPECIAL_AWARDS } from '@/lib/constants';
 
 interface LeaderboardItem {
   id: number;
@@ -21,17 +22,25 @@ interface Vote {
 }
 
 export default function LeaderboardPage() {
+  // 最佳Demo奖数据
   const [optimizerData, setOptimizerData] = useState<LeaderboardItem[]>([]);
   const [builderData, setBuilderData] = useState<LeaderboardItem[]>([]);
+  
+  // 专项奖数据
+  const [specialData, setSpecialData] = useState<Record<string, LeaderboardItem[]>>({
+    special_brain: [],
+    special_infectious: [],
+    special_useful: [],
+  });
+  
   const [myVotes, setMyVotes] = useState<Vote[]>([]);
   const [loading, setLoading] = useState(true);
   const [votingId, setVotingId] = useState<number | null>(null);
+  const [activeTab, setActiveTab] = useState<'best' | 'special'>('best');
   const [message, setMessage] = useState<{text: string, type: 'success' | 'error'} | null>(null);
 
-  const MAX_VOTES_PER_TRACK = 2;
-
   useEffect(() => {
-    fetchLeaderboard();
+    fetchAllData();
     fetchMyVotes();
   }, []);
 
@@ -43,8 +52,9 @@ export default function LeaderboardPage() {
     }
   }, [message]);
 
-  async function fetchLeaderboard() {
+  async function fetchAllData() {
     try {
+      // 获取最佳Demo奖数据
       const [optimizerRes, builderRes] = await Promise.all([
         fetch('/api/leaderboard?vote_type=best_optimizer'),
         fetch('/api/leaderboard?vote_type=best_builder'),
@@ -53,6 +63,15 @@ export default function LeaderboardPage() {
       const builderJson = await builderRes.json();
       setOptimizerData(optimizerJson.leaderboard || []);
       setBuilderData(builderJson.leaderboard || []);
+
+      // 获取专项奖数据
+      const specialResults: Record<string, LeaderboardItem[]> = {};
+      for (const awardId of Object.keys(SPECIAL_AWARDS)) {
+        const res = await fetch(`/api/leaderboard?vote_type=${awardId}`);
+        const data = await res.json();
+        specialResults[awardId] = data.leaderboard || [];
+      }
+      setSpecialData(specialResults);
     } catch (error) {
       console.error('Failed to fetch leaderboard:', error);
     } finally {
@@ -76,7 +95,7 @@ export default function LeaderboardPage() {
     return myVotes.some(v => v.demo_id === demoId && v.vote_type === voteType);
   }
 
-  function getVotesUsedForTrack(voteType: string) {
+  function getVotesUsed(voteType: string, maxVotes: number) {
     return myVotes.filter(v => v.vote_type === voteType).length;
   }
 
@@ -96,7 +115,7 @@ export default function LeaderboardPage() {
         
         if (res.ok) {
           setMyVotes(prev => prev.filter(v => !(v.demo_id === demoId && v.vote_type === voteType)));
-          fetchLeaderboard();
+          fetchAllData();
           setMessage({ text: '已取消投票', type: 'success' });
         } else {
           const err = await res.json();
@@ -112,7 +131,7 @@ export default function LeaderboardPage() {
         
         if (res.ok) {
           setMyVotes(prev => [...prev, { demo_id: demoId, vote_type: voteType }]);
-          fetchLeaderboard();
+          fetchAllData();
           setMessage({ text: '投票成功！', type: 'success' });
         } else {
           const err = await res.json();
@@ -126,10 +145,10 @@ export default function LeaderboardPage() {
     }
   }
 
-  function VoteButton({ item, voteType }: { item: LeaderboardItem; voteType: string }) {
+  function VoteButton({ item, voteType, maxVotes }: { item: LeaderboardItem; voteType: string; maxVotes: number }) {
     const isVoted = hasVotedFor(item.id, voteType);
-    const votesUsed = getVotesUsedForTrack(voteType);
-    const canVote = isVoted || votesUsed < MAX_VOTES_PER_TRACK;
+    const votesUsed = getVotesUsed(voteType, maxVotes);
+    const canVote = isVoted || votesUsed < maxVotes;
     const isLoading = votingId === item.id;
 
     return (
@@ -137,8 +156,8 @@ export default function LeaderboardPage() {
         onClick={() => handleVote(item.id, voteType)}
         disabled={!canVote || isLoading}
         className={`
-          relative px-5 py-2 rounded text-[11px] font-bold uppercase tracking-widest
-          transition-all active:scale-95 min-w-[80px]
+          relative px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider
+          transition-all active:scale-95 min-w-[70px]
           ${isVoted 
             ? 'bg-secondary text-on-secondary hover:bg-secondary-dim' 
             : canVote 
@@ -148,9 +167,7 @@ export default function LeaderboardPage() {
         `}
       >
         {isLoading ? (
-          <span className="flex items-center gap-1">
-            <Loader2 size={16} className="animate-spin" />
-          </span>
+          <Loader2 size={14} className="animate-spin mx-auto" />
         ) : isVoted ? (
           '已投'
         ) : (
@@ -160,85 +177,172 @@ export default function LeaderboardPage() {
     );
   }
 
-  function TrackSection({ 
+  function BestDemoSection({ 
     title, 
     subtitle, 
     data, 
     voteType,
+    maxVotes,
     accentColor 
   }: { 
     title: string; 
     subtitle: string; 
     data: LeaderboardItem[]; 
     voteType: string;
+    maxVotes: number;
     accentColor: 'secondary' | 'tertiary';
   }) {
-    const votesUsed = getVotesUsedForTrack(voteType);
-    const votesRemaining = MAX_VOTES_PER_TRACK - votesUsed;
+    const votesUsed = getVotesUsed(voteType, maxVotes);
+    const votesRemaining = maxVotes - votesUsed;
 
     return (
-      <section>
-        <div className="flex items-end justify-between mb-4">
-          <div>
-            <span className={`text-[10px] uppercase tracking-[0.2em] text-${accentColor} font-bold mb-1 block`}>
-              {subtitle}
-            </span>
-            <h3 className="font-headline text-2xl font-bold">{title}</h3>
-          </div>
-          <div className="flex items-center gap-4">
+      <section className="bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm border border-outline-variant/10">
+        <div className="p-6 border-b border-outline-variant/10">
+          <div className="flex items-center justify-between">
+            <div>
+              <span className={`text-[10px] uppercase tracking-[0.2em] text-${accentColor} font-bold mb-1 block`}>
+                {subtitle}
+              </span>
+              <h3 className="font-headline text-xl font-bold">{title}</h3>
+            </div>
             <div className="text-right">
               <span className="text-xs text-on-surface-variant">
-                剩余票数: <span className={`font-bold ${votesRemaining > 0 ? 'text-secondary' : 'text-outline'}`}>{votesRemaining}</span> / {MAX_VOTES_PER_TRACK}
+                剩余票数: <span className={`font-bold ${votesRemaining > 0 ? 'text-secondary' : 'text-outline'}`}>{votesRemaining}</span> / {maxVotes}
               </span>
+              <p className="text-[10px] text-on-surface-variant/60 mt-0.5">评选前3名</p>
             </div>
-            <span className="text-xs text-on-surface-variant italic">共 {data.length} 个项目</span>
           </div>
         </div>
         
-        <div className="bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm border border-outline-variant/10">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-surface-container-low/30 border-b border-outline-variant/20">
-                <th className="py-4 px-4 text-xs uppercase tracking-widest text-on-surface-variant font-semibold w-16">Rank</th>
-                <th className="py-4 px-4 text-xs uppercase tracking-widest text-on-surface-variant font-semibold">Project</th>
-                <th className="py-4 px-4 text-xs uppercase tracking-widest text-on-surface-variant font-semibold">Author</th>
-                <th className="py-4 px-4 text-xs uppercase tracking-widest text-on-surface-variant font-semibold text-right w-24">Votes</th>
-                <th className="py-4 px-4 text-xs uppercase tracking-widest text-on-surface-variant font-semibold text-right w-24">Action</th>
+        <table className="w-full text-left">
+          <thead className="bg-surface-container-low/50">
+            <tr>
+              <th className="py-3 px-4 text-[10px] uppercase tracking-widest text-on-surface-variant font-semibold w-14">排名</th>
+              <th className="py-3 px-4 text-[10px] uppercase tracking-widest text-on-surface-variant font-semibold">项目</th>
+              <th className="py-3 px-4 text-[10px] uppercase tracking-widest text-on-surface-variant font-semibold">作者</th>
+              <th className="py-3 px-4 text-[10px] uppercase tracking-widest text-on-surface-variant font-semibold text-right w-20">得分</th>
+              <th className="py-3 px-4 text-[10px] uppercase tracking-widest text-on-surface-variant font-semibold text-right w-24">操作</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-outline-variant/10">
+            {data.length === 0 ? (
+              <tr>
+                <td colSpan={5} className="py-8 text-center text-on-surface-variant text-sm">
+                  暂无项目
+                </td>
+              </tr>
+            ) : (
+              data.map((item, index) => (
+                <tr key={item.id} className="hover:bg-surface-container-low/30 transition-colors">
+                  <td className="py-3 px-4">
+                    <div className="flex items-center gap-1">
+                      <span className={`font-headline text-base font-bold ${
+                        index < 3 ? 'text-secondary' : 'text-on-surface/40'
+                      }`}>
+                        {String(index + 1).padStart(2, '0')}
+                      </span>
+                      {index === 0 && <Star size={14} className="text-secondary fill-secondary" />}
+                    </div>
+                  </td>
+                  <td className="py-3 px-4">
+                    <div className="font-medium text-on-surface text-sm">{item.name}</div>
+                    <div className="text-xs text-on-surface-variant/70 line-clamp-1 mt-0.5">{item.summary}</div>
+                  </td>
+                  <td className="py-3 px-4 text-on-surface-variant text-sm">
+                    {item.submitter1_name}
+                    {item.submitter2_name && <span className="text-outline text-xs"> +{item.submitter2_name}</span>}
+                  </td>
+                  <td className="py-3 px-4 text-right font-headline font-semibold text-sm">
+                    {item.score}
+                    <span className="text-[10px] text-on-surface-variant/60 ml-1">({item.vote_count}票)</span>
+                  </td>
+                  <td className="py-3 px-4 text-right">
+                    <VoteButton item={item} voteType={voteType} maxVotes={maxVotes} />
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </section>
+    );
+  }
+
+  function SpecialAwardSection({
+    awardId,
+    award,
+    data,
+  }: {
+    awardId: string;
+    award: typeof SPECIAL_AWARDS[keyof typeof SPECIAL_AWARDS];
+    data: LeaderboardItem[];
+  }) {
+    const maxVotes = award.maxVotes;
+    const votesUsed = getVotesUsed(awardId, maxVotes);
+    const votesRemaining = maxVotes - votesUsed;
+
+    return (
+      <section className="bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm border border-outline-variant/10">
+        <div className="p-5 border-b border-outline-variant/10 bg-gradient-to-r from-primary/5 to-transparent">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="font-headline text-lg font-bold">{award.labelCn}</h3>
+              <p className="text-xs text-on-surface-variant mt-0.5">{award.description}</p>
+            </div>
+            <div className="text-right">
+              <span className="text-xs text-on-surface-variant">
+                剩余: <span className={`font-bold ${votesRemaining > 0 ? 'text-secondary' : 'text-outline'}`}>{votesRemaining}</span>/{maxVotes}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div className="max-h-[400px] overflow-y-auto">
+          <table className="w-full text-left">
+            <thead className="bg-surface-container-low/50 sticky top-0">
+              <tr>
+                <th className="py-2 px-4 text-[10px] uppercase tracking-widest text-on-surface-variant font-semibold w-12">#</th>
+                <th className="py-2 px-4 text-[10px] uppercase tracking-widest text-on-surface-variant font-semibold">项目</th>
+                <th className="py-2 px-4 text-[10px] uppercase tracking-widest text-on-surface-variant font-semibold">赛道</th>
+                <th className="py-2 px-4 text-[10px] uppercase tracking-widest text-on-surface-variant font-semibold text-right w-16">得分</th>
+                <th className="py-2 px-4 text-[10px] uppercase tracking-widest text-on-surface-variant font-semibold text-right w-20">投票</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-stone-100/50">
+            <tbody className="divide-y divide-outline-variant/10">
               {data.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="py-8 text-center text-on-surface-variant text-sm">
-                    暂无项目，快来提交第一个 Demo 吧！
+                  <td colSpan={5} className="py-6 text-center text-on-surface-variant text-sm">
+                    暂无项目
                   </td>
                 </tr>
               ) : (
                 data.map((item, index) => (
-                  <tr key={item.id} className="group hover:bg-surface-container-low/20 transition-colors">
-                    <td className="py-4 px-4">
-                      <div className="flex items-center gap-1">
-                        <span className={`font-headline text-lg font-bold ${
-                          index === 0 ? 'text-secondary' : index === 1 ? 'text-on-surface/80' : index === 2 ? 'text-on-surface/60' : 'text-on-surface/40'
-                        }`}>
-                          {String(index + 1).padStart(2, '0')}
-                        </span>
-                        {index === 0 && (
-                          <Star size={16} className="text-secondary fill-secondary" />
-                        )}
-                      </div>
+                  <tr key={item.id} className="hover:bg-surface-container-low/30 transition-colors">
+                    <td className="py-2.5 px-4">
+                      <span className={`font-headline text-sm font-bold ${
+                        index === 0 ? 'text-secondary' : 'text-on-surface/40'
+                      }`}>
+                        {index + 1}
+                      </span>
                     </td>
-                    <td className="py-4 px-4">
-                      <div className="font-semibold text-on-surface text-base">{item.name}</div>
-                      <div className="text-sm text-on-surface-variant/70 line-clamp-1 mt-0.5 chinese-text">{item.summary}</div>
+                    <td className="py-2.5 px-4">
+                      <div className="font-medium text-on-surface text-sm">{item.name}</div>
+                      <div className="text-[10px] text-on-surface-variant/70 line-clamp-1">{item.submitter1_name}</div>
                     </td>
-                    <td className="py-4 px-4 text-on-surface-variant text-base chinese-text">
-                      {item.submitter1_name}
-                      {item.submitter2_name && <span className="text-outline"> + {item.submitter2_name}</span>}
+                    <td className="py-2.5 px-4">
+                      <span className={`text-[10px] px-2 py-0.5 rounded-full ${
+                        item.track === 'optimizer' 
+                          ? 'bg-secondary/10 text-secondary' 
+                          : 'bg-tertiary/10 text-tertiary'
+                      }`}>
+                        {item.track === 'optimizer' ? 'Optimizer' : 'Builder'}
+                      </span>
                     </td>
-                    <td className="py-4 px-4 text-right font-headline font-semibold text-base">{item.score}</td>
-                    <td className="py-4 px-4 text-right">
-                      <VoteButton item={item} voteType={voteType} />
+                    <td className="py-2.5 px-4 text-right font-headline font-semibold text-sm">
+                      {item.score}
+                    </td>
+                    <td className="py-2.5 px-4 text-right">
+                      <VoteButton item={item} voteType={awardId} maxVotes={maxVotes} />
                     </td>
                   </tr>
                 ))
@@ -253,7 +357,10 @@ export default function LeaderboardPage() {
   if (loading) {
     return (
       <div className="h-full flex items-center justify-center">
-        <div className="text-on-surface-variant">加载中...</div>
+        <div className="flex items-center gap-3 text-on-surface-variant">
+          <Loader2 size={24} className="animate-spin" />
+          <span>加载中...</span>
+        </div>
       </div>
     );
   }
@@ -262,11 +369,38 @@ export default function LeaderboardPage() {
     <div className="p-12 max-w-6xl">
       {/* Header */}
       <header className="mb-8">
-        <h2 className="font-headline text-4xl font-bold tracking-tight text-on-surface mb-6">Leaderboard</h2>
-        <p className="text-on-surface-variant text-lg max-w-2xl leading-relaxed chinese-text">
-          每个赛道最多可投 2 票，可以投给不同项目。点击 Vote 按钮投票，再次点击可取消。
+        <div className="flex items-center gap-3 mb-4">
+          <Trophy size={32} className="text-secondary" />
+          <h2 className="font-headline text-4xl font-bold tracking-tight text-on-surface">投票评选</h2>
+        </div>
+        <p className="text-on-surface-variant text-base max-w-2xl leading-relaxed">
+          最佳Demo奖每个赛道可投2票，专项奖每个奖项可投1票。评委投票权重为2票。
         </p>
       </header>
+
+      {/* Tab Navigation */}
+      <div className="flex gap-2 mb-8 p-1 bg-surface-container-low rounded-xl w-fit">
+        <button
+          onClick={() => setActiveTab('best')}
+          className={`px-6 py-2.5 rounded-lg text-sm font-bold transition-all ${
+            activeTab === 'best'
+              ? 'bg-primary text-on-primary shadow-sm'
+              : 'text-on-surface-variant hover:text-on-surface'
+          }`}
+        >
+          🏆 最佳Demo奖
+        </button>
+        <button
+          onClick={() => setActiveTab('special')}
+          className={`px-6 py-2.5 rounded-lg text-sm font-bold transition-all ${
+            activeTab === 'special'
+              ? 'bg-primary text-on-primary shadow-sm'
+              : 'text-on-surface-variant hover:text-on-surface'
+          }`}
+        >
+          ⭐ 专项奖
+        </button>
+      </div>
 
       {/* Message Toast */}
       {message && (
@@ -278,27 +412,46 @@ export default function LeaderboardPage() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 gap-12">
-        <TrackSection 
-          title="Optimizer 赛道" 
-          subtitle="Category 01" 
-          data={optimizerData} 
-          voteType="best_optimizer"
-          accentColor="secondary"
-        />
-        
-        <TrackSection 
-          title="Builder 赛道" 
-          subtitle="Category 02" 
-          data={builderData} 
-          voteType="best_builder"
-          accentColor="tertiary"
-        />
-      </div>
+      {/* Best Demo Awards */}
+      {activeTab === 'best' && (
+        <div className="grid grid-cols-1 gap-8">
+          <BestDemoSection 
+            title="最佳 Demo - Optimizer 赛道" 
+            subtitle="评选前3名"
+            data={optimizerData} 
+            voteType="best_optimizer"
+            maxVotes={BEST_DEMO_AWARDS.best_optimizer.maxVotes}
+            accentColor="secondary"
+          />
+          
+          <BestDemoSection 
+            title="最佳 Demo - Builder 赛道" 
+            subtitle="评选前3名"
+            data={builderData} 
+            voteType="best_builder"
+            maxVotes={BEST_DEMO_AWARDS.best_builder.maxVotes}
+            accentColor="tertiary"
+          />
+        </div>
+      )}
+
+      {/* Special Awards */}
+      {activeTab === 'special' && (
+        <div className="grid grid-cols-1 gap-6">
+          {Object.entries(SPECIAL_AWARDS).map(([awardId, award]) => (
+            <SpecialAwardSection
+              key={awardId}
+              awardId={awardId}
+              award={award}
+              data={specialData[awardId] || []}
+            />
+          ))}
+        </div>
+      )}
 
       {/* Legend */}
       <div className="mt-12 pt-8 border-t border-outline-variant/20">
-        <div className="flex items-center gap-8 text-xs text-on-surface-variant">
+        <div className="flex flex-wrap items-center gap-6 text-xs text-on-surface-variant">
           <div className="flex items-center gap-2">
             <span className="w-3 h-3 rounded-full bg-secondary"></span>
             <span>已投票</span>
@@ -308,8 +461,11 @@ export default function LeaderboardPage() {
             <span>可投票</span>
           </div>
           <div className="flex items-center gap-2">
-            <Star size={16} className="text-secondary fill-secondary" />
-            <span>当前第一名</span>
+            <Star size={14} className="text-secondary fill-secondary" />
+            <span>当前第一</span>
+          </div>
+          <div className="ml-auto text-on-surface-variant/60">
+            评委投票权重 = 2票
           </div>
         </div>
       </div>

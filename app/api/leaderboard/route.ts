@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
-import { PRO_JUDGE_WEIGHT, NORMAL_WEIGHT } from '@/lib/constants';
+import { PRO_JUDGE_WEIGHT, NORMAL_WEIGHT, BEST_DEMO_AWARDS, SPECIAL_AWARDS } from '@/lib/constants';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -8,25 +8,45 @@ export async function GET(request: Request) {
 
   const supabase = getSupabaseAdmin();
 
-  // 获取指定 track 的所有 demos
-  const track = voteType === 'best_optimizer' ? 'optimizer' : 'builder';
-  
-  const { data: demos, error } = await supabase
-    .from('demos')
-    .select('*')
-    .eq('track', track) as { data: any[]; error: any };
+  // 判断是最佳Demo奖还是专项奖
+  const isBestDemo = voteType in BEST_DEMO_AWARDS;
+  const isSpecial = voteType in SPECIAL_AWARDS;
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  let demos: any[] = [];
+
+  if (isBestDemo) {
+    // 最佳Demo奖：只获取对应赛道的项目
+    const track = BEST_DEMO_AWARDS[voteType as keyof typeof BEST_DEMO_AWARDS].track;
+    const { data, error } = await supabase
+      .from('demos')
+      .select('*')
+      .eq('track', track) as { data: any[]; error: any };
+    
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+    demos = data || [];
+  } else if (isSpecial) {
+    // 专项奖：获取所有项目（不分赛道）
+    const { data, error } = await supabase
+      .from('demos')
+      .select('*') as { data: any[]; error: any };
+    
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+    demos = data || [];
+  } else {
+    return NextResponse.json({ error: '无效的投票类型' }, { status: 400 });
   }
 
-  // 获取这些 demos 的投票
-  const demoIds = demos?.map(d => d.id) || [];
-  
-  if (demoIds.length === 0) {
+  if (demos.length === 0) {
     return NextResponse.json({ leaderboard: [] });
   }
 
+  // 获取这些 demos 的投票
+  const demoIds = demos.map(d => d.id);
+  
   const { data: votes, error: votesError } = await supabase
     .from('votes')
     .select(`
@@ -41,7 +61,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: votesError.message }, { status: 500 });
   }
 
-  // 计算分数
+  // 计算分数（考虑评委权重）
   const scores: Record<number, { score: number; vote_count: number }> = {};
   
   for (const vote of (votes || [])) {
@@ -55,7 +75,7 @@ export async function GET(request: Request) {
   }
 
   // 组装 leaderboard
-  const leaderboard = (demos || []).map(demo => ({
+  const leaderboard = demos.map(demo => ({
     id: demo.id,
     name: demo.name,
     summary: demo.summary,

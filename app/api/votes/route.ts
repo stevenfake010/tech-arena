@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { cookies } from 'next/headers';
-import { VOTE_TYPES, type VoteTypeId } from '@/lib/constants';
+import { VOTE_TYPES, BEST_DEMO_AWARDS, SPECIAL_AWARDS, type VoteTypeId } from '@/lib/constants';
 
 async function getCurrentUser() {
   const cookieStore = await cookies();
@@ -57,7 +57,7 @@ export async function POST(request: Request) {
 
   const supabase = getSupabaseAdmin();
 
-  // 验证 demo 存在且赛道匹配
+  // 验证 demo 存在
   const { data: demo, error: demoError } = await supabase
     .from('demos')
     .select('id, track, submitted_by')
@@ -68,8 +68,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Demo 不存在' }, { status: 404 });
   }
 
-  if (voteConfig.track && demo.track !== voteConfig.track) {
-    return NextResponse.json({ error: '赛道不匹配' }, { status: 400 });
+  // 最佳Demo奖需要验证赛道匹配
+  if (vote_type in BEST_DEMO_AWARDS && voteConfig.track) {
+    if (demo.track !== voteConfig.track) {
+      return NextResponse.json({ error: '赛道不匹配' }, { status: 400 });
+    }
   }
 
   // 检查投票数限制
@@ -80,7 +83,9 @@ export async function POST(request: Request) {
     .eq('vote_type', vote_type) as { data: any[]; error: any };
 
   if (existingVotes && existingVotes.length >= voteConfig.maxVotes) {
-    return NextResponse.json({ error: `该奖项最多投 ${voteConfig.maxVotes} 票` }, { status: 400 });
+    return NextResponse.json({ 
+      error: `该奖项最多投 ${voteConfig.maxVotes} 票` 
+    }, { status: 400 });
   }
 
   // 不能给自己的项目投票

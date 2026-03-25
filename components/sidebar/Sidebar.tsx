@@ -4,6 +4,7 @@ import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { Compass, LayoutGrid, Trophy, MessageSquare, Plus } from 'lucide-react';
+import { useLanguage } from '@/components/LanguageProvider';
 
 interface User {
   id: number;
@@ -12,16 +13,10 @@ interface User {
   role: string;
 }
 
-const NAV_ITEMS = [
-  { href: '/guide', label: 'Guide', icon: Compass },
-  { href: '/gallery', label: 'Gallery', icon: LayoutGrid },
-  { href: '/leaderboard', label: 'Leaderboard', icon: Trophy },
-  { href: '/square', label: 'Square', icon: MessageSquare },
-];
-
 export default function Sidebar({ onSubmitClick }: { onSubmitClick: () => void }) {
   const pathname = usePathname();
   const [user, setUser] = useState<User | null>(null);
+  const { t } = useLanguage();
 
   useEffect(() => {
     fetch('/api/auth/me')
@@ -29,6 +24,13 @@ export default function Sidebar({ onSubmitClick }: { onSubmitClick: () => void }
       .then(d => setUser(d.user))
       .catch(() => {});
   }, []);
+
+  const NAV_ITEMS = [
+    { href: '/guide', label: t.nav.guide, icon: Compass },
+    { href: '/gallery', label: t.nav.gallery, icon: LayoutGrid },
+    { href: '/leaderboard', label: t.nav.leaderboard, icon: Trophy },
+    { href: '/square', label: t.nav.square, icon: MessageSquare },
+  ];
 
   return (
     <aside className="h-screen w-64 fixed left-0 top-0 bg-[#f3f4ee] flex flex-col py-8 px-6 gap-y-4 z-50">
@@ -72,7 +74,7 @@ export default function Sidebar({ onSubmitClick }: { onSubmitClick: () => void }
           className="w-full flex items-center justify-center gap-2 bg-[#1A1A1A] text-white py-3 px-4 rounded-lg hover:opacity-90 transition-all shadow-sm group active:scale-95"
         >
           <Plus size={16} strokeWidth={2.5} />
-          <span className="font-headline tracking-tight text-base">Submit Demo</span>
+          <span className="font-headline tracking-tight text-base">{t.nav.submit}</span>
         </button>
       </div>
 
