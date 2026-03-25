@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { ArrowUp, AlertCircle } from 'lucide-react';
+import { ArrowUp, AlertCircle, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 interface Message {
@@ -26,6 +26,8 @@ export default function SquarePage() {
   const [user, setUser] = useState<any>(null);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const [sortOrder, setSortOrder] = useState<'time' | 'hot'>('time');
+  const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState<number | null>(null);
 
   useEffect(() => {
     // 获取用户信息
@@ -98,6 +100,29 @@ export default function SquarePage() {
       }
     } catch (error) {
       console.error('Failed to upvote:', error);
+    }
+  }
+
+  async function handleDelete(messageId: number) {
+    if (!user) return;
+    
+    setDeletingId(messageId);
+    try {
+      const res = await fetch(`/api/messages/${messageId}`, {
+        method: 'DELETE',
+      });
+      if (res.ok) {
+        fetchMessages();
+        setShowDeleteConfirm(null);
+      } else {
+        const data = await res.json();
+        alert(data.error || '删除失败');
+      }
+    } catch (error) {
+      console.error('Failed to delete:', error);
+      alert('删除失败');
+    } finally {
+      setDeletingId(null);
     }
   }
 
@@ -218,6 +243,15 @@ export default function SquarePage() {
                       {message.category}
                     </span>
                   )}
+                  {user && user.id === message.author_id && (
+                    <button
+                      onClick={() => setShowDeleteConfirm(message.id)}
+                      className="ml-auto p-1.5 text-outline hover:text-error hover:bg-error/10 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
+                      title="删除"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  )}
                 </div>
                 {message.title && (
                   <h3 className="text-xl font-headline font-bold text-on-surface mb-2 leading-snug">
@@ -259,6 +293,15 @@ export default function SquarePage() {
       {showLoginPrompt && (
         <LoginPrompt onClose={() => setShowLoginPrompt(false)} />
       )}
+
+      {/* 删除确认弹窗 */}
+      {showDeleteConfirm && (
+        <DeleteConfirm
+          onClose={() => setShowDeleteConfirm(null)}
+          onConfirm={() => handleDelete(showDeleteConfirm)}
+          deleting={deletingId === showDeleteConfirm}
+        />
+      )}
     </div>
   );
 }
@@ -289,6 +332,39 @@ function LoginPrompt({ onClose }: { onClose: () => void }) {
             className="flex-1 py-2.5 rounded-lg bg-primary text-on-primary hover:bg-primary-dim transition-colors"
           >
             去登录
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// 删除确认组件
+function DeleteConfirm({ onClose, onConfirm, deleting }: { onClose: () => void; onConfirm: () => void; deleting: boolean }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-on-surface/50 backdrop-blur-sm">
+      <div className="bg-surface-container-lowest rounded-xl p-6 max-w-sm w-full shadow-xl">
+        <div className="flex items-center gap-3 mb-4 text-error">
+          <Trash2 size={24} />
+          <h3 className="text-lg font-bold">确认删除</h3>
+        </div>
+        <p className="text-on-surface-variant mb-6">
+          删除后无法恢复，确定要删除这条留言吗？
+        </p>
+        <div className="flex gap-3">
+          <button
+            onClick={onClose}
+            disabled={deleting}
+            className="flex-1 py-2.5 rounded-lg border border-outline-variant/30 text-on-surface-variant hover:bg-surface-container-high transition-colors disabled:opacity-50"
+          >
+            取消
+          </button>
+          <button
+            onClick={onConfirm}
+            disabled={deleting}
+            className="flex-1 py-2.5 rounded-lg bg-error text-white hover:bg-error-dim transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+          >
+            {deleting ? '删除中...' : '删除'}
           </button>
         </div>
       </div>
