@@ -36,19 +36,20 @@ export default function GalleryContent() {
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [loading, setLoading] = useState(true);
-  const [activeTrack, setActiveTrack] = useState<'optimizer' | 'builder'>('optimizer');
+  // 初始为 null，等数据加载后再设置，避免闪烁
+  const [activeTrack, setActiveTrack] = useState<'optimizer' | 'builder' | null>(null);
   
   // Lightbox 状态
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const [isClient, setIsClient] = useState(false);
-  const [demoIdFromUrl, setDemoIdFromUrl] = useState<string | null>(null);
+  
+  // 从 URL 读取 demo 参数
+  const demoIdFromUrl = searchParams.get('demo');
   
   useEffect(() => {
     setIsClient(true);
-    // 在客户端安全地读取 URL 参数
-    setDemoIdFromUrl(searchParams.get('demo'));
-  }, [searchParams]);
+  }, []);
 
   // 搜索防抖 - 300ms 延迟
   useEffect(() => {
@@ -71,16 +72,23 @@ export default function GalleryContent() {
           const foundDemo = demosList.find((d: Demo) => d.id === demoId);
           if (foundDemo) {
             setSelectedDemo(foundDemo);
-            setActiveTrack(foundDemo.track);
+            setActiveTrack(foundDemo.track); // 直接设置正确的 track，避免闪烁
           } else {
             setSelectedDemo(demosList[0]);
+            setActiveTrack(demosList[0]?.track || 'optimizer');
           }
         } else if (demosList.length > 0) {
           setSelectedDemo(demosList[0]);
+          setActiveTrack(demosList[0]?.track || 'optimizer');
+        } else {
+          setActiveTrack('optimizer');
         }
         setLoading(false);
       })
-      .catch(() => setLoading(false));
+      .catch(() => {
+        setActiveTrack('optimizer');
+        setLoading(false);
+      });
   }, [demoIdFromUrl]);
 
   const optimizerDemos = demos.filter(d => d.track === 'optimizer');
@@ -138,7 +146,8 @@ export default function GalleryContent() {
   
   const mediaUrls = parseMediaUrls(selectedDemo?.media_urls);
 
-  if (loading) {
+  // 在确定 track 之前显示 loading，避免闪烁
+  if (loading || activeTrack === null) {
     return (
       <div className="h-full flex items-center justify-center">
         <div className="text-on-surface-variant">加载中...</div>
