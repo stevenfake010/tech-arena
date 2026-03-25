@@ -330,7 +330,7 @@ export default function SubmitModal({ onClose, initialTrack }: SubmitModalProps)
         </button>
 
         {/* Left Sidebar */}
-        <div className="w-1/3 bg-surface-container-low px-10 pb-10 pt-[84px] flex-col hidden md:flex">
+        <div className="w-[200px] bg-surface-container-low px-8 pb-10 pt-[84px] flex-col hidden md:flex flex-shrink-0">
           <div>
             <h2 className="font-headline text-[42px] font-bold leading-tight text-on-surface mb-6">提交 Demo</h2>
             <p className="text-sm text-on-surface-variant/60 leading-relaxed">
