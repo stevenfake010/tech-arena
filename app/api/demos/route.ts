@@ -107,9 +107,6 @@ export async function POST(request: Request) {
     background: background || null,
     media_urls: media_urls || [],
     submitted_by: user.id,
-    // 存储验证后的提交人ID，便于后续查询
-    submitter1_id: submitter1.id,
-    submitter2_id: submitter2Id,
   };
   
   const { data, error } = await supabase
