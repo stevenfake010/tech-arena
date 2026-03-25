@@ -398,7 +398,8 @@ export default function GalleryContent() {
                                   <video 
                                     src={url} 
                                     className="w-full h-full object-cover"
-                                    preload="metadata"
+                                    preload="none"
+                                    poster=""
                                   />
                                 ) : (
                                   <img 
@@ -406,6 +407,7 @@ export default function GalleryContent() {
                                     alt={`Media ${i + 1}`}
                                     className="w-full h-full object-cover"
                                     loading="lazy"
+                                    decoding="async"
                                   />
                                 )}
                               </div>

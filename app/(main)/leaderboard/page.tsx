@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Loader2, Star, CheckCircle, AlertCircle, Lock, Search, ExternalLink } from 'lucide-react';
 import { BEST_DEMO_AWARDS, SPECIAL_AWARDS } from '@/lib/constants';
@@ -33,16 +33,10 @@ interface SelectedVote {
 export default function LeaderboardPage() {
   const router = useRouter();
   
-  // 最佳Demo奖数据
-  const [optimizerData, setOptimizerData] = useState<LeaderboardItem[]>([]);
-  const [builderData, setBuilderData] = useState<LeaderboardItem[]>([]);
-  
-  // 专项奖数据
-  const [specialData, setSpecialData] = useState<Record<string, LeaderboardItem[]>>({
-    special_brain: [],
-    special_infectious: [],
-    special_useful: [],
-  });
+  // 各奖项数据 - 使用对象存储，按需加载
+  const [leaderboardData, setLeaderboardData] = useState<Record<string, LeaderboardItem[]>>({});
+  const [loadedTabs, setLoadedTabs] = useState<Set<string>>(new Set());
+  const [loadingTabs, setLoadingTabs] = useState<Set<string>>(new Set());
   
   // 用户已投票记录
   const [myVotes, setMyVotes] = useState<Vote[]>([]);
@@ -51,7 +45,6 @@ export default function LeaderboardPage() {
   // 用户当前选择的投票（盲投阶段）
   const [selectedVotes, setSelectedVotes] = useState<SelectedVote[]>([]);
   
-  const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   // Tab 状态：5 个具体奖项
   const [activeTab, setActiveTab] = useState<'optimizer' | 'builder' | 'special_brain' | 'special_infectious' | 'special_useful'>('optimizer');
@@ -65,16 +58,34 @@ export default function LeaderboardPage() {
   // 搜索关键词
   const [searchQuery, setSearchQuery] = useState('');
 
+  // 获取当前 Tab 的 vote_type
+  const getVoteType = useCallback((tab: string): string => {
+    switch (tab) {
+      case 'optimizer': return 'best_optimizer';
+      case 'builder': return 'best_builder';
+      default: return tab;
+    }
+  }, []);
+
+  // 初始化加载 - 只加载当前 Tab 的数据
   useEffect(() => {
     fetch('/api/auth/me')
       .then(r => r.json())
       .then(d => setUser(d.user))
       .catch(() => {});
     
-    fetchAllData();
     fetchMyVotes();
     fetchVotingStatus();
+    // 初始加载当前 Tab 的数据
+    loadTabData(activeTab);
   }, []);
+
+  // Tab 切换时加载对应数据
+  useEffect(() => {
+    if (!loadedTabs.has(activeTab)) {
+      loadTabData(activeTab);
+    }
+  }, [activeTab]);
 
   // 清除消息
   useEffect(() => {
@@ -84,6 +95,33 @@ export default function LeaderboardPage() {
     }
   }, [message]);
 
+  // 加载指定 Tab 的数据
+  async function loadTabData(tab: string) {
+    const voteType = getVoteType(tab);
+    if (loadingTabs.has(tab)) return;
+    
+    setLoadingTabs(prev => new Set(prev).add(tab));
+    
+    try {
+      const res = await fetch(`/api/leaderboard?vote_type=${voteType}`);
+      const data = await res.json();
+      
+      setLeaderboardData(prev => ({
+        ...prev,
+        [tab]: data.leaderboard || []
+      }));
+      setLoadedTabs(prev => new Set(prev).add(tab));
+    } catch (error) {
+      console.error('Failed to load tab data:', error);
+    } finally {
+      setLoadingTabs(prev => {
+        const next = new Set(prev);
+        next.delete(tab);
+        return next;
+      });
+    }
+  }
+
   // 获取投票状态
   async function fetchVotingStatus() {
     try {
@@ -92,31 +130,6 @@ export default function LeaderboardPage() {
       setVotingStatus(data);
     } catch (error) {
       console.error('Failed to fetch voting status:', error);
-    }
-  }
-
-  async function fetchAllData() {
-    try {
-      // 并行获取所有 leaderboard 数据（5个请求同时发起）
-      const awardIds = ['best_optimizer', 'best_builder', ...Object.keys(SPECIAL_AWARDS)];
-      const responses = await Promise.all(
-        awardIds.map(id => fetch(`/api/leaderboard?vote_type=${id}`))
-      );
-      const results = await Promise.all(responses.map(r => r.json()));
-      
-      // 分配数据
-      setOptimizerData(results[0].leaderboard || []);
-      setBuilderData(results[1].leaderboard || []);
-      
-      const specialResults: Record<string, LeaderboardItem[]> = {};
-      Object.keys(SPECIAL_AWARDS).forEach((awardId, index) => {
-        specialResults[awardId] = results[index + 2].leaderboard || [];
-      });
-      setSpecialData(specialResults);
-    } catch (error) {
-      console.error('Failed to fetch leaderboard:', error);
-    } finally {
-      setLoading(false);
     }
   }
 
@@ -228,7 +241,8 @@ export default function LeaderboardPage() {
         // 全部成功
         setMyVotes(prev => [...prev, ...tabVotes]);
         setSelectedVotes(prev => prev.filter(v => v.vote_type !== voteType));
-        fetchAllData();
+        // 刷新当前 Tab 数据
+        loadTabData(activeTab);
         setMessage({ text: '投票成功！', type: 'success' });
       } else {
         // 部分或全部失败
@@ -327,9 +341,10 @@ export default function LeaderboardPage() {
     data: LeaderboardItem[];
     voteType: string;
     maxVotes: number;
+    isLoading: boolean;
   }
 
-  function VoteSection({ title, subtitle, description, data, voteType, maxVotes }: VoteSectionProps) {
+  function VoteSection({ title, subtitle, description, data, voteType, maxVotes, isLoading }: VoteSectionProps) {
     const votesUsed = getVotesUsed(voteType);
     const selectedCount = getSelectedCount(voteType);
     const votesRemaining = maxVotes - votesUsed - selectedCount;
@@ -374,6 +389,17 @@ export default function LeaderboardPage() {
       }
       return { filteredData: displayData, rankMap };
     }, [data, debouncedSearch, showResults]);
+
+    if (isLoading) {
+      return (
+        <div className="bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm border border-outline-variant/10 p-12">
+          <div className="flex items-center justify-center gap-3 text-on-surface-variant">
+            <Loader2 size={24} className="animate-spin" />
+            <span>加载中...</span>
+          </div>
+        </div>
+      );
+    }
 
     return (
       <section className="bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm border border-outline-variant/10">
@@ -556,20 +582,13 @@ export default function LeaderboardPage() {
     );
   }
 
-  if (loading) {
-    return (
-      <div className="h-full flex items-center justify-center">
-        <div className="flex items-center gap-3 text-on-surface-variant">
-          <Loader2 size={24} className="animate-spin" />
-          <span>加载中...</span>
-        </div>
-      </div>
-    );
-  }
-
   // 计算总的选择数量
   const totalSelected = selectedVotes.length;
   const hasAnyVotes = myVotes.length > 0;
+  
+  // 获取当前 Tab 的数据
+  const currentData = leaderboardData[activeTab] || [];
+  const isCurrentLoading = loadingTabs.has(activeTab);
 
   return (
     <div className="px-12 pt-4 pb-12">
@@ -704,9 +723,10 @@ export default function LeaderboardPage() {
           <VoteSection 
             title="🏆 最佳 Demo 奖 - Optimizer 赛道"
             description="选出3个你认为综合表现最好的项目（综合项目创意、展现效果、落地应用等）"
-            data={optimizerData} 
+            data={currentData} 
             voteType="best_optimizer"
             maxVotes={BEST_DEMO_AWARDS.best_optimizer.maxVotes}
+            isLoading={isCurrentLoading}
           />
         )}
         
@@ -714,9 +734,10 @@ export default function LeaderboardPage() {
           <VoteSection 
             title="🏆 最佳 Demo 奖 - Builder 赛道" 
             description="选出3个你认为综合表现最好的项目（综合项目创意、展现效果、落地应用等）"
-            data={builderData} 
+            data={currentData} 
             voteType="best_builder"
             maxVotes={BEST_DEMO_AWARDS.best_builder.maxVotes}
+            isLoading={isCurrentLoading}
           />
         )}
 
@@ -724,9 +745,10 @@ export default function LeaderboardPage() {
           <VoteSection
             title={SPECIAL_AWARDS.special_brain.labelCn}
             description={SPECIAL_AWARDS.special_brain.description}
-            data={specialData.special_brain || []}
+            data={currentData}
             voteType="special_brain"
             maxVotes={SPECIAL_AWARDS.special_brain.maxVotes}
+            isLoading={isCurrentLoading}
           />
         )}
         
@@ -734,9 +756,10 @@ export default function LeaderboardPage() {
           <VoteSection
             title={SPECIAL_AWARDS.special_infectious.labelCn}
             description={SPECIAL_AWARDS.special_infectious.description}
-            data={specialData.special_infectious || []}
+            data={currentData}
             voteType="special_infectious"
             maxVotes={SPECIAL_AWARDS.special_infectious.maxVotes}
+            isLoading={isCurrentLoading}
           />
         )}
         
@@ -744,9 +767,10 @@ export default function LeaderboardPage() {
           <VoteSection
             title={SPECIAL_AWARDS.special_useful.labelCn}
             description={SPECIAL_AWARDS.special_useful.description}
-            data={specialData.special_useful || []}
+            data={currentData}
             voteType="special_useful"
             maxVotes={SPECIAL_AWARDS.special_useful.maxVotes}
+            isLoading={isCurrentLoading}
           />
         )}
       </div>
