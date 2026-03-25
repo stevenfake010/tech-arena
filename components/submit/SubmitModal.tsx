@@ -262,8 +262,8 @@ export default function SubmitModal({ onClose }: SubmitModalProps) {
             <h2 className="font-headline text-[42px] font-bold leading-tight text-on-surface mb-6">提交 Demo</h2>
             <p className="text-sm text-on-surface-variant/60 leading-relaxed">
               Join the Evolution.<br />
-              Stop talking about the future.<br />
-              Start shipping it.
+              Stop Talking About the Future.<br />
+              Start Shipping It.
             </p>
           </div>
           <div className="mt-auto space-y-6">
