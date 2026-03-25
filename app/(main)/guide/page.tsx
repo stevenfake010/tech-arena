@@ -50,7 +50,7 @@ export default function GuidePage() {
           {/* Optimizer */}
           <button
             onClick={() => openSubmit('optimizer')}
-            className="group text-left rounded-xl bg-surface-container-low border-x border-b border-outline-variant/15 border-t-2 border-t-secondary hover:shadow-md transition-all"
+            className="group text-left rounded-xl bg-surface-container-low border-x border-b border-outline-variant/15 border-t-[3px] border-t-secondary hover:shadow-md transition-all"
           >
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">
@@ -79,7 +79,7 @@ export default function GuidePage() {
           {/* Builder */}
           <button
             onClick={() => openSubmit('builder')}
-            className="group text-left rounded-xl bg-surface-container-low border-x border-b border-outline-variant/15 border-t-2 border-t-tertiary hover:shadow-md transition-all"
+            className="group text-left rounded-xl bg-surface-container-low border-x border-b border-outline-variant/15 border-t-[3px] border-t-tertiary hover:shadow-md transition-all"
           >
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">
