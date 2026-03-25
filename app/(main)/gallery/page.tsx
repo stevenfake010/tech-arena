@@ -416,7 +416,7 @@ export default function GalleryPage() {
       </section>
       
       {/* Lightbox 查看器 */}
-      {lightboxOpen && mediaUrls.length > 0 && (
+      {lightboxOpen && mediaUrls.length > 0 && typeof window !== 'undefined' && (
         <Lightbox 
           urls={mediaUrls}
           currentIndex={lightboxIndex}
@@ -443,19 +443,27 @@ function Lightbox({
   onPrev: () => void;
   onNext: () => void;
 }) {
+  const [mounted, setMounted] = useState(false);
   const currentUrl = urls[currentIndex];
   const isVideo = currentUrl.match(/\.(mp4|mov|webm|avi)$/i);
   
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+  
   // 键盘导航
   useEffect(() => {
+    if (!mounted) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
       if (e.key === 'ArrowLeft') onPrev();
       if (e.key === 'ArrowRight') onNext();
     };
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [onClose, onPrev, onNext]);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [mounted, onClose, onPrev, onNext]);
+  
+  if (!mounted) return null;
   
   return (
     <div 
