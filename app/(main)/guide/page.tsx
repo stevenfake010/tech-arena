@@ -153,7 +153,6 @@ export default function GuidePage() {
           <div className="flex-1 px-5 py-4">
             <p className="text-xs font-bold text-outline/60 uppercase tracking-wider mb-2">路演规则</p>
             <p className="text-sm text-on-surface font-medium">8 分钟展演 + 2 分钟 QA</p>
-            <p className="text-xs text-on-surface-variant mt-1">时间严格执行</p>
           </div>
           <div className="flex-1 px-5 py-4">
             <p className="text-xs font-bold text-outline/60 uppercase tracking-wider mb-2">奖项设置</p>
