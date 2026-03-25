@@ -25,6 +25,7 @@ export default function SquarePage() {
   const [submitting, setSubmitting] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+  const [sortOrder, setSortOrder] = useState<'time' | 'hot'>('time');
 
   useEffect(() => {
     // 获取用户信息
@@ -120,48 +121,49 @@ export default function SquarePage() {
   }
 
   return (
-    <div className="p-12 max-w-4xl">
+    <div className="px-12 pt-4 pb-12 max-w-4xl">
       {/* Header */}
-      <header className="mb-10">
-        <h2 className="font-headline text-4xl font-bold tracking-tight text-on-surface mb-6">Square</h2>
-        <p className="text-on-surface-variant text-lg leading-relaxed">
-          发布你的需求、想法或寻找合作伙伴。
-        </p>
+      <header className="flex-shrink-0 mb-8 pt-4 pb-2">
+        <div>
+          <h2 className="font-headline text-4xl font-bold tracking-tight text-on-surface">Discussion Square</h2>
+          <p className="text-base text-on-surface-variant mt-2">
+            许愿你最想要的 AI 需求、发布你的 AI 想法、或者聊任何你想聊的
+          </p>
+        </div>
       </header>
 
       {/* Message Entry Section */}
-      <section className="mb-12 bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/20 shadow-sm">
+      <section className="mb-8 bg-surface-container-lowest p-4 rounded-xl border border-outline-variant/20 shadow-sm">
         {user ? (
           <form onSubmit={handleSubmit}>
-            <div className="mb-4">
+            <div className="mb-3">
               <input
                 type="text"
                 placeholder="标题（可选）"
                 value={newTitle}
                 onChange={e => setNewTitle(e.target.value)}
-                className="w-full bg-transparent border-none border-b border-outline/30 focus:ring-0 focus:border-primary text-base font-headline font-medium mb-3 p-0 placeholder:text-outline"
+                className="w-full bg-transparent border-none border-b border-outline/30 focus:ring-0 focus:border-primary text-base font-headline font-medium mb-2 p-0 placeholder:text-outline"
               />
               <textarea
                 placeholder="分享你的需求或想法..."
                 value={newContent}
                 onChange={e => setNewContent(e.target.value)}
-                className="w-full bg-transparent border-none focus:ring-0 text-on-surface placeholder:text-outline p-0 text-base resize-none h-24"
+                className="w-full bg-transparent border-none focus:ring-0 text-on-surface placeholder:text-outline p-0 text-base resize-none h-16"
               />
             </div>
-            <div className="flex justify-between items-center pt-4 border-t border-outline-variant/10">
-              <span className="text-xs text-outline">支持 Markdown 格式</span>
+            <div className="flex justify-end items-center pt-2 border-t border-outline-variant/10">
               <button
                 type="submit"
                 disabled={submitting || !newContent.trim()}
                 className="px-6 py-2 bg-on-surface text-surface rounded-md text-xs uppercase tracking-widest hover:opacity-90 transition-opacity active:scale-95 disabled:opacity-50"
               >
-                {submitting ? '发布中...' : 'Post Need'}
+                {submitting ? '发布中...' : '发布'}
               </button>
             </div>
           </form>
         ) : (
-          <div className="text-center py-8">
-            <p className="text-on-surface-variant mb-4">游客模式只能浏览，无法发布内容</p>
+          <div className="text-center py-6">
+            <p className="text-on-surface-variant mb-3">游客模式只能浏览，无法发布内容</p>
             <button
               onClick={() => setShowLoginPrompt(true)}
               className="px-6 py-2 bg-primary text-on-primary rounded-md text-xs uppercase tracking-widest hover:opacity-90 transition-opacity"
@@ -172,6 +174,26 @@ export default function SquarePage() {
         )}
       </section>
 
+      {/* Sort Controls */}
+      {messages.length > 0 && (
+        <div className="flex items-center gap-1 mb-4">
+          <span className="text-xs text-outline mr-2">排序：</span>
+          {(['time', 'hot'] as const).map(order => (
+            <button
+              key={order}
+              onClick={() => setSortOrder(order)}
+              className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                sortOrder === order
+                  ? 'bg-on-surface text-surface'
+                  : 'text-on-surface-variant hover:bg-surface-container-high'
+              }`}
+            >
+              {order === 'time' ? '最新' : '热度'}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* Message List */}
       <div className="space-y-0">
         {messages.length === 0 ? (
@@ -179,7 +201,13 @@ export default function SquarePage() {
             <p>暂无消息，来发布第一条需求吧！</p>
           </div>
         ) : (
-          messages.map(message => (
+          [...messages]
+            .sort((a, b) =>
+              sortOrder === 'hot'
+                ? b.upvote_count - a.upvote_count
+                : new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+            )
+            .map(message => (
             <article key={message.id} className="py-8 border-b border-outline-variant/20 flex group">
               <div className="flex-1">
                 <div className="flex items-center gap-x-2 mb-2">
@@ -213,6 +241,7 @@ export default function SquarePage() {
           ))
         )}
       </div>
+
 
       {/* Footer */}
       {messages.length > 0 && (

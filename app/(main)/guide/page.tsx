@@ -1,220 +1,174 @@
 'use client';
 
-import { useLanguage } from '@/components/LanguageProvider';
-
 export default function GuidePage() {
-  const { t } = useLanguage();
-
   const timeline = [
-    { date: '3月29日（周日）18:00', dateEn: 'March 29 (Sun) @ 18:00', title: '报名开启', titleEn: 'Applications Open', desc: '报名通道开放，填写你的提案', descEn: 'The portal unlocks. Get your name in.' },
-    { date: '3月30日（周一）14:00', dateEn: 'March 30 (Mon) @ 14:00', title: '报名截止', titleEn: 'Applications Close', desc: '不接受延期，我们重视准时', descEn: 'No extensions. We value precision.', highlight: true },
-    { date: '3月30日（周一）下午', dateEn: 'March 30 (Mon) Afternoon', title: '初筛投票', titleEn: 'The First Cut', desc: '社区投票选出最有潜力的作品', descEn: 'Community voting begins to select the most promising evolutions.' },
-    { date: '4月1日（周三）', dateEn: 'April 1 (Wed)', title: 'Demo Day', titleEn: 'Demo Day', desc: '现场路演与最终评选', descEn: 'Live roadshow and the final showdown.', highlight: true },
+    { date: '3月26日 周四', time: '12:00', title: '报名通道开启' },
+    { date: '3月30日 周一', time: '12:00', title: '报名通道关闭', highlight: true },
+    { date: '3月31日 周二', time: '20:00', title: '入选项目公示' },
+    { date: '4月01日 周三', time: '13:30', title: 'The show is ON', highlight: true },
   ];
 
   const agenda = [
-    { time: '14:00 – 15:30', title: '第一幕：Optimizer 展示', titleEn: 'Act I: The Optimizers', desc: '见证工作效率的未来', descEn: 'Witness the future of work.' },
-    { time: '15:30 – 15:45', title: '茶歇', titleEn: 'Coffee Break', desc: '补充能量，交流想法', descEn: 'Refuel, recharge, and talk shop.', isBreak: true },
-    { time: '15:45 – 17:15', title: '第二幕：Builder 展示', titleEn: 'Act II: The Builders', desc: '探索产品的下一个前沿', descEn: 'Exploring the next frontier of products.' },
-    { time: '17:15 – 17:45', title: '颁奖典礼', titleEn: 'Award Ceremony', desc: '加冕进化的引领者', descEn: 'Crowning the leaders of the evolution.', isHighlight: true },
+    { time: '13:30 – 13:45', title: '开场白 & 规则介绍' },
+    { time: '13:45 起', title: 'Optimizer 赛道路演', sub: '约 2–2.5 小时 · 10–15 个项目' },
+    { time: '中场', title: '茶歇' },
+    { time: '接续', title: 'Builder 赛道路演', sub: '约 2–2.5 小时 · 10–15 个项目' },
+    { time: '最后 15 分钟', title: '结语 & 评奖' },
   ];
 
   return (
-    <div className="p-12 max-w-6xl">
-      {/* Hero Section */}
-      <header className="mb-16">
-        <div className="flex items-center gap-3 mb-6">
-          <span className="h-px w-12 bg-secondary"></span>
-          <span className="text-xs font-bold tracking-[0.3em] uppercase text-secondary">{t.guide.badge}</span>
-        </div>
-        
-        <h1 className="font-headline text-6xl md:text-7xl font-bold text-on-surface leading-[0.95] tracking-tight mb-8">
-          Evolution:<br />
-          <span className="italic font-light">AI Demo Day</span>
-        </h1>
-        
-        <p className="font-headline text-xl md:text-2xl text-on-surface-variant italic max-w-2xl mb-12">
-          {t.guide.subtitle}
+    <div className="px-8 pt-8 pb-16 max-w-5xl">
+
+      {/* ── Header（全宽） ──────────────────────── */}
+      <header className="mb-10 pb-8 border-b border-outline-variant/20">
+        <p className="text-xs font-bold tracking-widest uppercase text-secondary mb-3">
+          第一届 · 小红书战略 × 用研 × 投资
         </p>
-        
-        <div className="inline-flex items-center gap-4 bg-surface-container-low px-6 py-3 rounded-lg">
-          <span className="w-2 h-2 rounded-full bg-secondary animate-pulse"></span>
-          <span className="text-sm font-bold tracking-widest uppercase text-on-surface">{t.guide.status}</span>
-        </div>
+        <h1 className="font-headline text-4xl font-bold text-on-surface leading-tight mb-2">
+          Evolution: AI Demo Day
+        </h1>
+        <p className="text-base text-on-surface-variant italic mb-4">Stop talking, start shipping.</p>
+        <span className="inline-flex items-center gap-2 text-xs text-on-surface-variant bg-surface-container px-3 py-1.5 rounded-lg">
+          <span className="w-1.5 h-1.5 rounded-full bg-secondary" />
+          4月1日（周三）13:30 · 线下活动
+        </span>
       </header>
 
-      {/* 01. Why Evolution? */}
-      <section className="mb-16">
-        <div className="flex items-baseline gap-4 mb-8">
-          <span className="font-headline text-6xl font-bold text-outline-variant/30">01</span>
-          <h2 className="font-headline text-3xl font-bold text-on-surface">{t.guide.whyTitle}</h2>
-        </div>
-        
-        <div className="ml-20 space-y-6">
-          <blockquote className="font-headline text-3xl md:text-4xl font-bold text-secondary leading-tight">
-            {t.guide.whyContent1}
-          </blockquote>
-          
-          <div className="prose prose-lg max-w-3xl space-y-6 text-on-surface-variant leading-relaxed">
-            <p>
-              {t.guide.whyContent2}
+      {/* ── 两列主体 ───────────────────────────── */}
+      <div className="grid grid-cols-[3fr_2fr] gap-10 items-start">
+
+        {/* 左列：背景 + 赛道 */}
+        <div className="space-y-12">
+
+          {/* 活动背景 */}
+          <section>
+            <SectionTitle>活动背景</SectionTitle>
+            <p className="text-sm text-on-surface-variant leading-relaxed">
+              第一届战略 × 用研 × 投资 Demo Day 正式开启。AI 时代已经到来——这里是展示你用 AI 做了什么的舞台。欢迎大家踊跃报名。
             </p>
-          </div>
-          
-          <p className="font-headline text-2xl italic text-on-surface pt-4">
-            Don't just adapt. Evolve.
-          </p>
-        </div>
-      </section>
+          </section>
 
-      {/* 02. What is this? */}
-      <section className="mb-16">
-        <div className="flex items-baseline gap-4 mb-8">
-          <span className="font-headline text-6xl font-bold text-outline-variant/30">02</span>
-          <h2 className="font-headline text-3xl font-bold text-on-surface">{t.guide.whatTitle}</h2>
-        </div>
-        
-        <div className="ml-20">
-          <p className="text-on-surface-variant leading-relaxed max-w-3xl">
-            {t.guide.whatContent}
-          </p>
-        </div>
-      </section>
+          {/* 参赛赛道 */}
+          <section>
+            <SectionTitle>选择你的进化赛道</SectionTitle>
 
-      {/* 03. Pick Your Track */}
-      <section className="mb-16">
-        <div className="flex items-baseline gap-4 mb-12">
-          <span className="font-headline text-6xl font-bold text-outline-variant/30">03</span>
-          <h2 className="font-headline text-3xl font-bold text-on-surface">Pick Your Track</h2>
-        </div>
-
-        <div className="ml-20 grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* Track A: Optimizer */}
-          <div className="bg-surface-container-low p-8 rounded-xl border-l-4 border-secondary">
-            <div className="flex items-center gap-3 mb-6">
-              <span className="text-2xl">⚡️</span>
-              <h3 className="font-headline text-2xl font-bold">{t.guide.categories.optimizer.title}</h3>
-            </div>
-            
-            <div className="space-y-4 mb-6">
-              <p className="text-sm font-bold uppercase tracking-wider text-secondary">Your Mission</p>
-              <p className="text-on-surface-variant leading-relaxed">
-                {t.guide.categories.optimizer.desc}
-              </p>
-            </div>
-            
-            <div className="flex flex-wrap gap-2 pt-4 border-t border-outline-variant/20">
-              {['Efficiency', 'AI-Agents', 'Seamless', 'Hyper-growth'].map(tag => (
-                <span key={tag} className="px-3 py-1 bg-surface-container-high text-[10px] font-bold uppercase tracking-wider text-on-surface-variant rounded">
-                  {tag}
-                </span>
-              ))}
-            </div>
-          </div>
-
-          {/* Track B: Builder */}
-          <div className="bg-surface-container-low p-8 rounded-xl border-l-4 border-tertiary">
-            <div className="flex items-center gap-3 mb-6">
-              <span className="text-2xl">🛠️</span>
-              <h3 className="font-headline text-2xl font-bold">{t.guide.categories.builder.title}</h3>
-            </div>
-            
-            <div className="space-y-4 mb-6">
-              <p className="text-sm font-bold uppercase tracking-wider text-tertiary">Your Mission</p>
-              <p className="text-on-surface-variant leading-relaxed">
-                {t.guide.categories.builder.desc}
-              </p>
-            </div>
-            
-            <div className="flex flex-wrap gap-2 pt-4 border-t border-outline-variant/20">
-              {['Product-Led', 'User Value', 'Innovation', 'rednote DNA'].map(tag => (
-                <span key={tag} className="px-3 py-1 bg-surface-container-high text-[10px] font-bold uppercase tracking-wider text-on-surface-variant rounded">
-                  {tag}
-                </span>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 04. The Sprint */}
-      <section className="mb-16">
-        <div className="flex items-baseline gap-4 mb-8">
-          <span className="font-headline text-6xl font-bold text-outline-variant/30">04</span>
-          <h2 className="font-headline text-3xl font-bold text-on-surface">The Sprint</h2>
-        </div>
-        
-        <p className="ml-20 text-base text-on-surface-variant mb-10">
-          We move fast. Evolution waits for no one.
-        </p>
-
-        <div className="ml-20 space-y-0">
-          {timeline.map((item, i, arr) => (
-            <div key={i} className={`relative pl-8 pb-10 ${i < arr.length - 1 ? 'border-l border-outline-variant/30' : ''}`}>
-              <div className={`absolute -left-[5px] top-1.5 w-[9px] h-[9px] rounded-full ${item.highlight ? 'bg-secondary' : 'bg-outline-variant'}`} />
-              <div className="flex flex-col md:flex-row md:items-baseline md:gap-6">
-                <span className="font-headline text-lg font-medium md:w-56 shrink-0">{item.date}</span>
-                <div className="flex-1">
-                  <span className={`text-base font-bold ${item.highlight ? 'text-secondary' : 'text-on-surface'}`}>
-                    {item.title}
-                  </span>
-                  <p className="text-sm text-on-surface-variant mt-1">{item.desc}</p>
+            <div className="space-y-3">
+              {/* Optimizer */}
+              <div className="rounded-xl bg-surface-container-low border border-outline-variant/15 overflow-hidden">
+                <div className="h-0.5 bg-secondary" />
+                <div className="p-5">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <span>⚡</span>
+                      <span className="text-base font-bold text-on-surface">Optimizers</span>
+                    </div>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-secondary bg-secondary/10 px-2 py-0.5 rounded-full">个人参赛</span>
+                  </div>
+                  <p className="text-sm text-on-surface-variant leading-relaxed mb-2">
+                    重构工作流，用 AI 把自己武装成全能战士。
+                  </p>
+                  <p className="text-xs text-secondary/60 italic">Efficiency is a personal obsession.</p>
                 </div>
               </div>
+
+              {/* Builder */}
+              <div className="rounded-xl bg-surface-container-low border border-outline-variant/15 overflow-hidden">
+                <div className="h-0.5 bg-tertiary" />
+                <div className="p-5">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <span>🛠️</span>
+                      <span className="text-base font-bold text-on-surface">Builders</span>
+                    </div>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-tertiary bg-tertiary/10 px-2 py-0.5 rounded-full">≤ 2 人</span>
+                  </div>
+                  <p className="text-sm text-on-surface-variant leading-relaxed mb-2">
+                    设计小红书 in-app feature，或有 rednote DNA 的独立产品。欢迎找搭档双人组队，亦可 solo。
+                  </p>
+                  <p className="text-xs text-tertiary/60 italic">Turn a wild idea into a working demo.</p>
+                </div>
+              </div>
+
+              {/* 演示规则 */}
+              <div className="bg-surface-container-low rounded-xl px-5 py-4 border border-outline-variant/15 text-sm text-on-surface-variant">
+                每个作品 <span className="font-semibold text-on-surface">8 分钟展演 + 2 分钟 QA</span>，时间严格执行。每个赛道评选前 3 名，另设 3 个整体专项奖。
+              </div>
             </div>
-          ))}
-        </div>
-      </section>
+          </section>
 
-      {/* 05. Roadshow Agenda */}
-      <section className="mb-16">
-        <div className="flex items-baseline gap-4 mb-8">
-          <span className="font-headline text-6xl font-bold text-outline-variant/30">05</span>
-          <h2 className="font-headline text-3xl font-bold text-on-surface">Roadshow Agenda</h2>
         </div>
-        
-        <p className="ml-20 text-base text-on-surface-variant mb-10">
-          No fluff. No long speeches. Just pure building.
-        </p>
 
-        <div className="ml-20 bg-surface-container-low p-8 rounded-xl mb-8">
-          <h4 className="font-headline text-xl font-bold mb-4">The 8+2 Rule</h4>
-          <p className="text-on-surface-variant leading-relaxed">
-            You get 8 minutes to demo and 2 minutes for QA. Time limits are strictly enforced with a Hard Stop. Stay sharp.
+        {/* 右列：时间线 + 议程（sticky） */}
+        <div className="sticky top-6 space-y-8">
+
+          {/* The Sprint 时间线 */}
+          <section>
+            <SectionTitle>The Sprint</SectionTitle>
+            <p className="text-xs text-on-surface-variant/50 italic mb-5">We move fast. Evolution waits for no one.</p>
+
+            <div>
+              {timeline.map((item, i, arr) => (
+                <div
+                  key={i}
+                  className={`relative pl-5 pb-5 ${i < arr.length - 1 ? 'border-l border-outline-variant/25' : ''}`}
+                >
+                  <div className={`absolute -left-[5px] top-1 w-2.5 h-2.5 rounded-full ${
+                    item.highlight ? 'bg-secondary ring-2 ring-secondary/20' : 'bg-outline-variant/60'
+                  }`} />
+                  <p className="text-xs text-on-surface-variant mb-0.5">
+                    {item.date}
+                    <span className={`ml-1.5 font-bold ${item.highlight ? 'text-secondary' : 'text-on-surface-variant/60'}`}>
+                      @ {item.time}
+                    </span>
+                  </p>
+                  <p className={`text-sm font-semibold ${item.highlight ? 'text-secondary' : 'text-on-surface'}`}>
+                    {item.title}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* 当天议程 */}
+          <section>
+            <SectionTitle>当天议程</SectionTitle>
+
+            <div className="rounded-xl overflow-hidden border border-outline-variant/15">
+              {agenda.map((item, i) => (
+                <div
+                  key={i}
+                  className={`px-4 py-3 bg-surface-container-low ${i > 0 ? 'border-t border-outline-variant/10' : ''}`}
+                >
+                  <p className="text-[10px] font-mono font-bold mb-0.5 text-outline/70">
+                    {item.time}
+                  </p>
+                  <p className="text-sm font-medium text-on-surface">
+                    {item.title}
+                  </p>
+                  {item.sub && (
+                    <p className="text-[11px] text-on-surface-variant/50 mt-0.5">{item.sub}</p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* 结语 */}
+          <p className="text-xs text-on-surface-variant/40 italic pt-4 border-t border-outline-variant/15">
+            Don't just adapt. Evolve.
           </p>
-        </div>
 
-        <div className="ml-20 grid grid-cols-1 md:grid-cols-2 gap-4">
-          {agenda.map((item, i) => (
-            <div 
-              key={i} 
-              className={`p-6 rounded-lg ${
-                item.isHighlight 
-                  ? 'bg-secondary-container' 
-                  : item.isBreak 
-                    ? 'bg-surface-container-highest' 
-                    : 'bg-surface-container-low'
-              }`}
-            >
-              <span className={`text-xs font-bold uppercase tracking-wider ${item.isHighlight ? 'text-secondary' : 'text-outline'}`}>
-                {item.time}
-              </span>
-              <h5 className={`font-headline text-lg font-bold mt-2 ${item.isHighlight ? 'text-on-secondary-container' : 'text-on-surface'}`}>
-                {item.title}
-              </h5>
-              <p className={`text-sm mt-1 ${item.isHighlight ? 'text-on-secondary-container/70' : 'text-on-surface-variant'}`}>
-                {item.desc}
-              </p>
-            </div>
-          ))}
         </div>
-      </section>
-
-      {/* CTA */}
-      <section className="mt-20 pt-12 border-t border-outline-variant/20">
-        <h3 className="font-headline text-2xl font-bold text-on-surface mb-2">Ready to Evolve?</h3>
-        <p className="text-on-surface-variant">Submit your proposal and join the revolution.</p>
-      </section>
+      </div>
     </div>
+  );
+}
+
+function SectionTitle({ children }: { children: React.ReactNode }) {
+  return (
+    <h2 className="text-lg font-bold text-on-surface mb-4 flex items-center gap-2">
+      <span className="w-1 h-5 rounded-full bg-secondary flex-shrink-0" />
+      {children}
+    </h2>
   );
 }

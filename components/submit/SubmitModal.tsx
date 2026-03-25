@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { CheckCircle, Zap, Hammer, X, Upload } from 'lucide-react';
+import { CheckCircle, Zap, Hammer, X, Upload, Plus, FileImage, FileVideo, Trash2 } from 'lucide-react';
 import { pinyin } from 'pinyin-pro';
 
 interface UserOption {
@@ -34,6 +34,11 @@ export default function SubmitModal({ onClose }: SubmitModalProps) {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  // 关键词标签输入
+  const [keywordInput, setKeywordInput] = useState('');
+  const [keywordTags, setKeywordTags] = useState<string[]>([]);
+  const keywordInputRef = useRef<HTMLInputElement>(null);
 
   // 用户选择相关状态 - 与登录页逻辑一致
   const [users, setUsers] = useState<UserOption[]>([]);
@@ -135,6 +140,40 @@ export default function SubmitModal({ onClose }: SubmitModalProps) {
     }
   }
 
+  // 添加关键词标签
+  const addKeywordTag = () => {
+    const trimmed = keywordInput.trim();
+    if (!trimmed) return;
+    
+    // 支持顿号、逗号分隔输入多个关键词
+    const newTags = trimmed.split(/[\u3001,,，]/).map(t => t.trim()).filter(Boolean);
+    const uniqueTags = [...new Set([...keywordTags, ...newTags])].slice(0, 10); // 最多10个
+    
+    setKeywordTags(uniqueTags);
+    setKeywordInput('');
+    // 同步到 form
+    setForm(prev => ({ ...prev, keywords: uniqueTags.join('、') }));
+  };
+
+  // 删除关键词标签
+  const removeKeywordTag = (tagToRemove: string) => {
+    const newTags = keywordTags.filter(tag => tag !== tagToRemove);
+    setKeywordTags(newTags);
+    setForm(prev => ({ ...prev, keywords: newTags.join('、') }));
+  };
+
+  // 处理关键词输入框键盘事件
+  const handleKeywordKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      addKeywordTag();
+    } else if (e.key === 'Backspace' && !keywordInput && keywordTags.length > 0) {
+      // 输入框为空时按退格，删除最后一个标签
+      const lastTag = keywordTags[keywordTags.length - 1];
+      removeKeywordTag(lastTag);
+    }
+  };
+
   async function handleFileUpload(files: FileList | null) {
     if (!files?.length) return;
     setUploading(true);
@@ -155,6 +194,16 @@ export default function SubmitModal({ onClose }: SubmitModalProps) {
     } finally {
       setUploading(false);
     }
+  }
+
+  // 删除媒体文件
+  function removeMediaFile(index: number) {
+    setMediaFiles(prev => prev.filter((_, i) => i !== index));
+  }
+
+  // 判断文件类型
+  function isVideo(url: string) {
+    return url.match(/\.(mp4|mov|webm|avi)$/i);
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -529,17 +578,58 @@ export default function SubmitModal({ onClose }: SubmitModalProps) {
                 />
               </div>
               
-              {/* Keywords */}
+              {/* Keywords - Tag Input */}
               <div className="space-y-2">
                 <label className="block text-xs font-bold uppercase tracking-[0.12em] text-primary">
-                  关键词（选填）
+                  关键词（选填，最多10个）
                 </label>
-                <input
-                  className="w-full bg-surface-container-low border-0 border-b-2 border-outline focus:border-primary focus:ring-0 px-1 py-3 text-base transition-colors placeholder:text-outline-variant/50"
-                  placeholder="例如：PMO、数据分析、社区、电商等（可用顿号或逗号分隔）"
-                  value={form.keywords}
-                  onChange={e => updateField('keywords', e.target.value)}
-                />
+                
+                {/* 已添加的标签 */}
+                {keywordTags.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {keywordTags.map((tag, index) => (
+                      <span
+                        key={index}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 bg-secondary/10 text-secondary text-sm rounded-full group"
+                      >
+                        {tag}
+                        <button
+                          type="button"
+                          onClick={() => removeKeywordTag(tag)}
+                          className="p-0.5 hover:bg-secondary/20 rounded-full transition-colors"
+                        >
+                          <X size={12} />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+                
+                {/* 输入框 */}
+                <div className="relative">
+                  <input
+                    ref={keywordInputRef}
+                    className="w-full bg-surface-container-low border-0 border-b-2 border-outline focus:border-primary focus:ring-0 px-1 py-3 pr-10 text-base transition-colors placeholder:text-outline-variant/50"
+                    placeholder={keywordTags.length > 0 ? "继续输入关键词..." : "输入关键词后按回车添加"}
+                    value={keywordInput}
+                    onChange={e => setKeywordInput(e.target.value)}
+                    onKeyDown={handleKeywordKeyDown}
+                  />
+                  {keywordInput.trim() && (
+                    <button
+                      type="button"
+                      onClick={addKeywordTag}
+                      className="absolute right-1 top-1/2 -translate-y-1/2 p-1.5 bg-primary text-on-primary rounded-full hover:opacity-90 transition-opacity"
+                    >
+                      <Plus size={14} />
+                    </button>
+                  )}
+                </div>
+                
+                <p className="text-xs text-on-surface-variant/50">
+                  按 Enter 添加，点击标签可删除，空格按 Backspace 可删除上一个<br />
+                  关键词例如 PMO、数据分析、社区、商业化等
+                </p>
               </div>
             </div>
 
@@ -562,9 +652,15 @@ export default function SubmitModal({ onClose }: SubmitModalProps) {
 
             {/* Media Upload - 可选 */}
             <div className="pt-4">
-              <label className="block text-sm text-on-surface-variant/60 mb-3">
-                截图/录屏等（选填）
-              </label>
+              <div className="flex items-center justify-between mb-3">
+                <label className="block text-sm text-on-surface-variant/60">
+                  截图/录屏等（选填，支持多个）
+                </label>
+                {mediaFiles.length > 0 && (
+                  <span className="text-xs text-primary">已上传 {mediaFiles.length} 个文件</span>
+                )}
+              </div>
+              
               <input
                 ref={fileInputRef}
                 type="file"
@@ -573,23 +669,62 @@ export default function SubmitModal({ onClose }: SubmitModalProps) {
                 className="hidden"
                 onChange={e => handleFileUpload(e.target.files)}
               />
+              
+              {/* 已上传文件预览网格 */}
+              {mediaFiles.length > 0 && (
+                <div className="grid grid-cols-3 gap-3 mb-4">
+                  {mediaFiles.map((url, index) => (
+                    <div key={index} className="relative aspect-video bg-surface-container-highest rounded-lg overflow-hidden group">
+                      {isVideo(url) ? (
+                        <>
+                          <video 
+                            src={url} 
+                            className="w-full h-full object-cover"
+                            preload="metadata"
+                          />
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                            <FileVideo size={24} className="text-white" />
+                          </div>
+                        </>
+                      ) : (
+                        <img 
+                          src={url} 
+                          alt={`Media ${index + 1}`}
+                          className="w-full h-full object-cover"
+                        />
+                      )}
+                      {/* 删除按钮 */}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          removeMediaFile(index);
+                        }}
+                        className="absolute top-1 right-1 p-1 bg-error/90 text-on-error rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <Trash2 size={12} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              
+              {/* 上传区域 */}
               <div
                 onClick={() => fileInputRef.current?.click()}
                 onDragOver={e => { e.preventDefault(); e.stopPropagation(); }}
                 onDrop={e => { e.preventDefault(); e.stopPropagation(); handleFileUpload(e.dataTransfer.files); }}
-                className="w-full aspect-[21/6] rounded-lg bg-surface-container-low border-2 border-dashed border-outline-variant/30 flex flex-col items-center justify-center p-6 group hover:border-primary/50 transition-colors cursor-pointer"
+                className="w-full rounded-lg bg-surface-container-low border-2 border-dashed border-outline-variant/30 flex flex-col items-center justify-center p-4 group hover:border-primary/50 transition-colors cursor-pointer"
+                style={{ aspectRatio: mediaFiles.length > 0 ? '8/1' : '21/6' }}
               >
                 {uploading ? (
                   <p className="text-sm text-on-surface-variant">上传中...</p>
-                ) : mediaFiles.length > 0 ? (
-                  <div className="flex flex-wrap gap-2 items-center">
-                    <CheckCircle size={16} className="text-primary" />
-                    <span className="text-sm text-on-surface-variant">已上传 {mediaFiles.length} 个文件</span>
-                  </div>
                 ) : (
                   <>
-                    <Upload size={32} className="text-outline-variant group-hover:text-primary mb-3" />
-                    <p className="text-sm font-medium text-on-surface-variant">拖拽或点击上传图片/视频</p>
+                    <Upload size={mediaFiles.length > 0 ? 20 : 32} className="text-outline-variant group-hover:text-primary mb-1" />
+                    <p className="text-sm font-medium text-on-surface-variant">
+                      {mediaFiles.length > 0 ? '继续添加图片/视频' : '拖拽或点击上传图片/视频'}
+                    </p>
                   </>
                 )}
               </div>

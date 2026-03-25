@@ -52,6 +52,7 @@ export default function AdminPage() {
   // 工具
   const [seedLoading, setSeedLoading] = useState(false);
   const [clearLoading, setClearLoading] = useState(false);
+  const [clearVotesLoading, setClearVotesLoading] = useState(false);
   const [result, setResult] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   
   // 投票控制
@@ -282,6 +283,28 @@ export default function AdminPage() {
       setResult({ type: 'error', message: '网络错误' });
     } finally {
       setClearLoading(false);
+    }
+  }
+
+  // 清空所有投票
+  async function clearAllVotes() {
+    if (!confirm('确定要清空所有投票记录吗？\n\n⚠️ 此操作不可恢复，所有用户的投票数据将被清除。')) {
+      return;
+    }
+    setClearVotesLoading(true);
+    setResult(null);
+    try {
+      const res = await fetch('/api/admin/votes', { method: 'DELETE' });
+      const data = await res.json();
+      if (data.success) {
+        setResult({ type: 'success', message: data.message });
+      } else {
+        setResult({ type: 'error', message: data.error || '清空失败' });
+      }
+    } catch {
+      setResult({ type: 'error', message: '网络错误' });
+    } finally {
+      setClearVotesLoading(false);
     }
   }
 
@@ -816,6 +839,45 @@ export default function AdminPage() {
                   <>
                     <Trash size={16} />
                     一键清理
+                  </>
+                )}
+              </button>
+            </div>
+
+            {/* 清空所有投票 */}
+            <div className="bg-surface-container-low p-8 rounded-xl border border-error/20">
+              <h3 className="font-headline text-2xl font-bold mb-4 text-on-surface">🗳️ 清空所有投票</h3>
+              <p className="text-on-surface-variant mb-6 text-base">
+                仅清除投票记录，不影响项目和留言数据：
+              </p>
+              <ul className="text-sm text-on-surface-variant space-y-2 mb-8">
+                <li className="flex items-center gap-2">
+                  <Trash2 size={16} className="text-error" />
+                  清空所有用户的全部投票记录
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check size={16} className="text-secondary" />
+                  保留 Demo 项目数据
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check size={16} className="text-secondary" />
+                  保留留言和点赞数据
+                </li>
+              </ul>
+              <button
+                onClick={clearAllVotes}
+                disabled={clearVotesLoading}
+                className="w-full py-4 bg-error text-on-error rounded-lg font-bold uppercase tracking-widest hover:opacity-90 transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {clearVotesLoading ? (
+                  <>
+                    <Loader2 size={16} className="animate-spin" />
+                    清空中...
+                  </>
+                ) : (
+                  <>
+                    <Trash2 size={16} />
+                    一键清空投票
                   </>
                 )}
               </button>

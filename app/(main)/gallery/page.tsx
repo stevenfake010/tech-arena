@@ -46,14 +46,26 @@ export default function GalleryPage() {
   const optimizerDemos = demos.filter(d => d.track === 'optimizer');
   const builderDemos = demos.filter(d => d.track === 'builder');
 
-  const filteredOptimizer = optimizerDemos.filter(d => 
-    d.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    d.summary.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-  const filteredBuilder = builderDemos.filter(d => 
-    d.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    d.summary.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredOptimizer = optimizerDemos.filter(d => {
+    const q = searchQuery.toLowerCase();
+    return (
+      d.name.toLowerCase().includes(q) ||
+      d.summary.toLowerCase().includes(q) ||
+      d.submitter1_name.toLowerCase().includes(q) ||
+      (d.submitter2_name && d.submitter2_name.toLowerCase().includes(q)) ||
+      (d.keywords && d.keywords.toLowerCase().includes(q))
+    );
+  });
+  const filteredBuilder = builderDemos.filter(d => {
+    const q = searchQuery.toLowerCase();
+    return (
+      d.name.toLowerCase().includes(q) ||
+      d.summary.toLowerCase().includes(q) ||
+      d.submitter1_name.toLowerCase().includes(q) ||
+      (d.submitter2_name && d.submitter2_name.toLowerCase().includes(q)) ||
+      (d.keywords && d.keywords.toLowerCase().includes(q))
+    );
+  });
 
   // 安全解析 media_urls（可能是 JSONB 数组或字符串）
   function parseMediaUrls(mediaUrls: string | string[] | null | undefined): string[] {
@@ -84,10 +96,9 @@ export default function GalleryPage() {
   return (
     <div className="flex flex-col h-[calc(100vh-60px)]">
       {/* Header */}
-      <header className="flex items-center justify-between flex-shrink-0 mb-4 px-12 pt-4 pb-2">
+      <header className="flex-shrink-0 mb-4 px-12 pt-4 pb-2">
         <div>
-          <h2 className="text-4xl font-headline font-bold tracking-tight text-on-surface">Gallery</h2>
-          <p className="text-lg text-on-surface-variant mt-2 chinese-text">探索所有提交的 Demo 项目</p>
+          <h2 className="font-headline text-4xl font-bold tracking-tight text-on-surface">Demo Gallery</h2>
         </div>
       </header>
 
@@ -99,7 +110,7 @@ export default function GalleryPage() {
           <div className="relative mb-4 flex-shrink-0">
             <input
               className="w-full bg-surface-container-low border-none border-b border-outline/30 focus:ring-0 focus:border-primary text-sm px-4 py-3 rounded-lg transition-all"
-              placeholder="搜索项目..."
+              placeholder="搜索项目、关键词或薯名..."
               type="text"
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
@@ -112,13 +123,14 @@ export default function GalleryPage() {
             {/* Optimizer Section */}
             <div className="border-b border-outline-variant/30">
               {/* 吸顶标题栏 */}
-              <button 
-                className="sticky top-0 z-10 flex items-center justify-between w-full py-3 px-3 cursor-pointer group bg-surface-container-low/95 backdrop-blur-sm border-b border-outline-variant/20"
+              <button
+                className="sticky top-0 z-10 flex items-center justify-between w-full py-3 px-4 cursor-pointer group bg-surface-container-low/95 backdrop-blur-sm border-b border-outline-variant/20"
                 onClick={() => setOptimizerExpanded(!optimizerExpanded)}
               >
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2.5">
+                  <span className="w-0.5 h-4 rounded-full bg-secondary flex-shrink-0" />
                   <span className="text-secondary text-sm">⚡️</span>
-                  <span className="text-xs font-bold tracking-[0.15em] uppercase text-on-surface">
+                  <span className="font-headline text-base font-bold text-on-surface">
                     Optimizer
                   </span>
                   <span className="text-[10px] text-on-surface-variant bg-surface-container-high px-2 py-0.5 rounded-full">
@@ -128,47 +140,54 @@ export default function GalleryPage() {
                 <ChevronDown size={18} className={`text-outline transition-transform duration-300 ${optimizerExpanded ? '' : '-rotate-90'}`} />
               </button>
               {optimizerExpanded && (
-                <div className="space-y-2 p-2">
+                <div className="space-y-1.5 p-2">
                   {filteredOptimizer.map(demo => (
                     <div
                       key={demo.id}
                       onClick={() => setSelectedDemo(demo)}
-                      className={`p-4 rounded-lg cursor-pointer transition-all group ${
-                        selectedDemo?.id === demo.id 
-                          ? 'bg-surface-container-lowest shadow-sm border-l-2 border-secondary' 
+                      className={`p-3 rounded-lg cursor-pointer transition-all group ${
+                        selectedDemo?.id === demo.id
+                          ? 'bg-surface-container-lowest shadow-sm border-l-2 border-secondary'
                           : 'bg-surface-container-low hover:bg-surface-container-high'
                       }`}
                     >
-                      {/* 标题在最上面 */}
-                      <h3 className={`text-base font-headline font-bold mb-2 leading-tight ${
-                        selectedDemo?.id === demo.id ? '' : 'group-hover:text-primary'
-                      }`}>
-                        {demo.name}
-                      </h3>
-                      
-                      {/* 简介 */}
-                      <p className="text-sm text-on-surface-variant leading-relaxed mb-3 line-clamp-2 chinese-text">
-                        {demo.summary}
-                      </p>
-                      
-                      {/* 底部：作者 + 关键词 */}
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs text-outline">
-                          {demo.submitter1_name}
-                        </span>
-                      </div>
-                      {demo.keywords && (
-                        <div className="mt-2 flex flex-wrap gap-1">
-                          {demo.keywords.split(/[、,，]/).slice(0, 3).map((kw, i) => (
-                            <span key={i} className="text-[10px] px-1.5 py-0.5 bg-secondary/10 text-secondary rounded">
-                              {kw.trim()}
-                            </span>
-                          ))}
-                          {demo.keywords.split(/[、,，]/).length > 3 && (
-                            <span className="text-[10px] text-on-surface-variant">+{demo.keywords.split(/[、,，]/).length - 3}</span>
-                          )}
+                      {/* 标题和简介 */}
+                      <div className="mb-2">
+                        <div className="flex items-start justify-between gap-2 mb-1">
+                          <h3 className={`text-base font-headline font-bold leading-tight ${
+                            selectedDemo?.id === demo.id ? '' : 'group-hover:text-primary'
+                          }`}>
+                            {demo.name}
+                          </h3>
+                          <span className="text-xs text-outline flex-shrink-0">
+                            {demo.submitter1_name}
+                          </span>
                         </div>
-                      )}
+                        <p className="text-on-surface-variant text-sm line-clamp-1">
+                          {demo.summary}
+                        </p>
+                      </div>
+                      
+                      {/* 关键词 - 单独一行 */}
+                      {demo.keywords && (() => {
+                        const keywords = demo.keywords.split(/[、,，]/).map(kw => kw.trim()).filter(Boolean);
+                        const visibleKeywords = keywords.slice(0, 3);
+                        const hiddenCount = keywords.length - visibleKeywords.length;
+                        return (
+                          <div className="flex flex-wrap gap-1">
+                            {visibleKeywords.map((kw, i) => (
+                              <span key={i} className="text-[10px] px-1.5 py-0.5 bg-secondary/10 text-secondary rounded">
+                                {kw}
+                              </span>
+                            ))}
+                            {hiddenCount > 0 && (
+                              <span className="text-[10px] px-1.5 py-0.5 bg-surface-container-high text-on-surface-variant rounded">
+                                +{hiddenCount}
+                              </span>
+                            )}
+                          </div>
+                        );
+                      })()}
                     </div>
                   ))}
                 </div>
@@ -178,13 +197,14 @@ export default function GalleryPage() {
             {/* Builder Section */}
             <div className="border-b border-outline-variant/30">
               {/* 吸顶标题栏 */}
-              <button 
-                className="sticky top-0 z-10 flex items-center justify-between w-full py-3 px-3 cursor-pointer group bg-surface-container-low/95 backdrop-blur-sm border-b border-outline-variant/20"
+              <button
+                className="sticky top-0 z-10 flex items-center justify-between w-full py-3 px-4 cursor-pointer group bg-surface-container-low/95 backdrop-blur-sm border-b border-outline-variant/20"
                 onClick={() => setBuilderExpanded(!builderExpanded)}
               >
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2.5">
+                  <span className="w-0.5 h-4 rounded-full bg-tertiary flex-shrink-0" />
                   <span className="text-tertiary text-sm">🛠️</span>
-                  <span className="text-xs font-bold tracking-[0.15em] uppercase text-on-surface">
+                  <span className="font-headline text-base font-bold text-on-surface">
                     Builder
                   </span>
                   <span className="text-[10px] text-on-surface-variant bg-surface-container-high px-2 py-0.5 rounded-full">
@@ -194,47 +214,54 @@ export default function GalleryPage() {
                 <ChevronDown size={18} className={`text-outline transition-transform duration-300 ${builderExpanded ? '' : '-rotate-90'}`} />
               </button>
               {builderExpanded && (
-                <div className="space-y-2 p-2">
+                <div className="space-y-1.5 p-2">
                   {filteredBuilder.map(demo => (
                     <div
                       key={demo.id}
                       onClick={() => setSelectedDemo(demo)}
-                      className={`p-4 rounded-lg cursor-pointer transition-all group ${
-                        selectedDemo?.id === demo.id 
-                          ? 'bg-surface-container-lowest shadow-sm border-l-2 border-secondary' 
+                      className={`p-3 rounded-lg cursor-pointer transition-all group ${
+                        selectedDemo?.id === demo.id
+                          ? 'bg-surface-container-lowest shadow-sm border-l-2 border-tertiary'
                           : 'bg-surface-container-low hover:bg-surface-container-high'
                       }`}
                     >
-                      {/* 标题在最上面 */}
-                      <h3 className={`text-base font-headline font-bold mb-2 leading-tight ${
-                        selectedDemo?.id === demo.id ? '' : 'group-hover:text-primary'
-                      }`}>
-                        {demo.name}
-                      </h3>
-                      
-                      {/* 简介 */}
-                      <p className="text-sm text-on-surface-variant leading-relaxed mb-3 line-clamp-2">
-                        {demo.summary}
-                      </p>
-                      
-                      {/* 底部：作者 + 关键词 */}
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs text-outline">
-                          {demo.submitter1_name}{demo.submitter2_name ? ` + ${demo.submitter2_name}` : ''}
-                        </span>
-                      </div>
-                      {demo.keywords && (
-                        <div className="mt-2 flex flex-wrap gap-1">
-                          {demo.keywords.split(/[、,，]/).slice(0, 3).map((kw, i) => (
-                            <span key={i} className="text-[10px] px-1.5 py-0.5 bg-tertiary/10 text-tertiary rounded">
-                              {kw.trim()}
-                            </span>
-                          ))}
-                          {demo.keywords.split(/[、,，]/).length > 3 && (
-                            <span className="text-[10px] text-on-surface-variant">+{demo.keywords.split(/[、,，]/).length - 3}</span>
-                          )}
+                      {/* 标题和简介 */}
+                      <div className="mb-2">
+                        <div className="flex items-start justify-between gap-2 mb-1">
+                          <h3 className={`text-base font-headline font-bold leading-tight ${
+                            selectedDemo?.id === demo.id ? '' : 'group-hover:text-primary'
+                          }`}>
+                            {demo.name}
+                          </h3>
+                          <span className="text-xs text-outline flex-shrink-0">
+                            {demo.submitter1_name}{demo.submitter2_name ? ` + ${demo.submitter2_name}` : ''}
+                          </span>
                         </div>
-                      )}
+                        <p className="text-on-surface-variant text-sm line-clamp-1">
+                          {demo.summary}
+                        </p>
+                      </div>
+                      
+                      {/* 关键词 - 单独一行 */}
+                      {demo.keywords && (() => {
+                        const keywords = demo.keywords.split(/[、,，]/).map(kw => kw.trim()).filter(Boolean);
+                        const visibleKeywords = keywords.slice(0, 3);
+                        const hiddenCount = keywords.length - visibleKeywords.length;
+                        return (
+                          <div className="flex flex-wrap gap-1">
+                            {visibleKeywords.map((kw, i) => (
+                              <span key={i} className="text-[10px] px-1.5 py-0.5 bg-tertiary/10 text-tertiary rounded">
+                                {kw}
+                              </span>
+                            ))}
+                            {hiddenCount > 0 && (
+                              <span className="text-[10px] px-1.5 py-0.5 bg-surface-container-high text-on-surface-variant rounded">
+                                +{hiddenCount}
+                              </span>
+                            )}
+                          </div>
+                        );
+                      })()}
                     </div>
                   ))}
                 </div>
@@ -247,9 +274,15 @@ export default function GalleryPage() {
         <div className="flex-1 bg-surface-container-low rounded-xl flex flex-col h-full overflow-hidden border border-outline-variant/10">
           {selectedDemo ? (
             <>
-              <div className="px-8 pt-6 pb-4 flex-shrink-0 border-b border-outline-variant/10 bg-surface-container-low">
+              {/* 彩色顶部细线，按赛道区分 */}
+              <div className={`h-0.5 flex-shrink-0 ${selectedDemo.track === 'optimizer' ? 'bg-secondary' : 'bg-tertiary'}`} />
+              <div className="px-8 pt-5 pb-4 flex-shrink-0 border-b border-outline-variant/10 bg-surface-container-low">
                 <div className="flex items-center gap-3 mb-2">
-                  <span className="px-2 py-0.5 bg-surface-container-highest text-[10px] font-bold text-on-surface-variant uppercase tracking-wide rounded">
+                  <span className={`px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide rounded ${
+                    selectedDemo.track === 'optimizer'
+                      ? 'bg-secondary/10 text-secondary'
+                      : 'bg-tertiary/10 text-tertiary'
+                  }`}>
                     {selectedDemo.track}
                   </span>
                   {selectedDemo.track === 'optimizer' ? (
@@ -341,15 +374,27 @@ export default function GalleryPage() {
                       <section>
                         <p className="text-xs uppercase tracking-widest text-outline font-bold mb-3">截图/录屏</p>
                         <div className="grid grid-cols-2 gap-4">
-                          {mediaUrls.map((url: string, i: number) => (
-                            <div key={i} className="aspect-video bg-surface-container-highest rounded-lg overflow-hidden">
-                              <img 
-                                src={url} 
-                                alt={`Media ${i + 1}`}
-                                className="w-full h-full object-cover"
-                              />
-                            </div>
-                          ))}
+                          {mediaUrls.map((url: string, i: number) => {
+                            const isVideo = url.match(/\.(mp4|mov|webm|avi)$/i);
+                            return (
+                              <div key={i} className="aspect-video bg-surface-container-highest rounded-lg overflow-hidden">
+                                {isVideo ? (
+                                  <video 
+                                    src={url} 
+                                    controls
+                                    className="w-full h-full object-contain bg-black"
+                                    preload="metadata"
+                                  />
+                                ) : (
+                                  <img 
+                                    src={url} 
+                                    alt={`Media ${i + 1}`}
+                                    className="w-full h-full object-cover"
+                                  />
+                                )}
+                              </div>
+                            );
+                          })}
                         </div>
                       </section>
                     )}

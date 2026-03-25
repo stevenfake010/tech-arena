@@ -83,12 +83,15 @@ export async function GET(request: Request) {
     submitter1_name: demo.submitter1_name,
     submitter1_dept: demo.submitter1_dept,
     submitter2_name: demo.submitter2_name,
+    submitter2_dept: demo.submitter2_dept,
+    keywords: demo.keywords,
+    submitted_by: demo.submitted_by,
     score: scores[demo.id]?.score || 0,
-    vote_count: scores[demo.id]?.vote_count || 0,
+    vote_count: scores[demo.id]?.score || 0,  // 展示加权后的票数（评委权重×2）
   }));
 
-  // 按分数排序
-  leaderboard.sort((a, b) => b.score - a.score);
+  // 按拼音排序（前端会根据投票状态重新排序）
+  leaderboard.sort((a, b) => a.name.localeCompare(b.name, 'zh-CN'));
 
   return NextResponse.json({ leaderboard });
 }

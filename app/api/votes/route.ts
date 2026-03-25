@@ -127,11 +127,15 @@ export async function POST(request: Request) {
     demo_id,
     vote_type,
   };
+  
+  console.log('插入投票:', voteData);
+  
   const { error: insertError } = await supabase
     .from('votes')
     .insert(voteData);
 
   if (insertError) {
+    console.error('投票插入失败:', insertError);
     if (insertError.code === '23505') { // unique violation
       return NextResponse.json({ error: '已经投过这个项目了' }, { status: 409 });
     }

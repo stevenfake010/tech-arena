@@ -125,7 +125,7 @@ function EntryPortalContent() {
               <label className="text-sm font-semibold text-outline tracking-wide" htmlFor="username">{t.login.nameLabel}</label>
               <input
                 ref={inputRef}
-                className="w-full px-0 py-3 text-lg text-on-surface bg-transparent border-0 border-b-2 border-outline/30 focus:border-primary focus:outline-none transition-colors placeholder:text-outline/40"
+                className="w-full px-0 py-3 text-base text-on-surface bg-transparent border-0 border-b-2 border-outline/30 focus:border-primary focus:outline-none transition-colors placeholder:text-outline/40"
                 id="username"
                 placeholder={t.login.namePlaceholder}
                 type="text"

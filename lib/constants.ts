@@ -5,23 +5,23 @@ export const TRACKS = {
 
 export type TrackId = keyof typeof TRACKS;
 
-// 最佳Demo奖 - 每个赛道评选3个，每人每赛道2票
+// 最佳Demo奖 - 每个赛道评选3个，每人每赛道3票
 export const BEST_DEMO_AWARDS = {
-  best_optimizer: { 
-    id: 'best_optimizer', 
-    label: 'Best Demo - Optimizer', 
+  best_optimizer: {
+    id: 'best_optimizer',
+    label: 'Best Demo - Optimizer',
     labelCn: '最佳 Demo - Optimizer 赛道',
-    track: 'optimizer', 
-    maxVotes: 2,
+    track: 'optimizer',
+    maxVotes: 3,
     description: '评选最优秀的 Optimizer 项目（前3名获奖）',
     descriptionEn: 'Vote for the best Optimizer projects (Top 3 win)'
   },
-  best_builder: { 
-    id: 'best_builder', 
-    label: 'Best Demo - Builder', 
+  best_builder: {
+    id: 'best_builder',
+    label: 'Best Demo - Builder',
     labelCn: '最佳 Demo - Builder 赛道',
-    track: 'builder', 
-    maxVotes: 2,
+    track: 'builder',
+    maxVotes: 3,
     description: '评选最优秀的 Builder 项目（前3名获奖）',
     descriptionEn: 'Vote for the best Builder projects (Top 3 win)'
   },
@@ -32,28 +32,28 @@ export const SPECIAL_AWARDS = {
   special_brain: { 
     id: 'special_brain', 
     label: '🧠 Brain Blast Award', 
-    labelCn: '🧠 脑洞大开奖',
+    labelCn: '🧠 最脑洞Demo奖',
     track: null, 
     maxVotes: 1,
-    description: '最具创意和想象力的项目',
+    description: '选出1个你认为最有创意和想象力的项目',
     descriptionEn: 'Most creative and imaginative project'
   },
   special_infectious: { 
     id: 'special_infectious', 
     label: '🔥 Most Infectious Award', 
-    labelCn: '🔥 最佳感染力奖',
+    labelCn: '🔥 最感染力Demo奖',
     track: null, 
     maxVotes: 1,
-    description: '演讲最有感染力、最能打动人心的项目',
+    description: '选出1个你认为现场展示效果最好、最有感染力的项目',
     descriptionEn: 'Most persuasive and inspiring presentation'
   },
   special_useful: { 
     id: 'special_useful', 
     label: '💎 Most Useful Award', 
-    labelCn: '💎 最有用奖',
+    labelCn: '💎 最实用Demo奖',
     track: null, 
     maxVotes: 1,
-    description: '最实用、最能解决实际问题的项目',
+    description: '选出1个你认为最实用、最能助力日常工作的项目',
     descriptionEn: 'Most practical and problem-solving project'
   },
 } as const;

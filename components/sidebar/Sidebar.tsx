@@ -3,7 +3,7 @@
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { Compass, LayoutGrid, Trophy, MessageSquare, Plus, LogIn, LogOut } from 'lucide-react';
+import { Compass, LayoutGrid, Trophy, MessageSquare, Plus, LogIn, LogOut, FolderOpen } from 'lucide-react';
 import { useLanguage } from '@/components/LanguageProvider';
 
 interface User {
@@ -36,6 +36,7 @@ export default function Sidebar({ onSubmitClick }: { onSubmitClick: () => void }
     { href: '/guide', label: t.nav.guide, icon: Compass },
     { href: '/gallery', label: t.nav.gallery, icon: LayoutGrid },
     { href: '/leaderboard', label: t.nav.leaderboard, icon: Trophy },
+    ...(user ? [{ href: '/my-demos', label: t.nav.myDemos, icon: FolderOpen }] : []),
     { href: '/square', label: t.nav.square, icon: MessageSquare },
   ];
 
@@ -97,12 +98,12 @@ export default function Sidebar({ onSubmitClick }: { onSubmitClick: () => void }
             {user ? (
               <>
                 <Plus size={16} strokeWidth={2.5} />
-                <span className="font-headline tracking-tight text-base">{t.nav.submit}</span>
+                <span className="font-headline font-bold tracking-tight text-base chinese-text">{t.nav.submit}</span>
               </>
             ) : (
               <>
                 <LogIn size={16} strokeWidth={2.5} />
-                <span className="font-headline tracking-tight text-base">{t.nav.login}</span>
+                <span className="font-headline font-bold tracking-tight text-base chinese-text">{t.nav.login}</span>
               </>
             )}
           </button>

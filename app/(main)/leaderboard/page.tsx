@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Loader2, Star, CheckCircle, AlertCircle, Trophy, Lock } from 'lucide-react';
+import { Loader2, Star, CheckCircle, AlertCircle, Lock, Search } from 'lucide-react';
 import { BEST_DEMO_AWARDS, SPECIAL_AWARDS } from '@/lib/constants';
 
 interface LeaderboardItem {
@@ -12,11 +12,19 @@ interface LeaderboardItem {
   submitter1_name: string;
   submitter1_dept: string;
   submitter2_name: string | null;
+  submitter2_dept?: string;
+  keywords?: string;
+  submitted_by: number;
   score: number;
   vote_count: number;
 }
 
 interface Vote {
+  demo_id: number;
+  vote_type: string;
+}
+
+interface SelectedVote {
   demo_id: number;
   vote_type: string;
 }
@@ -33,19 +41,28 @@ export default function LeaderboardPage() {
     special_useful: [],
   });
   
+  // 用户已投票记录
   const [myVotes, setMyVotes] = useState<Vote[]>([]);
+  const [votesLoaded, setVotesLoaded] = useState(false);
+  
+  // 用户当前选择的投票（盲投阶段）
+  const [selectedVotes, setSelectedVotes] = useState<SelectedVote[]>([]);
+  
   const [loading, setLoading] = useState(true);
-  const [votingId, setVotingId] = useState<number | null>(null);
-  const [activeTab, setActiveTab] = useState<'best' | 'special'>('best');
+  const [submitting, setSubmitting] = useState(false);
+  // Tab 状态：5 个具体奖项
+  const [activeTab, setActiveTab] = useState<'optimizer' | 'builder' | 'special_brain' | 'special_infectious' | 'special_useful'>('optimizer');
   const [message, setMessage] = useState<{text: string, type: 'success' | 'error'} | null>(null);
   const [user, setUser] = useState<any>(null);
   const [votingStatus, setVotingStatus] = useState<{
     isVotingOpen: boolean;
     notice: string;
   } | null>(null);
+  
+  // 搜索关键词
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
-    // 获取用户信息
     fetch('/api/auth/me')
       .then(r => r.json())
       .then(d => setUser(d.user))
@@ -55,6 +72,14 @@ export default function LeaderboardPage() {
     fetchMyVotes();
     fetchVotingStatus();
   }, []);
+
+  // 清除消息
+  useEffect(() => {
+    if (message) {
+      const timer = setTimeout(() => setMessage(null), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [message]);
 
   // 获取投票状态
   async function fetchVotingStatus() {
@@ -67,17 +92,8 @@ export default function LeaderboardPage() {
     }
   }
 
-  // 清除消息
-  useEffect(() => {
-    if (message) {
-      const timer = setTimeout(() => setMessage(null), 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [message]);
-
   async function fetchAllData() {
     try {
-      // 获取最佳Demo奖数据
       const [optimizerRes, builderRes] = await Promise.all([
         fetch('/api/leaderboard?vote_type=best_optimizer'),
         fetch('/api/leaderboard?vote_type=best_builder'),
@@ -87,7 +103,6 @@ export default function LeaderboardPage() {
       setOptimizerData(optimizerJson.leaderboard || []);
       setBuilderData(builderJson.leaderboard || []);
 
-      // 获取专项奖数据
       const specialResults: Record<string, LeaderboardItem[]> = {};
       for (const awardId of Object.keys(SPECIAL_AWARDS)) {
         const res = await fetch(`/api/leaderboard?vote_type=${awardId}`);
@@ -111,6 +126,8 @@ export default function LeaderboardPage() {
       }
     } catch (error) {
       console.error('Failed to fetch votes:', error);
+    } finally {
+      setVotesLoaded(true);
     }
   }
 
@@ -118,292 +135,404 @@ export default function LeaderboardPage() {
     return myVotes.some(v => v.demo_id === demoId && v.vote_type === voteType);
   }
 
-  function getVotesUsed(voteType: string, maxVotes: number) {
+  // 判断是否在某个奖项投过票
+  function hasVotedInType(voteType: string) {
+    return myVotes.some(v => v.vote_type === voteType);
+  }
+
+  function isSelected(demoId: number, voteType: string) {
+    return selectedVotes.some(v => v.demo_id === demoId && v.vote_type === voteType);
+  }
+
+  function getVotesUsed(voteType: string) {
     return myVotes.filter(v => v.vote_type === voteType).length;
   }
 
-  async function handleVote(demoId: number, voteType: string) {
+  function getSelectedCount(voteType: string) {
+    return selectedVotes.filter(v => v.vote_type === voteType).length;
+  }
+
+  // 切换选择（盲投阶段）
+  function toggleSelection(demoId: number, voteType: string, maxVotes: number) {
     // 检查投票是否开放
     if (votingStatus && !votingStatus.isVotingOpen) {
       setMessage({ text: votingStatus.notice, type: 'error' });
       return;
     }
 
-    const isVoted = hasVotedFor(demoId, voteType);
-    
-    setVotingId(demoId);
-    
+    // 如果已经投过票，不能再次选择
+    if (hasVotedFor(demoId, voteType)) {
+      return;
+    }
+
+    const currentSelected = getSelectedCount(voteType);
+    const isCurrentlySelected = isSelected(demoId, voteType);
+
+    if (isCurrentlySelected) {
+      // 取消选择
+      setSelectedVotes(prev => prev.filter(v => !(v.demo_id === demoId && v.vote_type === voteType)));
+    } else {
+      // 检查是否已达上限
+      const votesUsed = getVotesUsed(voteType);
+      if (votesUsed + currentSelected >= maxVotes) {
+        setMessage({ text: `该奖项最多投 ${maxVotes} 票`, type: 'error' });
+        return;
+      }
+      // 添加选择
+      setSelectedVotes(prev => [...prev, { demo_id: demoId, vote_type: voteType }]);
+    }
+  }
+
+  // 提交当前 Tab 的投票
+  async function submitTabVotes(voteType: string) {
+    const tabVotes = selectedVotes.filter(v => v.vote_type === voteType);
+    if (tabVotes.length === 0) {
+      setMessage({ text: '请至少选择一个项目', type: 'error' });
+      return;
+    }
+
+    if (!confirm(`确认提交 ${tabVotes.length} 票？\n\n⚠️ 投票后将不能修改。`)) {
+      return;
+    }
+
+    setSubmitting(true);
+
     try {
-      if (isVoted) {
-        // 取消投票
-        const res = await fetch('/api/votes', {
-          method: 'DELETE',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ demo_id: demoId, vote_type: voteType }),
-        });
-        
-        if (res.ok) {
-          setMyVotes(prev => prev.filter(v => !(v.demo_id === demoId && v.vote_type === voteType)));
-          fetchAllData();
-          setMessage({ text: '已取消投票', type: 'success' });
-        } else {
-          const err = await res.json();
-          setMessage({ text: err.error || '取消失败', type: 'error' });
-        }
+      // 批量提交投票
+      const results = await Promise.all(
+        tabVotes.map(async (vote) => {
+          const res = await fetch('/api/votes', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ demo_id: vote.demo_id, vote_type: vote.vote_type }),
+          });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) {
+            console.error('投票失败:', vote.demo_id, vote.vote_type, data.error);
+          }
+          return { ...vote, success: res.ok, error: data.error };
+        })
+      );
+
+      const successCount = results.filter(r => r.success).length;
+      const failedResults = results.filter(r => !r.success);
+      
+      if (failedResults.length > 0) {
+        console.error('投票失败详情:', failedResults);
+      }
+      
+      if (successCount === tabVotes.length) {
+        // 全部成功
+        setMyVotes(prev => [...prev, ...tabVotes]);
+        setSelectedVotes(prev => prev.filter(v => v.vote_type !== voteType));
+        fetchAllData();
+        setMessage({ text: '投票成功！', type: 'success' });
       } else {
-        // 投票
-        const res = await fetch('/api/votes', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ demo_id: demoId, vote_type: voteType }),
+        // 部分或全部失败
+        const isAllFailed = successCount === 0;
+        const errorMsg = failedResults[0]?.error || '';
+        const actionText = isAllFailed ? '提交失败' : '部分提交失败';
+        setMessage({ 
+          text: `${actionText}: ${errorMsg || '请检查投票规则后重试'}`, 
+          type: 'error' 
         });
-        
-        if (res.ok) {
-          setMyVotes(prev => [...prev, { demo_id: demoId, vote_type: voteType }]);
-          fetchAllData();
-          setMessage({ text: '投票成功！', type: 'success' });
-        } else {
-          const err = await res.json();
-          setMessage({ text: err.error || '投票失败', type: 'error' });
-        }
       }
     } catch (error) {
       setMessage({ text: '网络错误，请重试', type: 'error' });
     } finally {
-      setVotingId(null);
+      setSubmitting(false);
     }
   }
 
-  function VoteButton({ item, voteType, maxVotes }: { item: LeaderboardItem; voteType: string; maxVotes: number }) {
-    // 投票未开放 - 显示锁定状态
+  // 选择按钮组件
+  function SelectButton({ item, voteType, maxVotes }: { item: LeaderboardItem; voteType: string; maxVotes: number }) {
+    // 投票未开放
     if (votingStatus && !votingStatus.isVotingOpen) {
       return (
-        <button
-          disabled
-          className="px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider bg-surface-container-high text-outline cursor-not-allowed min-w-[70px] flex items-center justify-center gap-1"
-        >
-          <Lock size={12} />
-          未开始
+        <button disabled className="px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider bg-surface-container-high text-outline cursor-not-allowed min-w-[70px] flex items-center justify-center gap-1">
+          <Lock size={12} /> 未开始
         </button>
       );
     }
 
-    // 游客模式 - 显示登录提示
+    // 游客模式
     if (!user) {
       return (
-        <button
-          onClick={() => setMessage({ text: '游客模式无法投票，请先登录', type: 'error' })}
-          className="px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider bg-surface-container-high text-outline hover:text-on-surface transition-colors min-w-[70px]"
-        >
-          Vote
+        <button onClick={() => setMessage({ text: '游客模式无法投票，请先登录', type: 'error' })} className="px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider bg-surface-container-high text-outline hover:text-on-surface transition-colors min-w-[70px]">
+          投票
         </button>
       );
     }
 
-    const isVoted = hasVotedFor(item.id, voteType);
-    const votesUsed = getVotesUsed(voteType, maxVotes);
-    const canVote = isVoted || votesUsed < maxVotes;
-    const isLoading = votingId === item.id;
+    // 不能给自己的项目投票
+    const isMyDemo = item.submitted_by === user.id;
 
+    const isVoted = hasVotedFor(item.id, voteType);
+    const isSelectedItem = isSelected(item.id, voteType);
+
+    // 已投票状态
+    if (isVoted) {
+      return (
+        <button disabled className="w-[88px] py-2 rounded-lg text-xs font-bold uppercase tracking-wider bg-secondary text-on-secondary flex items-center justify-center gap-1">
+          <CheckCircle size={14} /> 已投
+        </button>
+      );
+    }
+
+    // 自己的项目 - 禁用并提示
+    if (isMyDemo) {
+      return (
+        <button 
+          disabled 
+          title="不能给自己的项目投票"
+          className="w-[88px] py-2 rounded-lg text-xs font-bold uppercase tracking-wider bg-surface-container-high text-outline/50 cursor-not-allowed flex items-center justify-center gap-1"
+        >
+          <Lock size={12} /> 我的
+        </button>
+      );
+    }
+
+    // 可选择状态
     return (
       <button
-        onClick={() => handleVote(item.id, voteType)}
-        disabled={!canVote || isLoading}
+        onClick={() => toggleSelection(item.id, voteType, maxVotes)}
         className={`
-          relative px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider
-          transition-all active:scale-95 min-w-[70px]
-          ${isVoted 
-            ? 'bg-secondary text-on-secondary hover:bg-secondary-dim' 
-            : canVote 
-              ? 'bg-primary text-on-primary hover:bg-primary-dim'
-              : 'bg-surface-container-high text-outline cursor-not-allowed'
+          w-[88px] py-2 rounded-lg text-xs font-bold uppercase tracking-wider
+          transition-all active:scale-95 border-2 flex items-center justify-center gap-1
+          ${isSelectedItem 
+            ? 'bg-secondary text-on-secondary border-secondary' 
+            : 'bg-transparent text-on-surface-variant border-outline-variant hover:border-secondary/50'
           }
         `}
       >
-        {isLoading ? (
-          <Loader2 size={14} className="animate-spin mx-auto" />
-        ) : isVoted ? (
-          '已投'
+        {isSelectedItem ? (
+          <>
+            <CheckCircle size={14} /> 已选
+          </>
         ) : (
-          'Vote'
+          '选择'
         )}
       </button>
     );
   }
 
-  function BestDemoSection({ 
-    title, 
-    subtitle, 
-    data, 
-    voteType,
-    maxVotes,
-    accentColor 
-  }: { 
-    title: string; 
-    subtitle: string; 
-    data: LeaderboardItem[]; 
+  // 统一的投票区块组件 - 按 Tab 独立提交
+  interface VoteSectionProps {
+    title: string;
+    subtitle?: string;
+    description?: string;
+    data: LeaderboardItem[];
     voteType: string;
     maxVotes: number;
-    accentColor: 'secondary' | 'tertiary';
-  }) {
-    const votesUsed = getVotesUsed(voteType, maxVotes);
-    const votesRemaining = maxVotes - votesUsed;
+  }
+
+  function VoteSection({ title, subtitle, description, data, voteType, maxVotes }: VoteSectionProps) {
+    const votesUsed = getVotesUsed(voteType);
+    const selectedCount = getSelectedCount(voteType);
+    const votesRemaining = maxVotes - votesUsed - selectedCount;
+    const hasSubmitted = votesUsed > 0;
+    const hasSelected = selectedCount > 0;
+    // 是否在该奖项投过票（投过才显示票数）
+    const showResults = hasVotedInType(voteType);
+    
+    // 本地搜索状态
+    const [localSearch, setLocalSearch] = useState('');
+    
+    // 排序数据：投票后前10按票数排序并显示票数，其余不排序也不显示票数
+    const top10 = showResults
+      ? [...data].sort((a, b) => b.vote_count - a.vote_count).slice(0, 10)
+      : [];
+    const rankMap = new Map(top10.map((item, i) => [item.id, i + 1]));
+    const top10Ids = new Set(top10.map(item => item.id));
+    let displayData = showResults
+      ? [...top10, ...data.filter(item => !top10Ids.has(item.id))]
+      : data;
+
+    // 搜索过滤
+    let filteredData = displayData;
+    if (localSearch.trim()) {
+      const query = localSearch.toLowerCase();
+      filteredData = displayData.filter(item => 
+        item.name.toLowerCase().includes(query) ||
+        item.summary.toLowerCase().includes(query) ||
+        (item.keywords && item.keywords.toLowerCase().includes(query)) ||
+        item.submitter1_name.toLowerCase().includes(query) ||
+        item.submitter1_dept.toLowerCase().includes(query) ||
+        (item.submitter2_name && item.submitter2_name.toLowerCase().includes(query)) ||
+        (item.submitter2_dept && item.submitter2_dept.toLowerCase().includes(query))
+      );
+    }
 
     return (
       <section className="bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm border border-outline-variant/10">
-        <div className="p-6 border-b border-outline-variant/10">
-          <div className="flex items-center justify-between">
+        {/* 头部 - 统一样式 + 搜索栏 + 提交按钮 */}
+        <div className="py-6 border-b border-outline-variant/10">
+          <div className="flex items-center justify-between mb-4 px-4">
             <div>
-              <span className={`text-[10px] uppercase tracking-[0.2em] text-${accentColor} font-bold mb-1 block`}>
-                {subtitle}
-              </span>
               <h3 className="font-headline text-xl font-bold">{title}</h3>
+              {(subtitle || description) && (
+                <p className="text-xs text-on-surface-variant/70 mt-1">
+                  {subtitle || description}
+                </p>
+              )}
             </div>
-            <div className="text-right">
-              <span className="text-xs text-on-surface-variant">
-                剩余票数: <span className={`font-bold ${votesRemaining > 0 ? 'text-secondary' : 'text-outline'}`}>{votesRemaining}</span> / {maxVotes}
-              </span>
-              <p className="text-[10px] text-on-surface-variant/60 mt-0.5">评选前3名</p>
+            <div className="flex items-center gap-4">
+              {hasSubmitted ? (
+                <span className="text-xs text-secondary font-bold">已投票 {votesUsed}/{maxVotes}</span>
+              ) : (
+                <>
+                  {/* 还可选择票数 */}
+                  <span className="text-xs text-on-surface-variant whitespace-nowrap">
+                    还可选择 <span className={`font-bold ${votesRemaining > 0 ? 'text-secondary' : 'text-outline'}`}>{votesRemaining}</span> 个
+                  </span>
+                  {/* 提交按钮 - 有选择时显示，红色暗示可提交 */}
+                  {hasSelected && (
+                    <button
+                      onClick={() => submitTabVotes(voteType)}
+                      disabled={submitting}
+                      className="px-5 py-2 bg-error text-on-error rounded-lg font-bold hover:bg-error/90 transition-colors flex items-center gap-2 disabled:opacity-50 text-sm whitespace-nowrap"
+                    >
+                      {submitting ? <Loader2 size={14} className="animate-spin" /> : null}
+                      提交投票 ({selectedCount})
+                    </button>
+                  )}
+                </>
+              )}
             </div>
+          </div>
+          
+          {/* 搜索栏 */}
+          <div className="relative px-4">
+            <Search size={16} className="absolute left-7 top-1/2 -translate-y-1/2 text-on-surface-variant/50" />
+            <input
+              type="text"
+              placeholder="搜索项目、关键词或作者..."
+              value={localSearch}
+              onChange={e => setLocalSearch(e.target.value)}
+              className="w-full bg-surface-container-low border border-outline-variant/30 rounded-lg pl-10 pr-4 py-2.5 text-sm focus:border-primary focus:outline-none transition-colors"
+            />
           </div>
         </div>
         
+        {/* 表格 - 统一结构：排名 | 项目 | 关键词 | 赛道 | 作者 | 票数(可选) | 投票 */}
         <table className="w-full text-left">
           <thead className="bg-surface-container-low/50">
             <tr>
-              <th className="py-3 px-4 text-[10px] uppercase tracking-widest text-on-surface-variant font-semibold w-14">排名</th>
-              <th className="py-3 px-4 text-[10px] uppercase tracking-widest text-on-surface-variant font-semibold">项目</th>
-              <th className="py-3 px-4 text-[10px] uppercase tracking-widest text-on-surface-variant font-semibold">作者</th>
-              <th className="py-3 px-4 text-[10px] uppercase tracking-widest text-on-surface-variant font-semibold text-right w-20">得分</th>
-              <th className="py-3 px-4 text-[10px] uppercase tracking-widest text-on-surface-variant font-semibold text-right w-24">操作</th>
+              {showResults && (
+                <th className="py-3 px-2 text-xs uppercase tracking-widest text-on-surface-variant font-semibold text-center w-[6%] min-w-[50px]">排名</th>
+              )}
+              <th className="py-3 px-4 text-xs uppercase tracking-widest text-on-surface-variant font-semibold w-[26%]">项目</th>
+              <th className="py-3 px-4 text-xs uppercase tracking-widest text-on-surface-variant font-semibold w-[24%]">关键词</th>
+              <th className="py-3 px-4 text-xs uppercase tracking-widest text-on-surface-variant font-semibold w-[10%]">赛道</th>
+              <th className="py-3 px-4 text-xs uppercase tracking-widest text-on-surface-variant font-semibold w-[16%]">作者</th>
+              {showResults && (
+                <th className="py-3 px-4 text-xs uppercase tracking-widest text-on-surface-variant font-semibold text-right w-[8%] min-w-[60px]">票数</th>
+              )}
+              <th className="py-3 pr-4 text-xs uppercase tracking-widest text-on-surface-variant font-semibold text-right w-[104px] box-border">
+                {hasSubmitted ? '状态' : '选择'}
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-outline-variant/10">
-            {data.length === 0 ? (
+            {filteredData.length === 0 ? (
               <tr>
-                <td colSpan={5} className="py-8 text-center text-on-surface-variant text-sm">
-                  暂无项目
+                <td colSpan={showResults ? 7 : 5} className="py-8 text-center text-on-surface-variant text-sm">
+                  {localSearch.trim() ? '没有找到匹配的项目' : '暂无项目'}
                 </td>
               </tr>
             ) : (
-              data.map((item, index) => (
+              filteredData.map((item, index) => (
                 <tr key={item.id} className="hover:bg-surface-container-low/30 transition-colors">
+                  {/* 排名 - 只有 Top 10 才显示 */}
+                  {showResults && (
+                    <td className="py-3 px-2 text-center">
+                      {rankMap.has(item.id) ? (
+                        rankMap.get(item.id)! <= 3 ? (
+                          <span className={`
+                            inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold
+                            ${rankMap.get(item.id) === 1 ? 'bg-yellow-500/20 text-yellow-700' : ''}
+                            ${rankMap.get(item.id) === 2 ? 'bg-gray-400/20 text-gray-600' : ''}
+                            ${rankMap.get(item.id) === 3 ? 'bg-orange-600/20 text-orange-700' : ''}
+                          `}>
+                            {rankMap.get(item.id)}
+                          </span>
+                        ) : (
+                          <span className="text-xs text-on-surface-variant/50">{rankMap.get(item.id)}</span>
+                        )
+                      ) : null}
+                    </td>
+                  )}
+                  
+                  {/* 项目名 + 一句话概括 */}
                   <td className="py-3 px-4">
+                    <div className="font-medium text-on-surface text-base truncate">{item.name}</div>
+                    <div className="text-sm text-on-surface-variant/70 line-clamp-1 mt-0.5">{item.summary}</div>
+                  </td>
+                  
+                  {/* 关键词 */}
+                  <td className="py-3 px-4">
+                    {item.keywords ? (
+                      <div className="flex flex-wrap gap-1">
+                        {item.keywords.split(/[\u3001,,，]/).slice(0, 3).map((kw, i) => (
+                          <span key={i} className="text-xs px-1.5 py-0.5 bg-surface-container-high text-on-surface-variant rounded">
+                            {kw.trim()}
+                          </span>
+                        ))}
+                        {item.keywords.split(/[\u3001,,，]/).length > 3 && (
+                          <span className="text-xs text-on-surface-variant/50">+</span>
+                        )}
+                      </div>
+                    ) : (
+                      <span className="text-xs text-on-surface-variant/30">-</span>
+                    )}
+                  </td>
+                  
+                  {/* 赛道 */}
+                  <td className="py-3 px-4">
+                    <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+                      item.track === 'optimizer' 
+                        ? 'bg-secondary/10 text-secondary' 
+                        : 'bg-tertiary/10 text-tertiary'
+                    }`}>
+                      {item.track === 'optimizer' ? 'Optimizer' : 'Builder'}
+                    </span>
+                  </td>
+                  
+                  {/* 作者 - 显示部门，双人字体一样大 */}
+                  <td className="py-3 px-4 text-sm text-on-surface-variant">
+                    {/* 第一作者 */}
                     <div className="flex items-center gap-1">
-                      <span className={`font-headline text-base font-bold ${
-                        index < 3 ? 'text-secondary' : 'text-on-surface/40'
-                      }`}>
-                        {String(index + 1).padStart(2, '0')}
-                      </span>
-                      {index === 0 && <Star size={14} className="text-secondary fill-secondary" />}
+                      <span className="truncate">{item.submitter1_name}</span>
+                      <span className="text-on-surface-variant/40 text-xs">{item.submitter1_dept}</span>
                     </div>
+                    {/* 第二作者（如果有）- 字体一样大 */}
+                    {item.submitter2_name && (
+                      <div className="flex items-center gap-1 mt-0.5">
+                        <span className="truncate">{item.submitter2_name}</span>
+                        <span className="text-on-surface-variant/40 text-xs">{item.submitter2_dept || ''}</span>
+                      </div>
+                    )}
                   </td>
-                  <td className="py-3 px-4">
-                    <div className="font-medium text-on-surface text-sm">{item.name}</div>
-                    <div className="text-xs text-on-surface-variant/70 line-clamp-1 mt-0.5">{item.summary}</div>
-                  </td>
-                  <td className="py-3 px-4 text-on-surface-variant text-sm">
-                    {item.submitter1_name}
-                    {item.submitter2_name && <span className="text-outline text-xs"> +{item.submitter2_name}</span>}
-                  </td>
-                  <td className="py-3 px-4 text-right font-headline font-semibold text-sm">
-                    {item.score}
-                    <span className="text-[10px] text-on-surface-variant/60 ml-1">({item.vote_count}票)</span>
-                  </td>
-                  <td className="py-3 px-4 text-right">
-                    <VoteButton item={item} voteType={voteType} maxVotes={maxVotes} />
+                  
+                  {/* 票数 - 只有 Top 10 才显示 */}
+                  {showResults && (
+                    <td className="py-3 px-4 text-right font-headline font-semibold text-sm">
+                      {rankMap.has(item.id) ? `${item.vote_count}票` : ''}
+                    </td>
+                  )}
+                  
+                  {/* 投票按钮 */}
+                  <td className="py-3 pr-4 pl-2">
+                    <div className="flex justify-end">
+                      <SelectButton item={item} voteType={voteType} maxVotes={maxVotes} />
+                    </div>
                   </td>
                 </tr>
               ))
             )}
           </tbody>
         </table>
-      </section>
-    );
-  }
-
-  function SpecialAwardSection({
-    awardId,
-    award,
-    data,
-  }: {
-    awardId: string;
-    award: typeof SPECIAL_AWARDS[keyof typeof SPECIAL_AWARDS];
-    data: LeaderboardItem[];
-  }) {
-    const maxVotes = award.maxVotes;
-    const votesUsed = getVotesUsed(awardId, maxVotes);
-    const votesRemaining = maxVotes - votesUsed;
-
-    return (
-      <section className="bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm border border-outline-variant/10">
-        <div className="p-5 border-b border-outline-variant/10 bg-gradient-to-r from-primary/5 to-transparent">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="font-headline text-lg font-bold">{award.labelCn}</h3>
-              <p className="text-xs text-on-surface-variant mt-0.5">{award.description}</p>
-            </div>
-            <div className="text-right">
-              <span className="text-xs text-on-surface-variant">
-                剩余: <span className={`font-bold ${votesRemaining > 0 ? 'text-secondary' : 'text-outline'}`}>{votesRemaining}</span>/{maxVotes}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <div className="max-h-[400px] overflow-y-auto">
-          <table className="w-full text-left">
-            <thead className="bg-surface-container-low/50 sticky top-0">
-              <tr>
-                <th className="py-2 px-4 text-[10px] uppercase tracking-widest text-on-surface-variant font-semibold w-12">#</th>
-                <th className="py-2 px-4 text-[10px] uppercase tracking-widest text-on-surface-variant font-semibold">项目</th>
-                <th className="py-2 px-4 text-[10px] uppercase tracking-widest text-on-surface-variant font-semibold">赛道</th>
-                <th className="py-2 px-4 text-[10px] uppercase tracking-widest text-on-surface-variant font-semibold text-right w-16">得分</th>
-                <th className="py-2 px-4 text-[10px] uppercase tracking-widest text-on-surface-variant font-semibold text-right w-20">投票</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-outline-variant/10">
-              {data.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="py-6 text-center text-on-surface-variant text-sm">
-                    暂无项目
-                  </td>
-                </tr>
-              ) : (
-                data.map((item, index) => (
-                  <tr key={item.id} className="hover:bg-surface-container-low/30 transition-colors">
-                    <td className="py-2.5 px-4">
-                      <span className={`font-headline text-sm font-bold ${
-                        index === 0 ? 'text-secondary' : 'text-on-surface/40'
-                      }`}>
-                        {index + 1}
-                      </span>
-                    </td>
-                    <td className="py-2.5 px-4">
-                      <div className="font-medium text-on-surface text-sm">{item.name}</div>
-                      <div className="text-[10px] text-on-surface-variant/70 line-clamp-1">{item.submitter1_name}</div>
-                    </td>
-                    <td className="py-2.5 px-4">
-                      <span className={`text-[10px] px-2 py-0.5 rounded-full ${
-                        item.track === 'optimizer' 
-                          ? 'bg-secondary/10 text-secondary' 
-                          : 'bg-tertiary/10 text-tertiary'
-                      }`}>
-                        {item.track === 'optimizer' ? 'Optimizer' : 'Builder'}
-                      </span>
-                    </td>
-                    <td className="py-2.5 px-4 text-right font-headline font-semibold text-sm">
-                      {item.score}
-                    </td>
-                    <td className="py-2.5 px-4 text-right">
-                      <VoteButton item={item} voteType={awardId} maxVotes={maxVotes} />
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+        
       </section>
     );
   }
@@ -419,58 +548,123 @@ export default function LeaderboardPage() {
     );
   }
 
+  // 计算总的选择数量
+  const totalSelected = selectedVotes.length;
+  const hasAnyVotes = myVotes.length > 0;
+
   return (
-    <div className="p-12 max-w-6xl">
+    <div className="px-12 pt-4 pb-12">
       {/* Header */}
-      <header className="mb-8">
-        <div className="flex items-center gap-3 mb-4">
-          <Trophy size={32} className="text-secondary" />
-          <h2 className="font-headline text-4xl font-bold tracking-tight text-on-surface">投票评选</h2>
+      <header className="flex-shrink-0 mb-8 pt-4 pb-2">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="font-headline text-4xl font-bold tracking-tight text-on-surface">Demo Leaderboard</h2>
+          </div>
+          {/* 切换显示结果（仅已投票用户可用） */}
+          {hasAnyVotes && (
+            <span className="text-xs text-on-surface-variant/60">
+              已投票 {myVotes.length} 个奖项
+            </span>
+          )}
         </div>
-        <p className="text-on-surface-variant text-base max-w-2xl leading-relaxed">
-          最佳Demo奖每个赛道可投2票，专项奖每个奖项可投1票。评委投票权重为2票。
-        </p>
-        {/* 投票状态提示 */}
-        {votingStatus && !votingStatus.isVotingOpen && (
-          <div className="mt-4 p-4 bg-error-container rounded-lg text-on-error-container">
-            <div className="flex items-start gap-3">
-              <Lock size={20} className="mt-0.5 flex-shrink-0" />
-              <div>
-                <p className="font-medium">投票暂未开始</p>
-                <p className="text-sm text-on-error-container/80 mt-1">{votingStatus.notice}</p>
-              </div>
-            </div>
-          </div>
-        )}
-        {!user && votingStatus?.isVotingOpen && (
-          <div className="mt-4 p-3 bg-surface-container-low rounded-lg text-sm text-on-surface-variant inline-block">
-            👀 您当前以游客身份浏览，<a href="/" className="text-primary hover:underline">登录</a>后可参与投票
-          </div>
-        )}
       </header>
 
-      {/* Tab Navigation */}
-      <div className="flex gap-2 mb-8 p-1 bg-surface-container-low rounded-xl w-fit">
-        <button
-          onClick={() => setActiveTab('best')}
-          className={`px-6 py-2.5 rounded-lg text-sm font-bold transition-all ${
-            activeTab === 'best'
-              ? 'bg-primary text-on-primary shadow-sm'
-              : 'text-on-surface-variant hover:text-on-surface'
-          }`}
-        >
-          🏆 最佳Demo奖
-        </button>
-        <button
-          onClick={() => setActiveTab('special')}
-          className={`px-6 py-2.5 rounded-lg text-sm font-bold transition-all ${
-            activeTab === 'special'
-              ? 'bg-primary text-on-primary shadow-sm'
-              : 'text-on-surface-variant hover:text-on-surface'
-          }`}
-        >
-          ⭐ 专项奖
-        </button>
+      {/* 投票规则 */}
+      <div className="mb-8 p-4 bg-surface-container-low rounded-xl border border-outline-variant/20">
+        <h3 className="text-sm font-bold text-on-surface mb-2">投票规则</h3>
+        <ol className="list-decimal list-inside space-y-1 text-sm text-on-surface-variant">
+          <li>最佳Demo奖分为2个赛道，每个赛道每人3票，选出前3名；专项奖不分赛道，每人1票，选出第1名；评委每票拥有2倍的权重（=2票）</li>
+          <li>每个奖单独投票，投票后将无法修改，请确认后提交；提交后可以查看前10名的得票情况</li>
+        </ol>
+      </div>
+
+      {/* 投票状态提示 */}
+      {votingStatus && !votingStatus.isVotingOpen && (
+        <div className="mb-8 p-4 bg-error-container rounded-lg text-on-error-container">
+          <div className="flex items-start gap-3">
+            <Lock size={20} className="mt-0.5 flex-shrink-0" />
+            <div>
+              <p className="font-medium">投票暂未开始</p>
+              <p className="text-sm text-on-error-container/80 mt-1">{votingStatus.notice}</p>
+            </div>
+          </div>
+        </div>
+      )}
+      {!user && votingStatus?.isVotingOpen && (
+        <div className="mb-8 p-3 bg-surface-container-low rounded-lg text-sm text-on-surface-variant inline-block">
+          👀 您当前以游客身份浏览，<a href="/" className="text-primary hover:underline">登录</a>后可参与投票
+        </div>
+      )}
+
+
+      {/* Tab 栏 - 一行平铺，带分类标签 */}
+      <div className="flex items-center gap-6 mb-8 flex-wrap">
+        {/* 最佳 Demo 奖组 */}
+        <div className="flex items-center gap-3">
+          <span className="text-xs font-bold text-on-surface-variant/60 uppercase tracking-wider whitespace-nowrap">🏆 最佳 Demo 奖</span>
+          <div className="flex gap-1 p-1 bg-surface-container-low rounded-xl">
+            <button
+              onClick={() => setActiveTab('optimizer')}
+              className={`px-5 py-2.5 rounded-lg text-sm font-bold transition-all ${
+                activeTab === 'optimizer'
+                  ? 'bg-primary text-on-primary shadow-sm'
+                  : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high'
+              }`}
+            >
+              ⚡ Optimizer
+            </button>
+            <button
+              onClick={() => setActiveTab('builder')}
+              className={`px-5 py-2.5 rounded-lg text-sm font-bold transition-all ${
+                activeTab === 'builder'
+                  ? 'bg-primary text-on-primary shadow-sm'
+                  : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high'
+              }`}
+            >
+              🛠️ Builder
+            </button>
+          </div>
+        </div>
+
+        {/* 分隔线 */}
+        <div className="w-px h-8 bg-outline-variant/30"></div>
+
+        {/* 专项奖组 */}
+        <div className="flex items-center gap-3">
+          <span className="text-xs font-bold text-on-surface-variant/60 uppercase tracking-wider whitespace-nowrap">⭐ 专项奖</span>
+          <div className="flex gap-1 p-1 bg-surface-container-low rounded-xl">
+            <button
+              onClick={() => setActiveTab('special_brain')}
+              className={`px-5 py-2.5 rounded-lg text-sm font-bold transition-all ${
+                activeTab === 'special_brain'
+                  ? 'bg-primary text-on-primary shadow-sm'
+                  : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high'
+              }`}
+            >
+              🧠 最脑洞
+            </button>
+            <button
+              onClick={() => setActiveTab('special_infectious')}
+              className={`px-5 py-2.5 rounded-lg text-sm font-bold transition-all ${
+                activeTab === 'special_infectious'
+                  ? 'bg-primary text-on-primary shadow-sm'
+                  : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high'
+              }`}
+            >
+              🔥 最感染力
+            </button>
+            <button
+              onClick={() => setActiveTab('special_useful')}
+              className={`px-5 py-2.5 rounded-lg text-sm font-bold transition-all ${
+                activeTab === 'special_useful'
+                  ? 'bg-primary text-on-primary shadow-sm'
+                  : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high'
+              }`}
+            >
+              💎 最实用
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Message Toast */}
@@ -483,62 +677,57 @@ export default function LeaderboardPage() {
         </div>
       )}
 
-      {/* Best Demo Awards */}
-      {activeTab === 'best' && (
-        <div className="grid grid-cols-1 gap-8">
-          <BestDemoSection 
-            title="最佳 Demo - Optimizer 赛道" 
-            subtitle="评选前3名"
+      {/* 当前选中的奖项 */}
+      <div>
+        {activeTab === 'optimizer' && (
+          <VoteSection 
+            title="🏆 最佳 Demo 奖 - Optimizer 赛道"
+            description="选出3个你认为综合表现最好的项目（综合项目创意、展现效果、落地应用等）"
             data={optimizerData} 
             voteType="best_optimizer"
             maxVotes={BEST_DEMO_AWARDS.best_optimizer.maxVotes}
-            accentColor="secondary"
           />
-          
-          <BestDemoSection 
-            title="最佳 Demo - Builder 赛道" 
-            subtitle="评选前3名"
+        )}
+        
+        {activeTab === 'builder' && (
+          <VoteSection 
+            title="🏆 最佳 Demo 奖 - Builder 赛道" 
+            description="选出3个你认为综合表现最好的项目（综合项目创意、展现效果、落地应用等）"
             data={builderData} 
             voteType="best_builder"
             maxVotes={BEST_DEMO_AWARDS.best_builder.maxVotes}
-            accentColor="tertiary"
           />
-        </div>
-      )}
+        )}
 
-      {/* Special Awards */}
-      {activeTab === 'special' && (
-        <div className="grid grid-cols-1 gap-6">
-          {Object.entries(SPECIAL_AWARDS).map(([awardId, award]) => (
-            <SpecialAwardSection
-              key={awardId}
-              awardId={awardId}
-              award={award}
-              data={specialData[awardId] || []}
-            />
-          ))}
-        </div>
-      )}
-
-      {/* Legend */}
-      <div className="mt-12 pt-8 border-t border-outline-variant/20">
-        <div className="flex flex-wrap items-center gap-6 text-xs text-on-surface-variant">
-          <div className="flex items-center gap-2">
-            <span className="w-3 h-3 rounded-full bg-secondary"></span>
-            <span>已投票</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="w-3 h-3 rounded-full bg-primary"></span>
-            <span>可投票</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Star size={14} className="text-secondary fill-secondary" />
-            <span>当前第一</span>
-          </div>
-          <div className="ml-auto text-on-surface-variant/60">
-            评委投票权重 = 2票
-          </div>
-        </div>
+        {activeTab === 'special_brain' && (
+          <VoteSection
+            title={SPECIAL_AWARDS.special_brain.labelCn}
+            description={SPECIAL_AWARDS.special_brain.description}
+            data={specialData.special_brain || []}
+            voteType="special_brain"
+            maxVotes={SPECIAL_AWARDS.special_brain.maxVotes}
+          />
+        )}
+        
+        {activeTab === 'special_infectious' && (
+          <VoteSection
+            title={SPECIAL_AWARDS.special_infectious.labelCn}
+            description={SPECIAL_AWARDS.special_infectious.description}
+            data={specialData.special_infectious || []}
+            voteType="special_infectious"
+            maxVotes={SPECIAL_AWARDS.special_infectious.maxVotes}
+          />
+        )}
+        
+        {activeTab === 'special_useful' && (
+          <VoteSection
+            title={SPECIAL_AWARDS.special_useful.labelCn}
+            description={SPECIAL_AWARDS.special_useful.description}
+            data={specialData.special_useful || []}
+            voteType="special_useful"
+            maxVotes={SPECIAL_AWARDS.special_useful.maxVotes}
+          />
+        )}
       </div>
     </div>
   );
