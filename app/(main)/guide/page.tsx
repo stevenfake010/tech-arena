@@ -42,7 +42,7 @@ export default function GuidePage() {
       <section className="mb-12">
         <SectionTitle>选择你的赛道</SectionTitle>
         <p className="text-base text-on-surface-variant mb-5">
-          每人不限制赛道数量、不限制提交 Demo 数量，欢迎大家踊跃提交
+          每人不限制赛道数量、不限制提交 Demo 数量，欢迎大家踊跃提交。
         </p>
         <div className="grid grid-cols-2 gap-4">
 
