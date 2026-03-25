@@ -536,7 +536,7 @@ export default function SubmitModal({ onClose }: SubmitModalProps) {
                 </label>
                 <input
                   className="w-full bg-surface-container-low border-0 border-b-2 border-outline focus:border-primary focus:ring-0 px-1 py-3 text-base transition-colors placeholder:text-outline-variant/50"
-                  placeholder="例如：PMO、数据分析、社区、电商等"
+                  placeholder="例如：PMO、数据分析、社区、电商等（可用顿号或逗号分隔）"
                   value={form.keywords}
                   onChange={e => updateField('keywords', e.target.value)}
                 />
