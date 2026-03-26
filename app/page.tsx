@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { pinyin } from 'pinyin-pro';
 import { LanguageProvider, useLanguage } from '@/components/LanguageProvider';
+import { mutate } from 'swr';
 // import LanguageSwitcher from '@/components/LanguageSwitcher';
 
 interface UserOption {
@@ -78,6 +79,8 @@ function EntryPortalContent() {
         setError(data.error || t.login.errorNetwork);
         return;
       }
+      // 登录成功后立即刷新 SWR 缓存，确保 Sidebar/Layout 立刻显示登录态
+      await mutate('/api/auth/me');
       router.push('/guide');
     } catch {
       setError(t.login.errorNetwork);
@@ -201,8 +204,9 @@ function EntryPortalContent() {
               <button
                 type="button"
                 onClick={async () => {
-                  // 调用 logout API 清除 httpOnly cookie
+                  // 调用 logout API 清除 httpOnly cookie，并刷新 SWR 缓存
                   await fetch('/api/auth/logout', { method: 'POST' });
+                  await mutate('/api/auth/me', null, false); // 立即将缓存置为 null（游客）
                   router.push('/guide');
                 }}
                 className="w-full py-3 px-8 flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors text-sm"

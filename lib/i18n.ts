@@ -9,7 +9,7 @@ export const translations = {
       gallery: 'Demo总览',
       leaderboard: 'Demo投票',
       square: '留言广场',
-      myDemos: '我的 Demo',
+      myDemos: '我的Demo',
       submit: '提交 Demo',
       login: '登录',
       guest: '游客',

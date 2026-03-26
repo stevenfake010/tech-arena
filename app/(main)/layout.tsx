@@ -2,25 +2,21 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import dynamic from 'next/dynamic';
 import Sidebar from '@/components/sidebar/Sidebar';
-import SubmitModal from '@/components/submit/SubmitModal';
 import { LanguageProvider } from '@/components/LanguageProvider';
-// import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { AlertCircle } from 'lucide-react';
+import { useUser } from '@/lib/hooks/useUser';
+
+// 懒加载 SubmitModal — 包含 pinyin-pro 和 react-markdown，体积大，用户不一定会打开
+const SubmitModal = dynamic(() => import('@/components/submit/SubmitModal'), { ssr: false });
 
 function MainLayoutContent({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const [showSubmit, setShowSubmit] = useState(false);
   const [submitTrack, setSubmitTrack] = useState<'optimizer' | 'builder' | undefined>(undefined);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
-  const [user, setUser] = useState<any>(null);
-
-  useEffect(() => {
-    fetch('/api/auth/me')
-      .then(r => r.json())
-      .then(d => setUser(d.user))
-      .catch(() => {});
-  }, []);
+  const { user } = useUser();
 
   // 监听来自页面的提交 Demo 事件，支持传入初始赛道
   useEffect(() => {
@@ -45,18 +41,14 @@ function MainLayoutContent({ children }: { children: React.ReactNode }) {
     <div className="h-screen overflow-hidden bg-surface">
       <Sidebar onSubmitClick={() => handleSubmitClick()} />
       <main className="ml-64 h-screen overflow-y-auto custom-scrollbar bg-surface relative">
-        {/* 语言切换按钮 - 暂时隐藏 */}
-        {/* <div className="absolute top-4 right-4 z-40">
-          <LanguageSwitcher />
-        </div> */}
         <div className="min-h-full pt-6">
           {children}
         </div>
       </main>
-      
-      {/* 提交弹窗 */}
+
+      {/* 提交弹窗 - 懒加载 */}
       {showSubmit && <SubmitModal onClose={() => setShowSubmit(false)} initialTrack={submitTrack} />}
-      
+
       {/* 登录提示弹窗 */}
       {showLoginPrompt && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-on-surface/50 backdrop-blur-sm">

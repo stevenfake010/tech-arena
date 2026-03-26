@@ -39,7 +39,14 @@ export async function GET() {
     submitter_department: d.submitter?.department,
   })) || [];
 
-  return NextResponse.json({ demos: formattedDemos });
+  return NextResponse.json(
+    { demos: formattedDemos },
+    {
+      headers: {
+        'Cache-Control': 'private, max-age=30, stale-while-revalidate=60',
+      },
+    }
+  );
 }
 
 export async function POST(request: Request) {

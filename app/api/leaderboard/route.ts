@@ -14,14 +14,17 @@ export async function GET(request: Request) {
 
   let demos: any[] = [];
 
+  // 只查询 leaderboard 需要的字段，减少数据传输
+  const selectFields = 'id, name, summary, track, submitter1_name, submitter1_dept, submitter2_name, submitter2_dept, keywords, submitted_by';
+
   if (isBestDemo) {
     // 最佳Demo奖：只获取对应赛道的项目
     const track = BEST_DEMO_AWARDS[voteType as keyof typeof BEST_DEMO_AWARDS].track;
     const { data, error } = await supabase
       .from('demos')
-      .select('*')
+      .select(selectFields)
       .eq('track', track) as { data: any[]; error: any };
-    
+
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
@@ -30,8 +33,8 @@ export async function GET(request: Request) {
     // 专项奖：获取所有项目（不分赛道）
     const { data, error } = await supabase
       .from('demos')
-      .select('*') as { data: any[]; error: any };
-    
+      .select(selectFields) as { data: any[]; error: any };
+
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
@@ -93,5 +96,12 @@ export async function GET(request: Request) {
   // 按拼音排序（前端会根据投票状态重新排序）
   leaderboard.sort((a, b) => a.name.localeCompare(b.name, 'zh-CN'));
 
-  return NextResponse.json({ leaderboard });
+  return NextResponse.json(
+    { leaderboard },
+    {
+      headers: {
+        'Cache-Control': 'private, max-age=15, stale-while-revalidate=30',
+      },
+    }
+  );
 }

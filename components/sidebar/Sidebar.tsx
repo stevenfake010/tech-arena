@@ -2,35 +2,15 @@
 
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
 import { Compass, LayoutGrid, Trophy, MessageSquare, Plus, LogIn, LogOut, FolderOpen } from 'lucide-react';
 import { useLanguage } from '@/components/LanguageProvider';
-
-interface User {
-  id: number;
-  name: string;
-  department: string;
-  role: string;
-}
+import { useUser } from '@/lib/hooks/useUser';
 
 export default function Sidebar({ onSubmitClick }: { onSubmitClick: () => void }) {
   const pathname = usePathname();
   const router = useRouter();
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { user, isLoading: loading, mutate } = useUser();
   const { t } = useLanguage();
-
-  useEffect(() => {
-    fetch('/api/auth/me')
-      .then(r => r.json())
-      .then(d => {
-        setUser(d.user);
-        setLoading(false);
-      })
-      .catch(() => {
-        setLoading(false);
-      });
-  }, []);
 
   const NAV_ITEMS = [
     { href: '/guide', label: t.nav.guide, icon: Compass },
@@ -50,12 +30,12 @@ export default function Sidebar({ onSubmitClick }: { onSubmitClick: () => void }
 
   const handleLogout = async () => {
     await fetch('/api/auth/logout', { method: 'POST' });
-    setUser(null);
+    mutate(null, false); // 立即更新缓存，不重新请求
     router.push('/');
   };
 
   return (
-    <aside className="h-screen w-64 fixed left-0 top-0 bg-[#f3f4ee] flex flex-col py-8 px-6 gap-y-4 z-50">
+    <aside className="h-screen w-64 fixed left-0 top-0 bg-[#f3f4ee] flex flex-col pt-10 pb-8 px-6 gap-y-4 z-50">
       {/* Branding */}
       <div className="mb-8 px-2">
         <h1 className="text-3xl font-headline font-bold text-on-surface leading-tight">AI Demo Day</h1>
@@ -110,7 +90,7 @@ export default function Sidebar({ onSubmitClick }: { onSubmitClick: () => void }
         )}
       </div>
 
-      {/* User Info - 已登录显示用户信息和退出按钮，未登录显示游客状态 */}
+      {/* User Info */}
       <div className="px-4">
         {loading ? (
           <div className="text-xs text-on-surface-variant">Loading...</div>

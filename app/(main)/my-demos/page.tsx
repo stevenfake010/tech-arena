@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Edit2, Trash2, User, AlertCircle, X, Check, Loader2, Zap, Hammer, Plus, Upload, CheckCircle, FileVideo, Eye, Edit3 } from 'lucide-react';
 import { pinyin } from 'pinyin-pro';
 import ReactMarkdown from 'react-markdown';
+import { useUser } from '@/lib/hooks/useUser';
 
 interface Demo {
   id: number;
@@ -33,9 +34,9 @@ interface UserOption {
 
 export default function MyDemosPage() {
   const router = useRouter();
+  const { user, isLoading: userLoading } = useUser();
   const [demos, setDemos] = useState<Demo[]>([]);
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState<any>(null);
   const [editingDemo, setEditingDemo] = useState<Demo | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<number | null>(null);
   const [users, setUsers] = useState<UserOption[]>([]);
@@ -119,13 +120,16 @@ export default function MyDemosPage() {
     return url.match(/\.(mp4|mov|webm|avi)$/i);
   }
 
+  // 当用户信息加载完成后，获取 demos 和用户列表
   useEffect(() => {
-    // 并行执行认证检查和用户列表获取
-    Promise.all([
-      checkAuth(),
-      fetchUsers()
-    ]);
-  }, []);
+    if (userLoading) return;
+    if (!user) {
+      router.push('/');
+      return;
+    }
+    fetchMyDemos();
+    fetchUsers();
+  }, [user, userLoading]);
 
   // 点击外部关闭下拉框
   useEffect(() => {
@@ -143,20 +147,7 @@ export default function MyDemosPage() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  async function checkAuth() {
-    try {
-      const res = await fetch('/api/auth/me');
-      const data = await res.json();
-      if (!data.user) {
-        router.push('/');
-        return;
-      }
-      setUser(data.user);
-      fetchMyDemos();
-    } catch (error) {
-      router.push('/');
-    }
-  }
+  // checkAuth removed — user comes from useUser() SWR hook
 
   async function fetchMyDemos() {
     try {
@@ -911,11 +902,11 @@ export default function MyDemosPage() {
 
   // 列表模式
   return (
-    <div className="p-12 max-w-4xl">
+    <div className="px-12 pb-12 max-w-4xl">
       {/* Header */}
-      <header className="mb-8">
+      <header className="mb-8 pt-4">
         <div>
-          <h2 className="font-headline text-4xl font-bold tracking-tight text-on-surface">我的 Demo</h2>
+          <h2 className="font-headline text-4xl font-bold tracking-tight text-on-surface">My Demo</h2>
           <p className="text-lg text-on-surface-variant mt-2">
             管理你提交或参与创作的 Demo
           </p>

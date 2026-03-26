@@ -21,7 +21,7 @@ export default function GuidePage() {
   }
 
   return (
-    <div className="px-10 pt-8 pb-16 max-w-5xl">
+    <div className="px-10 pt-4 pb-16 max-w-5xl">
 
       {/* ── Header ── */}
       <header className="mb-12 pb-8 border-b border-outline-variant/20">

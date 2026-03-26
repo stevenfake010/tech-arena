@@ -1,8 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { ArrowUp, AlertCircle, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import useSWR from 'swr';
+import { useUser } from '@/lib/hooks/useUser';
 
 interface Message {
   id: number;
@@ -17,43 +19,31 @@ interface Message {
   hasUpvoted?: boolean;
 }
 
+const messagesFetcher = (url: string) => fetch(url).then(r => r.json()).then(d => d.messages || []);
+
 export default function SquarePage() {
-  const [messages, setMessages] = useState<Message[]>([]);
+  const { user } = useUser();
+  const { data: messages = [], mutate: mutateMessages, isLoading: loading } = useSWR<Message[]>(
+    '/api/messages',
+    messagesFetcher,
+    {
+      revalidateOnFocus: false,
+      dedupingInterval: 10000,
+    }
+  );
+
   const [newContent, setNewContent] = useState('');
   const [newTitle, setNewTitle] = useState('');
-  const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [user, setUser] = useState<any>(null);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const [sortOrder, setSortOrder] = useState<'time' | 'hot'>('time');
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<number | null>(null);
 
-  useEffect(() => {
-    // 并行获取用户信息和消息列表
-    Promise.all([
-      fetch('/api/auth/me').then(r => r.json()).then(d => setUser(d.user)).catch(() => {}),
-      fetchMessages()
-    ]);
-  }, []);
-
-  async function fetchMessages() {
-    try {
-      const res = await fetch('/api/messages');
-      const data = await res.json();
-      setMessages(data.messages || []);
-    } catch (error) {
-      console.error('Failed to fetch messages:', error);
-    } finally {
-      setLoading(false);
-    }
-  }
-
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!newContent.trim()) return;
 
-    // 游客模式检查
     if (!user) {
       setShowLoginPrompt(true);
       return;
@@ -64,16 +54,16 @@ export default function SquarePage() {
       const res = await fetch('/api/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          title: newTitle || null, 
+        body: JSON.stringify({
+          title: newTitle || null,
           content: newContent,
-          category: null 
+          category: null
         }),
       });
       if (res.ok) {
         setNewContent('');
         setNewTitle('');
-        fetchMessages();
+        mutateMessages(); // SWR 重新请求
       }
     } catch (error) {
       console.error('Failed to post message:', error);
@@ -83,34 +73,52 @@ export default function SquarePage() {
   }
 
   async function handleUpvote(messageId: number) {
-    // 游客模式检查
     if (!user) {
       setShowLoginPrompt(true);
       return;
     }
 
+    // 判断当前是否已点赞，决定是 +1 还是 -1
+    const currentMessage = messages.find(m => m.id === messageId);
+    const alreadyUpvoted = currentMessage?.hasUpvoted ?? false;
+    const delta = alreadyUpvoted ? -1 : 1;
+
+    // 乐观更新：先在本地更新计数和状态
+    mutateMessages(
+      (current) => current?.map(m =>
+        m.id === messageId
+          ? { ...m, upvote_count: m.upvote_count + delta, hasUpvoted: !alreadyUpvoted }
+          : m
+      ),
+      false // 不触发重新请求，避免浏览器缓存覆盖乐观更新
+    );
+
     try {
-      const res = await fetch(`/api/messages/${messageId}/upvote`, {
-        method: 'POST',
-      });
-      if (res.ok) {
-        fetchMessages();
+      const res = await fetch(`/api/messages/${messageId}/upvote`, { method: 'POST' });
+      if (!res.ok) {
+        // 请求失败，回滚：重新从服务器获取真实数据
+        mutateMessages();
       }
+      // 成功时不立即 revalidate，让 SWR 在下次自然刷新时更新
+      // 避免因缓存时序问题导致计数闪烁
     } catch (error) {
       console.error('Failed to upvote:', error);
+      mutateMessages(); // 网络错误，回滚
     }
   }
 
   async function handleDelete(messageId: number) {
     if (!user) return;
-    
+
     setDeletingId(messageId);
     try {
-      const res = await fetch(`/api/messages/${messageId}`, {
-        method: 'DELETE',
-      });
+      const res = await fetch(`/api/messages/${messageId}`, { method: 'DELETE' });
       if (res.ok) {
-        fetchMessages();
+        // 乐观删除
+        mutateMessages(
+          (current) => current?.filter(m => m.id !== messageId),
+          false
+        );
         setShowDeleteConfirm(null);
       } else {
         const data = await res.json();
@@ -128,7 +136,7 @@ export default function SquarePage() {
     const date = new Date(dateString);
     const now = new Date();
     const diff = Math.floor((now.getTime() - date.getTime()) / 1000);
-    
+
     if (diff < 60) return '刚刚';
     if (diff < 3600) return `${Math.floor(diff / 60)}分钟前`;
     if (diff < 86400) return `${Math.floor(diff / 3600)}小时前`;
@@ -144,7 +152,7 @@ export default function SquarePage() {
   }
 
   return (
-    <div className="px-12 pt-4 pb-12 max-w-4xl">
+    <div className="px-12 pb-12 max-w-4xl">
       {/* Header */}
       <header className="flex-shrink-0 mb-8 pt-4 pb-2">
         <div>
@@ -256,14 +264,18 @@ export default function SquarePage() {
                     {message.title}
                   </h3>
                 )}
-                <p className="text-on-surface-variant text-lg leading-relaxed whitespace-pre-wrap chinese-text">
+                <p className="text-on-surface-variant text-base leading-relaxed whitespace-pre-wrap chinese-text">
                   {message.content}
                 </p>
               </div>
               <div className="flex flex-col items-center ml-6">
                 <button
                   onClick={() => handleUpvote(message.id)}
-                  className="w-12 h-12 rounded-xl border border-outline-variant/30 flex flex-col items-center justify-center hover:bg-surface-container-high transition-colors active:scale-95"
+                  className={`w-12 h-12 rounded-xl border flex flex-col items-center justify-center transition-all active:scale-95 ${
+                    message.hasUpvoted
+                      ? 'bg-secondary text-on-secondary border-secondary'
+                      : 'border-outline-variant/30 hover:bg-surface-container-high hover:border-secondary/40'
+                  }`}
                 >
                   <ArrowUp size={18} />
                   <span className="text-xs font-bold">{message.upvote_count}</span>
@@ -278,8 +290,8 @@ export default function SquarePage() {
       {/* Footer */}
       {messages.length > 0 && (
         <footer className="mt-12 pb-12 text-center">
-          <button 
-            onClick={fetchMessages}
+          <button
+            onClick={() => mutateMessages()}
             className="text-[10px] uppercase tracking-[0.3em] text-outline hover:text-on-surface transition-colors"
           >
             刷新列表
@@ -307,13 +319,13 @@ export default function SquarePage() {
 // 登录提示组件
 function LoginPrompt({ onClose }: { onClose: () => void }) {
   const router = useRouter();
-  
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-on-surface/50 backdrop-blur-sm">
       <div className="bg-surface-container-lowest rounded-xl p-6 max-w-sm w-full shadow-xl">
         <div className="flex items-center gap-3 mb-4 text-primary">
           <AlertCircle size={24} />
-          <h3 className="text-lg font-bold">需要登录</h3>
+          <h3 className="text-lg font-headline font-bold">需要登录</h3>
         </div>
         <p className="text-on-surface-variant mb-6">
           游客模式无法发表内容或点赞，请先登录。
@@ -344,7 +356,7 @@ function DeleteConfirm({ onClose, onConfirm, deleting }: { onClose: () => void; 
       <div className="bg-surface-container-lowest rounded-xl p-6 max-w-sm w-full shadow-xl">
         <div className="flex items-center gap-3 mb-4 text-error">
           <Trash2 size={24} />
-          <h3 className="text-lg font-bold">确认删除</h3>
+          <h3 className="text-lg font-headline font-bold">确认删除</h3>
         </div>
         <p className="text-on-surface-variant mb-6">
           删除后无法恢复，确定要删除这条留言吗？

@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { CheckCircle, Zap, Hammer, X, Upload, Plus, FileImage, FileVideo, Trash2, Eye, Edit3 } from 'lucide-react';
 import { pinyin } from 'pinyin-pro';
 import ReactMarkdown from 'react-markdown';
+import { useUser } from '@/lib/hooks/useUser';
 
 interface UserOption {
   id: number;
@@ -17,6 +18,7 @@ interface SubmitModalProps {
 }
 
 export default function SubmitModal({ onClose, initialTrack }: SubmitModalProps) {
+  const { user } = useUser();
   const [form, setForm] = useState({
     name: '',
     summary: '',
@@ -72,6 +74,15 @@ export default function SubmitModal({ onClose, initialTrack }: SubmitModalProps)
       })
       .catch(() => {});
   }, []);
+
+  // 自动填充登录用户为薯名1（只读）
+  useEffect(() => {
+    if (user) {
+      setQuery1(user.name);
+      setSelectedUser1({ id: user.id, name: user.name, department: user.department });
+      setForm(prev => ({ ...prev, submitter1_name: user.name, submitter1_dept: user.department }));
+    }
+  }, [user]);
 
   // 点击外部关闭下拉框
   useEffect(() => {
@@ -306,8 +317,7 @@ export default function SubmitModal({ onClose, initialTrack }: SubmitModalProps)
       >
         <div className="bg-surface-container-lowest rounded-xl shadow-lg p-16 text-center">
           <CheckCircle size={48} className="text-secondary mx-auto mb-4" />
-          <h2 className="font-headline text-3xl mb-2">Submitted!</h2>
-          <p className="text-on-surface-variant">Your evolution is now in the archive.</p>
+          <h2 className="font-headline text-3xl mb-2">提交成功</h2>
         </div>
       </div>
     );
@@ -433,54 +443,20 @@ export default function SubmitModal({ onClose, initialTrack }: SubmitModalProps)
                 </p>
               </div>
               
-              {/* Member 1 */}
+              {/* Member 1 - 自动填充为登录用户，只读 */}
               <div className="space-y-2">
                 <label className="block text-xs font-bold uppercase tracking-[0.12em] text-on-surface-variant">
                   薯名 1 *
                 </label>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="relative">
-                    <input
-                      ref={inputRef1}
-                      className="w-full bg-surface-container-low border-0 border-b-2 border-outline focus:border-primary focus:ring-0 px-1 py-3 text-base transition-colors placeholder:text-outline-variant/50 disabled:opacity-30"
-                      placeholder="输入薯名搜索..."
-                      value={query1}
-                      disabled={!form.track}
-                      onChange={e => {
-                        setQuery1(e.target.value);
-                        setSelectedUser1(null);
-                        setForm(prev => ({ ...prev, submitter1_name: '', submitter1_dept: '' }));
-                        setShowDropdown1(true);
-                      }}
-                      onFocus={() => form.track && setShowDropdown1(true)}
-                    />
-                    {showDropdown1 && filteredUsers1.length > 0 && (
-                      <div
-                        ref={dropdownRef1}
-                        className="absolute top-full left-0 right-0 mt-1 bg-white border border-surface-container-high shadow-xl max-h-48 overflow-y-auto z-50 rounded-lg"
-                      >
-                        {filteredUsers1.map(u => (
-                          <button
-                            key={u.id}
-                            type="button"
-                            className="w-full px-4 py-3 text-left hover:bg-surface-container-low transition-colors flex justify-between items-center"
-                            onClick={() => selectUser1(u)}
-                          >
-                            <span className="text-base font-medium text-on-surface">{u.name}</span>
-                            <span className="text-xs text-outline">{u.department}</span>
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                    {showDropdown1 && query1 && filteredUsers1.length === 0 && (
-                      <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-surface-container-high shadow-xl z-50 rounded-lg px-4 py-3 text-sm text-outline">
-                        未找到匹配用户
-                      </div>
-                    )}
-                  </div>
                   <input
                     className="w-full bg-surface-container-low/50 border-0 border-b-2 border-outline/30 px-1 py-3 text-base text-on-surface/70 cursor-not-allowed"
-                    placeholder="选择薯名后自动填充"
+                    value={query1}
+                    readOnly
+                  />
+                  <input
+                    className="w-full bg-surface-container-low/50 border-0 border-b-2 border-outline/30 px-1 py-3 text-base text-on-surface/70 cursor-not-allowed"
+                    placeholder="自动填充"
                     value={form.submitter1_dept}
                     readOnly
                   />
@@ -650,23 +626,23 @@ export default function SubmitModal({ onClose, initialTrack }: SubmitModalProps)
               
               {/* Keywords - Tag Input */}
               <div className="space-y-2">
-                <label className="block text-xs font-bold uppercase tracking-[0.12em] text-primary">
+                <label className={`block text-xs font-bold uppercase tracking-[0.12em] ${form.track === 'builder' ? 'text-tertiary' : 'text-primary'}`}>
                   KEY WORDS / 关键词（选填，最多10个）
                 </label>
-                
+
                 {/* 已添加的标签 */}
                 {keywordTags.length > 0 && (
                   <div className="flex flex-wrap gap-2 mb-2">
                     {keywordTags.map((tag, index) => (
                       <span
                         key={index}
-                        className="inline-flex items-center gap-1 px-2.5 py-1 bg-secondary/10 text-secondary text-sm rounded-full group"
+                        className={`inline-flex items-center gap-1 px-2.5 py-1 text-sm rounded-full group ${form.track === 'builder' ? 'bg-tertiary/10 text-tertiary' : 'bg-secondary/10 text-secondary'}`}
                       >
                         {tag}
                         <button
                           type="button"
                           onClick={() => removeKeywordTag(tag)}
-                          className="p-0.5 hover:bg-secondary/20 rounded-full transition-colors"
+                          className={`p-0.5 rounded-full transition-colors ${form.track === 'builder' ? 'hover:bg-tertiary/20' : 'hover:bg-secondary/20'}`}
                         >
                           <X size={12} />
                         </button>
@@ -674,12 +650,12 @@ export default function SubmitModal({ onClose, initialTrack }: SubmitModalProps)
                     ))}
                   </div>
                 )}
-                
+
                 {/* 输入框 */}
                 <div className="relative">
                   <input
                     ref={keywordInputRef}
-                    className="w-full bg-surface-container-low border-0 border-b-2 border-outline focus:border-primary focus:ring-0 px-1 py-3 pr-10 text-base transition-colors placeholder:text-outline-variant/50"
+                    className={`w-full bg-surface-container-low border-0 border-b-2 border-outline focus:ring-0 px-1 py-3 pr-10 text-base transition-colors placeholder:text-outline-variant/50 ${form.track === 'builder' ? 'focus:border-tertiary' : 'focus:border-primary'}`}
                     placeholder={keywordTags.length > 0 ? "继续输入关键词..." : "输入关键词后按回车添加"}
                     value={keywordInput}
                     onChange={e => setKeywordInput(e.target.value)}
@@ -689,7 +665,7 @@ export default function SubmitModal({ onClose, initialTrack }: SubmitModalProps)
                     <button
                       type="button"
                       onClick={addKeywordTag}
-                      className="absolute right-1 top-1/2 -translate-y-1/2 p-1.5 bg-primary text-on-primary rounded-full hover:opacity-90 transition-opacity"
+                      className={`absolute right-1 top-1/2 -translate-y-1/2 p-1.5 rounded-full hover:opacity-90 transition-opacity ${form.track === 'builder' ? 'bg-tertiary text-on-tertiary' : 'bg-primary text-on-primary'}`}
                     >
                       <Plus size={14} />
                     </button>
@@ -711,16 +687,18 @@ export default function SubmitModal({ onClose, initialTrack }: SubmitModalProps)
                 </label>
                 <p className="text-sm text-on-surface-variant/60">展示你的作品（Demo、文档、GitHub）</p>
               </div>
-              <input
-                className="w-full bg-surface-container-low border-0 border-b-2 border-outline focus:border-primary focus:ring-0 px-1 py-3 text-base transition-colors placeholder:text-outline-variant/50"
-                placeholder="Link to demo / doc / GitHub / 演示链接"
-                type="url"
-                value={form.demo_link}
-                onChange={e => updateField('demo_link', e.target.value)}
-              />
-              <p className="text-xs text-on-surface-variant/50 mt-2">
-                Redoc文档请提前开放权限
-              </p>
+              <div>
+                <input
+                  className="w-full bg-surface-container-low border-0 border-b-2 border-outline focus:border-primary focus:ring-0 px-1 py-3 text-base transition-colors placeholder:text-outline-variant/50"
+                  placeholder="Link to demo / doc / GitHub / 演示链接"
+                  type="url"
+                  value={form.demo_link}
+                  onChange={e => updateField('demo_link', e.target.value)}
+                />
+                <p className="text-xs text-on-surface-variant/50 mt-1">
+                  Redoc文档请提前开放权限
+                </p>
+              </div>
             </div>
 
             {/* Media Upload - 可选 */}

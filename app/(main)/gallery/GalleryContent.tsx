@@ -4,10 +4,13 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import dynamicImport from 'next/dynamic';
 import { Search, ExternalLink } from 'lucide-react';
-import ReactMarkdown from 'react-markdown';
+import useSWR from 'swr';
 
 // 动态导入 Lightbox 组件，禁用服务端渲染
 const Lightbox = dynamicImport(() => import('@/components/Lightbox'), { ssr: false });
+
+// 懒加载 ReactMarkdown — 只有查看详情时才需要
+const ReactMarkdown = dynamicImport(() => import('react-markdown'), { ssr: false });
 
 interface Demo {
   id: number;
@@ -28,25 +31,34 @@ interface Demo {
   created_at: string;
 }
 
+const demosFetcher = (url: string) => fetch(url).then(r => r.json()).then(d => d.demos || []);
+
 export default function GalleryContent() {
   const searchParams = useSearchParams();
-  
-  const [demos, setDemos] = useState<Demo[]>([]);
+
+  const { data: demos = [], isLoading: loading } = useSWR<Demo[]>(
+    '/api/demos',
+    demosFetcher,
+    {
+      revalidateOnFocus: false,
+      dedupingInterval: 30000, // 30s 内不重复请求
+    }
+  );
+
   const [selectedDemo, setSelectedDemo] = useState<Demo | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
-  const [loading, setLoading] = useState(true);
   // 初始为 null，等数据加载后再设置，避免闪烁
   const [activeTrack, setActiveTrack] = useState<'optimizer' | 'builder' | null>(null);
-  
+
   // Lightbox 状态
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const [isClient, setIsClient] = useState(false);
-  
+
   // 从 URL 读取 demo 参数
   const demoIdFromUrl = searchParams.get('demo');
-  
+
   useEffect(() => {
     setIsClient(true);
   }, []);
@@ -59,37 +71,27 @@ export default function GalleryContent() {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
+  // 当 demos 数据加载完成后，设置初始选中项和赛道
   useEffect(() => {
-    fetch('/api/demos')
-      .then(r => r.json())
-      .then(data => {
-        const demosList = data.demos || [];
-        setDemos(demosList);
-        
-        // 如果 URL 中有 demo 参数，自动选中对应项目
-        if (demoIdFromUrl && demosList.length > 0) {
-          const demoId = parseInt(demoIdFromUrl);
-          const foundDemo = demosList.find((d: Demo) => d.id === demoId);
-          if (foundDemo) {
-            setSelectedDemo(foundDemo);
-            setActiveTrack(foundDemo.track); // 直接设置正确的 track，避免闪烁
-          } else {
-            setSelectedDemo(demosList[0]);
-            setActiveTrack(demosList[0]?.track || 'optimizer');
-          }
-        } else if (demosList.length > 0) {
-          setSelectedDemo(demosList[0]);
-          setActiveTrack(demosList[0]?.track || 'optimizer');
-        } else {
-          setActiveTrack('optimizer');
-        }
-        setLoading(false);
-      })
-      .catch(() => {
-        setActiveTrack('optimizer');
-        setLoading(false);
-      });
-  }, [demoIdFromUrl]);
+    if (demos.length === 0 || activeTrack !== null) return;
+
+    if (demoIdFromUrl) {
+      const demoId = parseInt(demoIdFromUrl);
+      const foundDemo = demos.find((d: Demo) => d.id === demoId);
+      if (foundDemo) {
+        setSelectedDemo(foundDemo);
+        setActiveTrack(foundDemo.track);
+      } else {
+        setSelectedDemo(demos[0]);
+        setActiveTrack(demos[0]?.track || 'optimizer');
+      }
+    } else if (demos.length > 0) {
+      setSelectedDemo(demos[0]);
+      setActiveTrack(demos[0]?.track || 'optimizer');
+    } else {
+      setActiveTrack('optimizer');
+    }
+  }, [demos, demoIdFromUrl, activeTrack]);
 
   const optimizerDemos = demos.filter(d => d.track === 'optimizer');
   const builderDemos = demos.filter(d => d.track === 'builder');
@@ -137,13 +139,12 @@ export default function GalleryContent() {
         const parsed = JSON.parse(mediaUrls);
         return Array.isArray(parsed) ? parsed : [mediaUrls];
       } catch {
-        // 如果不是 JSON，可能是单个 URL 字符串
         return [mediaUrls];
       }
     }
     return [];
   }
-  
+
   const mediaUrls = parseMediaUrls(selectedDemo?.media_urls);
 
   // 在确定 track 之前显示 loading，避免闪烁
@@ -224,9 +225,9 @@ export default function GalleryContent() {
             </div>
           </div>
 
-          {/* Project List - 独立滚动区域，和 Tab 共享容器色，形成视觉整体 */}
+          {/* Project List - 独立滚动区域 */}
           <div className="flex-1 overflow-y-auto custom-scrollbar border-x border-b border-outline-variant/20 rounded-b-xl bg-surface-container-low/50">
-            <div className="space-y-1 p-2">
+            <div className="p-2">
               {activeList.length === 0 ? (
                 <p className="text-center text-on-surface-variant text-sm py-8">暂无项目</p>
               ) : activeList.map(demo => {
@@ -240,12 +241,12 @@ export default function GalleryContent() {
                   <div
                     key={demo.id}
                     onClick={() => setSelectedDemo(demo)}
-                    className={`p-3 rounded-lg cursor-pointer transition-all group ${
+                    className={`p-3 cursor-pointer transition-all group ${
                       isSelected
                         ? activeTrack === 'optimizer'
-                          ? 'bg-surface-container-lowest shadow-sm border-l-2 border-secondary'
-                          : 'bg-surface-container-lowest shadow-sm border-l-2 border-tertiary'
-                        : 'hover:bg-surface-container-high'
+                          ? 'rounded-lg bg-surface-container-lowest shadow-sm border-l-2 border-secondary'
+                          : 'rounded-lg bg-surface-container-lowest shadow-sm border-l-2 border-tertiary'
+                        : 'border-b border-outline-variant/20 hover:bg-surface-container-high'
                     }`}
                   >
                     <div className="mb-2">
@@ -310,17 +311,15 @@ export default function GalleryContent() {
                   )}
                 </div>
                 <h1 className="text-3xl font-headline font-bold text-on-surface">{selectedDemo.name}</h1>
-                {/* One-Line Pitch 移到标题下方 */}
                 <p className="mt-3 text-base text-on-surface-variant leading-relaxed">
                   {selectedDemo.summary}
                 </p>
               </div>
               <div className="flex-1 overflow-y-auto custom-scrollbar px-8 py-6">
                 <div className="flex flex-col gap-8">
-                  {/* 4. The Story - Why & How */}
+                  {/* The Story - Why & How */}
                   {(selectedDemo.background || selectedDemo.solution) && (
                     <div className="pb-6 border-b border-outline-variant/20 space-y-6">
-                      {/* Why */}
                       {selectedDemo.background && (
                         <div>
                           <p className="text-xs uppercase tracking-widest text-secondary font-bold mb-3">Why / 为什么要做</p>
@@ -329,8 +328,6 @@ export default function GalleryContent() {
                           </div>
                         </div>
                       )}
-                      
-                      {/* How */}
                       {selectedDemo.solution && (
                         <div>
                           <p className="text-xs uppercase tracking-widest text-tertiary font-bold mb-3">How / 怎么解决的</p>
@@ -339,8 +336,6 @@ export default function GalleryContent() {
                           </div>
                         </div>
                       )}
-                      
-                      {/* Keywords */}
                       {selectedDemo.keywords && (
                         <div>
                           <p className="text-xs uppercase tracking-widest text-primary font-bold mb-3">KEY WORDS / 关键词</p>
@@ -356,7 +351,7 @@ export default function GalleryContent() {
                     </div>
                   )}
 
-                  {/* 2. Who's the mastermind */}
+                  {/* Who's the mastermind */}
                   <div className="pb-6 border-b border-outline-variant/20">
                     <p className="text-xs uppercase tracking-widest text-outline font-bold mb-3">Who's the Mastermind / 负责人</p>
                     <div className="flex items-center gap-2 text-base text-on-surface">
@@ -372,12 +367,12 @@ export default function GalleryContent() {
                     </div>
                   </div>
 
-                  {/* 5. Show Us the Goods */}
+                  {/* Show Us the Goods */}
                   <div className="space-y-6">
                     {selectedDemo.demo_link && (
                       <section>
                         <p className="text-xs uppercase tracking-widest text-outline font-bold mb-3">Show Us the Goods / 作品链接</p>
-                        <a 
+                        <a
                           className="inline-flex items-center gap-2 px-4 py-2 bg-surface-container-high hover:bg-surface-container-highest rounded-lg text-primary font-medium text-sm transition-colors"
                           href={selectedDemo.demo_link}
                           target="_blank"
@@ -395,8 +390,8 @@ export default function GalleryContent() {
                           {mediaUrls.map((url: string, i: number) => {
                             const isVideo = url.match(/\.(mp4|mov|webm|avi)$/i);
                             return (
-                              <div 
-                                key={i} 
+                              <div
+                                key={i}
                                 className="aspect-video bg-surface-container-highest rounded-lg overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
                                 onClick={() => {
                                   setLightboxIndex(i);
@@ -404,15 +399,15 @@ export default function GalleryContent() {
                                 }}
                               >
                                 {isVideo ? (
-                                  <video 
-                                    src={url} 
+                                  <video
+                                    src={url}
                                     className="w-full h-full object-cover"
                                     preload="none"
                                     poster=""
                                   />
                                 ) : (
-                                  <img 
-                                    src={url} 
+                                  <img
+                                    src={url}
                                     alt={`Media ${i + 1}`}
                                     className="w-full h-full object-cover"
                                     loading="lazy"
@@ -436,10 +431,10 @@ export default function GalleryContent() {
           )}
         </div>
       </section>
-      
+
       {/* Lightbox 查看器 - 只在客户端渲染 */}
       {isClient && lightboxOpen && mediaUrls.length > 0 && (
-        <Lightbox 
+        <Lightbox
           urls={mediaUrls}
           currentIndex={lightboxIndex}
           onClose={() => setLightboxOpen(false)}

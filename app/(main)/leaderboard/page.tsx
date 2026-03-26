@@ -4,6 +4,8 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Loader2, Star, CheckCircle, AlertCircle, Lock, Search, ExternalLink } from 'lucide-react';
 import { BEST_DEMO_AWARDS, SPECIAL_AWARDS } from '@/lib/constants';
+import useSWR from 'swr';
+import { useUser } from '@/lib/hooks/useUser';
 
 interface LeaderboardItem {
   id: number;
@@ -30,31 +32,40 @@ interface SelectedVote {
   vote_type: string;
 }
 
+const jsonFetcher = (url: string) => fetch(url).then(r => r.json());
+
 export default function LeaderboardPage() {
   const router = useRouter();
-  
+  const { user } = useUser();
+
+  // SWR: 投票配置
+  const { data: votingStatus } = useSWR<{ isVotingOpen: boolean; notice: string }>(
+    '/api/config',
+    jsonFetcher,
+    { revalidateOnFocus: false, dedupingInterval: 60000 }
+  );
+
+  // SWR: 我的投票记录
+  const { data: votesData, mutate: mutateVotes } = useSWR<{ votes: Vote[] }>(
+    '/api/votes',
+    jsonFetcher,
+    { revalidateOnFocus: false, dedupingInterval: 30000 }
+  );
+  const myVotes = votesData?.votes || [];
+
   // 各奖项数据 - 使用对象存储，按需加载
   const [leaderboardData, setLeaderboardData] = useState<Record<string, LeaderboardItem[]>>({});
   const [loadedTabs, setLoadedTabs] = useState<Set<string>>(new Set());
   const [loadingTabs, setLoadingTabs] = useState<Set<string>>(new Set());
-  
-  // 用户已投票记录
-  const [myVotes, setMyVotes] = useState<Vote[]>([]);
-  const [votesLoaded, setVotesLoaded] = useState(false);
-  
+
   // 用户当前选择的投票（盲投阶段）
   const [selectedVotes, setSelectedVotes] = useState<SelectedVote[]>([]);
-  
+
   const [submitting, setSubmitting] = useState(false);
   // Tab 状态：5 个具体奖项
   const [activeTab, setActiveTab] = useState<'optimizer' | 'builder' | 'special_brain' | 'special_infectious' | 'special_useful'>('optimizer');
   const [message, setMessage] = useState<{text: string, type: 'success' | 'error'} | null>(null);
-  const [user, setUser] = useState<any>(null);
-  const [votingStatus, setVotingStatus] = useState<{
-    isVotingOpen: boolean;
-    notice: string;
-  } | null>(null);
-  
+
   // 搜索关键词
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -67,16 +78,8 @@ export default function LeaderboardPage() {
     }
   }, []);
 
-  // 初始化加载 - 只加载当前 Tab 的数据
+  // 初始化加载当前 Tab 的数据
   useEffect(() => {
-    fetch('/api/auth/me')
-      .then(r => r.json())
-      .then(d => setUser(d.user))
-      .catch(() => {});
-    
-    fetchMyVotes();
-    fetchVotingStatus();
-    // 初始加载当前 Tab 的数据
     loadTabData(activeTab);
   }, []);
 
@@ -99,13 +102,13 @@ export default function LeaderboardPage() {
   async function loadTabData(tab: string) {
     const voteType = getVoteType(tab);
     if (loadingTabs.has(tab)) return;
-    
+
     setLoadingTabs(prev => new Set(prev).add(tab));
-    
+
     try {
       const res = await fetch(`/api/leaderboard?vote_type=${voteType}`);
       const data = await res.json();
-      
+
       setLeaderboardData(prev => ({
         ...prev,
         [tab]: data.leaderboard || []
@@ -119,31 +122,6 @@ export default function LeaderboardPage() {
         next.delete(tab);
         return next;
       });
-    }
-  }
-
-  // 获取投票状态
-  async function fetchVotingStatus() {
-    try {
-      const res = await fetch('/api/config');
-      const data = await res.json();
-      setVotingStatus(data);
-    } catch (error) {
-      console.error('Failed to fetch voting status:', error);
-    }
-  }
-
-  async function fetchMyVotes() {
-    try {
-      const res = await fetch('/api/votes');
-      const data = await res.json();
-      if (data.votes) {
-        setMyVotes(data.votes);
-      }
-    } catch (error) {
-      console.error('Failed to fetch votes:', error);
-    } finally {
-      setVotesLoaded(true);
     }
   }
 
@@ -238,8 +216,11 @@ export default function LeaderboardPage() {
       }
       
       if (successCount === tabVotes.length) {
-        // 全部成功
-        setMyVotes(prev => [...prev, ...tabVotes]);
+        // 全部成功 — 通过 SWR mutate 更新投票缓存
+        mutateVotes(
+          (current) => ({ votes: [...(current?.votes || []), ...tabVotes] }),
+          false
+        );
         setSelectedVotes(prev => prev.filter(v => v.vote_type !== voteType));
         // 刷新当前 Tab 数据
         loadTabData(activeTab);
@@ -591,7 +572,7 @@ export default function LeaderboardPage() {
   const isCurrentLoading = loadingTabs.has(activeTab);
 
   return (
-    <div className="px-12 pt-4 pb-12">
+    <div className="px-12 pb-12">
       {/* Header */}
       <header className="flex-shrink-0 mb-8 pt-4 pb-2">
         <div className="flex items-center justify-between">
