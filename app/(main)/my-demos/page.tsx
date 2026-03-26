@@ -429,7 +429,7 @@ export default function MyDemosPage() {
   // 编辑模式 - 使用与 SubmitModal 一致的布局
   if (editingDemo) {
     return (
-      <div className="p-12 max-w-5xl">
+      <div className="px-12 pt-4 pb-12 max-w-5xl">
         <div className="flex items-center justify-between mb-8">
           <h2 className="font-headline text-3xl font-bold text-on-surface">编辑 Demo</h2>
           <button 
@@ -904,13 +904,11 @@ export default function MyDemosPage() {
   return (
     <div className="px-12 pb-12 max-w-4xl">
       {/* Header */}
-      <header className="mb-8 pt-4">
-        <div>
-          <h2 className="font-headline text-4xl font-bold tracking-tight text-on-surface">My Demo</h2>
-          <p className="text-lg text-on-surface-variant mt-2">
-            管理你提交或参与创作的 Demo
-          </p>
-        </div>
+      <header className="flex-shrink-0 mb-8 pt-4 pb-2">
+        <h2 className="font-headline text-4xl font-bold tracking-tight text-on-surface">My Demo</h2>
+        <p className="text-lg text-on-surface-variant mt-2">
+          管理你提交或参与创作的 Demo
+        </p>
       </header>
 
       {/* Demo List */}

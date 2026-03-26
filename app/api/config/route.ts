@@ -21,26 +21,27 @@ async function getCurrentUser() {
 // 获取投票配置（公开接口）
 export async function GET() {
   const supabase = getSupabaseAdmin();
-  
+
   // 从数据库获取配置
   const { data: config, error } = await supabase
     .from('site_config')
     .select('*')
-    .in('key', ['voting_enabled', 'voting_notice']) as { data: any[]; error: any };
-  
+    .in('key', ['voting_enabled', 'voting_notice', 'submission_enabled']) as { data: any[]; error: any };
+
   // 表不存在的错误
   if (error && error.code === '42P01') {
     return NextResponse.json({
       isVotingOpen: false,
+      isSubmissionOpen: true,
       notice: '投票系统未初始化',
       error: 'TABLE_NOT_FOUND',
     });
   }
-  
+
   if (error) {
     console.error('Error fetching config:', error);
   }
-  
+
   // 解析配置
   const configMap: Record<string, string> = {};
   if (config && Array.isArray(config)) {
@@ -48,12 +49,15 @@ export async function GET() {
       configMap[item.key] = item.value || '';
     });
   }
-  
+
   const isVotingOpen = configMap['voting_enabled'] === 'true';
   const notice = configMap['voting_notice'] || (isVotingOpen ? '' : '投票暂未开始，敬请期待');
-  
+  // submission_enabled 默认为 true（未配置时视为开放）
+  const isSubmissionOpen = configMap['submission_enabled'] !== 'false';
+
   return NextResponse.json({
     isVotingOpen,
+    isSubmissionOpen,
     notice,
   });
 }
@@ -65,31 +69,35 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: '无权访问' }, { status: 403 });
   }
   
-  const { enabled, notice } = await request.json();
-  
+  const { enabled, notice, submissionEnabled } = await request.json();
+
   const supabase = getSupabaseAdmin();
-  
+
   // 检查表是否存在
   const { error: checkError } = await supabase
     .from('site_config')
     .select('id')
     .limit(1);
-  
+
   if (checkError && checkError.code === '42P01') {
-    return NextResponse.json({ 
+    return NextResponse.json({
       error: '配置表不存在，请先点击"初始化配置"按钮',
       code: 'TABLE_NOT_FOUND'
     }, { status: 400 });
   }
-  
+
   const updates: Array<{key: string; value: string}> = [];
-  
+
   if (enabled !== undefined) {
     updates.push({ key: 'voting_enabled', value: enabled ? 'true' : 'false' });
   }
-  
+
   if (notice !== undefined) {
     updates.push({ key: 'voting_notice', value: notice });
+  }
+
+  if (submissionEnabled !== undefined) {
+    updates.push({ key: 'submission_enabled', value: submissionEnabled ? 'true' : 'false' });
   }
   
   // 批量 upsert

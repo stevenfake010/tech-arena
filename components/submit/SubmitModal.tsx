@@ -257,6 +257,11 @@ export default function SubmitModal({ onClose, initialTrack }: SubmitModalProps)
       return;
     }
 
+    if (keywordTags.length === 0) {
+      setError('请至少添加一个关键词');
+      return;
+    }
+
     // 验证提交人1必须已选择（从下拉框选择，不是手动输入）
     if (!selectedUser1) {
       setError('请从下拉列表中选择第一位提交人');
@@ -627,7 +632,7 @@ export default function SubmitModal({ onClose, initialTrack }: SubmitModalProps)
               {/* Keywords - Tag Input */}
               <div className="space-y-2">
                 <label className={`block text-xs font-bold uppercase tracking-[0.12em] ${form.track === 'builder' ? 'text-tertiary' : 'text-primary'}`}>
-                  KEY WORDS / 关键词（选填，最多10个）
+                  KEY WORDS / 关键词 *
                 </label>
 
                 {/* 已添加的标签 */}

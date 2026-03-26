@@ -32,6 +32,7 @@ export async function POST() {
     const defaultConfigs = [
       { key: 'voting_enabled', value: 'false' },
       { key: 'voting_notice', value: '投票将于 4月1日 12:00 开始，敬请期待！' },
+      { key: 'submission_enabled', value: 'true' },
     ];
     
     for (const config of defaultConfigs) {

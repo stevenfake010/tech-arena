@@ -55,6 +55,19 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: '请先登录' }, { status: 401 });
   }
 
+  // 检查提交权限是否开放
+  const supabaseCheck = getSupabaseAdmin();
+  const { data: submissionConfig } = await supabaseCheck
+    .from('site_config')
+    .select('value')
+    .eq('key', 'submission_enabled')
+    .single() as { data: any; error: any };
+  // 未配置时默认开放；明确配置为 'false' 时关闭
+  const isSubmissionOpen = submissionConfig?.value !== 'false';
+  if (!isSubmissionOpen) {
+    return NextResponse.json({ error: '提交通道已关闭，不再接受新的 Demo 提交' }, { status: 403 });
+  }
+
   const body = await request.json();
   const { name, summary, track, demo_link, submitter1_name, submitter1_dept, submitter2_name, submitter2_dept, background, solution, keywords, media_urls } = body;
 
