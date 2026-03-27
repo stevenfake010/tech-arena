@@ -9,8 +9,6 @@ import useSWR from 'swr';
 // 动态导入 Lightbox 组件，禁用服务端渲染
 const Lightbox = dynamicImport(() => import('@/components/Lightbox'), { ssr: false });
 
-// 懒加载 ReactMarkdown — 只有查看详情时才需要
-const ReactMarkdown = dynamicImport(() => import('react-markdown'), { ssr: false });
 
 interface Demo {
   id: number;
@@ -323,17 +321,13 @@ export default function GalleryContent() {
                       {selectedDemo.background && (
                         <div>
                           <p className="text-xs uppercase tracking-widest text-secondary font-bold mb-3">Why / 为什么要做</p>
-                          <div className="markdown-content">
-                            <ReactMarkdown>{selectedDemo.background}</ReactMarkdown>
-                          </div>
+                          <div className="markdown-content prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: selectedDemo.background }} />
                         </div>
                       )}
                       {selectedDemo.solution && (
                         <div>
                           <p className="text-xs uppercase tracking-widest text-tertiary font-bold mb-3">How / 怎么解决的</p>
-                          <div className="markdown-content">
-                            <ReactMarkdown>{selectedDemo.solution}</ReactMarkdown>
-                          </div>
+                          <div className="markdown-content prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: selectedDemo.solution }} />
                         </div>
                       )}
                       {selectedDemo.keywords && (

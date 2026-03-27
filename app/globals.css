@@ -320,3 +320,41 @@ p {
   border-top: 1px solid #aeb4aa;
   margin: 1em 0;
 }
+
+/* Tiptap 富文本编辑器内样式 */
+.ProseMirror {
+  outline: none;
+}
+.ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  color: rgba(0,0,0,0.3);
+  pointer-events: none;
+  float: left;
+  height: 0;
+}
+.ProseMirror ul {
+  list-style-type: disc !important;
+  padding-left: 1.5em !important;
+  margin: 0.4em 0;
+}
+.ProseMirror ol {
+  list-style-type: decimal !important;
+  padding-left: 1.5em !important;
+  margin: 0.4em 0;
+}
+.ProseMirror li {
+  margin: 0.15em 0;
+}
+.ProseMirror h3 {
+  font-size: 1.1em;
+  font-weight: 600;
+  margin: 0.6em 0 0.3em;
+}
+.ProseMirror strong { font-weight: 600; }
+.ProseMirror em { font-style: italic; }
+.ProseMirror hr {
+  border: none;
+  border-top: 1px solid #aeb4aa;
+  margin: 0.8em 0;
+}
+.ProseMirror p { margin: 0.25em 0; }

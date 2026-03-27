@@ -1,10 +1,10 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { CheckCircle, Zap, Hammer, X, Upload, Plus, FileImage, FileVideo, Trash2, Eye, Edit3 } from 'lucide-react';
+import { CheckCircle, Zap, Hammer, X, Upload, Plus, FileImage, FileVideo, Trash2 } from 'lucide-react';
 import { pinyin } from 'pinyin-pro';
-import ReactMarkdown from 'react-markdown';
 import { useUser } from '@/lib/hooks/useUser';
+import { RichTextEditor } from '@/components/ui/RichTextEditor';
 
 interface UserOption {
   id: number;
@@ -45,8 +45,6 @@ export default function SubmitModal({ onClose, initialTrack }: SubmitModalProps)
   const keywordInputRef = useRef<HTMLInputElement>(null);
 
   // Markdown 预览模式状态
-  const [whyPreview, setWhyPreview] = useState(false);
-  const [howPreview, setHowPreview] = useState(false);
 
   // 用户选择相关状态 - 与登录页逻辑一致
   const [users, setUsers] = useState<UserOption[]>([]);
@@ -559,74 +557,30 @@ export default function SubmitModal({ onClose, initialTrack }: SubmitModalProps)
               
               {/* Why */}
               <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <label className="block text-xs font-bold uppercase tracking-[0.12em] text-secondary">
-                    Why / 为什么要做？ *
-                  </label>
-                  <button
-                    type="button"
-                    onClick={() => setWhyPreview(!whyPreview)}
-                    className="flex items-center gap-1 text-xs text-on-surface-variant hover:text-secondary transition-colors"
-                  >
-                    {whyPreview ? <Edit3 size={14} /> : <Eye size={14} />}
-                    {whyPreview ? '编辑' : '预览'}
-                  </button>
-                </div>
-                {whyPreview ? (
-                  <div className="w-full bg-surface-container-low/50 border border-outline/20 rounded-lg px-4 py-3 min-h-[120px] max-h-[300px] overflow-y-auto">
-                    {form.background ? (
-                      <div className="markdown-content">
-                        <ReactMarkdown>{form.background}</ReactMarkdown>
-                      </div>
-                    ) : (
-                      <p className="text-outline-variant italic">暂无内容</p>
-                    )}
-                  </div>
-                ) : (
-                  <textarea
-                    className="w-full bg-surface-container-low border-0 border-b-2 border-outline focus:border-secondary focus:ring-0 px-1 py-3 text-base leading-relaxed transition-colors resize-none placeholder:text-outline-variant/50"
-                    placeholder="解决什么问题？背后的故事是什么？发现什么痛点？（支持 Markdown）"
-                    rows={4}
-                    value={form.background}
-                    onChange={e => updateField('background', e.target.value)}
-                  />
-                )}
+                <label className="block text-xs font-bold uppercase tracking-[0.12em] text-secondary">
+                  Why / 为什么要做？ *
+                </label>
+                <RichTextEditor
+                  value={form.background}
+                  onChange={v => updateField('background', v)}
+                  placeholder="解决什么问题？背后的故事是什么？发现什么痛点？"
+                  accent="secondary"
+                  rows={4}
+                />
               </div>
-              
+
               {/* How */}
               <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <label className="block text-xs font-bold uppercase tracking-[0.12em] text-tertiary">
-                    How / 怎么解决的？ *
-                  </label>
-                  <button
-                    type="button"
-                    onClick={() => setHowPreview(!howPreview)}
-                    className="flex items-center gap-1 text-xs text-on-surface-variant hover:text-tertiary transition-colors"
-                  >
-                    {howPreview ? <Edit3 size={14} /> : <Eye size={14} />}
-                    {howPreview ? '编辑' : '预览'}
-                  </button>
-                </div>
-                {howPreview ? (
-                  <div className="w-full bg-surface-container-low/50 border border-outline/20 rounded-lg px-4 py-3 min-h-[120px] max-h-[300px] overflow-y-auto">
-                    {form.solution ? (
-                      <div className="markdown-content">
-                        <ReactMarkdown>{form.solution}</ReactMarkdown>
-                      </div>
-                    ) : (
-                      <p className="text-outline-variant italic">暂无内容</p>
-                    )}
-                  </div>
-                ) : (
-                  <textarea
-                    className="w-full bg-surface-container-low border-0 border-b-2 border-outline focus:border-tertiary focus:ring-0 px-1 py-3 text-base leading-relaxed transition-colors resize-none placeholder:text-outline-variant/50"
-                    placeholder="具体的解决方案是什么？用什么方法/技术实现的？（支持 Markdown）"
-                    rows={4}
-                    value={form.solution}
-                    onChange={e => updateField('solution', e.target.value)}
-                  />
-                )}
+                <label className="block text-xs font-bold uppercase tracking-[0.12em] text-tertiary">
+                  How / 怎么解决的？ *
+                </label>
+                <RichTextEditor
+                  value={form.solution}
+                  onChange={v => updateField('solution', v)}
+                  placeholder="具体的解决方案是什么？用什么方法/技术实现的？"
+                  accent="tertiary"
+                  rows={4}
+                />
               </div>
               
               {/* Keywords - Tag Input */}
