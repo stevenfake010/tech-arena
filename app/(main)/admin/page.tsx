@@ -38,6 +38,10 @@ export default function AdminPage() {
   const router = useRouter();
   const [user, setUser] = useState<{ name: string; role: string } | null>(null);
   const [loading, setLoading] = useState(true);
+  const [adminAuthed, setAdminAuthed] = useState(false);
+  const [pwInput, setPwInput] = useState('');
+  const [pwError, setPwError] = useState('');
+  const [pwLoading, setPwLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<'demos' | 'messages' | 'settings'>('demos');
 
   // Demos 管理
@@ -75,20 +79,37 @@ export default function AdminPage() {
 
   // 验证权限
   useEffect(() => {
-    fetch('/api/auth/me')
-      .then(r => r.json())
-      .then(data => {
-        if (!data.user || data.user.role !== 'admin') {
-          router.push('/');
-          return;
-        }
-        setUser(data.user);
-        setLoading(false);
-      })
-      .catch(() => {
+    Promise.all([
+      fetch('/api/auth/me').then(r => r.json()),
+      fetch('/api/admin/verify').then(r => r.json()),
+    ]).then(([authData, verifyData]) => {
+      if (!authData.user || authData.user.role !== 'admin') {
         router.push('/');
-      });
+        return;
+      }
+      setUser(authData.user);
+      setAdminAuthed(verifyData.ok === true);
+      setLoading(false);
+    }).catch(() => router.push('/'));
   }, [router]);
+
+  async function handleAdminLogin(e: React.FormEvent) {
+    e.preventDefault();
+    setPwLoading(true);
+    setPwError('');
+    const res = await fetch('/api/admin/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: pwInput }),
+    });
+    setPwLoading(false);
+    if (res.ok) {
+      setAdminAuthed(true);
+    } else {
+      setPwError('密码错误，请重试');
+      setPwInput('');
+    }
+  }
 
   // 加载 Demos
   const loadDemos = async () => {
@@ -342,6 +363,37 @@ export default function AdminPage() {
           <Loader2 size={24} className="animate-spin" />
           <span>验证权限中...</span>
         </div>
+      </div>
+    );
+  }
+
+  if (!adminAuthed) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-surface">
+        <form onSubmit={handleAdminLogin} className="bg-surface-container-low rounded-2xl p-10 w-full max-w-sm shadow-lg flex flex-col gap-6">
+          <div className="text-center">
+            <ShieldAlert size={36} className="mx-auto mb-3 text-primary" />
+            <h1 className="font-headline text-2xl font-bold">管理员验证</h1>
+            <p className="text-sm text-on-surface-variant mt-1">请输入管理后台密码</p>
+          </div>
+          <input
+            type="password"
+            value={pwInput}
+            onChange={e => setPwInput(e.target.value)}
+            placeholder="密码"
+            autoFocus
+            className="w-full bg-surface border border-outline-variant rounded-lg px-4 py-3 text-base focus:outline-none focus:border-primary transition-colors"
+          />
+          {pwError && <p className="text-sm text-error -mt-3">{pwError}</p>}
+          <button
+            type="submit"
+            disabled={pwLoading || !pwInput}
+            className="w-full py-3 bg-primary text-on-primary font-bold rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2"
+          >
+            {pwLoading ? <Loader2 size={18} className="animate-spin" /> : null}
+            进入管理后台
+          </button>
+        </form>
       </div>
     );
   }
