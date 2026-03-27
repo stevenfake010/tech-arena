@@ -9,6 +9,15 @@ import useSWR from 'swr';
 // 动态导入 Lightbox 组件，禁用服务端渲染
 const Lightbox = dynamicImport(() => import('@/components/Lightbox'), { ssr: false });
 
+interface DemoLink { title: string; url: string; }
+function parseDemoLinks(raw: string | null): DemoLink[] {
+  if (!raw) return [];
+  if (raw.trim().startsWith('[')) {
+    try { return JSON.parse(raw); } catch {}
+  }
+  return [{ title: '', url: raw }];
+}
+
 
 interface Demo {
   id: number;
@@ -363,18 +372,24 @@ export default function GalleryContent() {
 
                   {/* Show Us the Goods */}
                   <div className="space-y-6">
-                    {selectedDemo.demo_link && (
+                    {parseDemoLinks(selectedDemo.demo_link).length > 0 && (
                       <section>
                         <p className="text-xs uppercase tracking-widest text-outline font-bold mb-3">Show Us the Goods / 作品链接</p>
-                        <a
-                          className="inline-flex items-center gap-2 px-4 py-2 bg-surface-container-high hover:bg-surface-container-highest rounded-lg text-primary font-medium text-sm transition-colors"
-                          href={selectedDemo.demo_link}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          <ExternalLink size={16} />
-                          <span>链接</span>
-                        </a>
+                        <div className="space-y-2">
+                          {parseDemoLinks(selectedDemo.demo_link).map((link, i) => (
+                            <div key={i}>
+                              <a
+                                className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
+                                href={link.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                <span>{link.title || '链接'}</span>
+                                <ExternalLink size={13} className="flex-shrink-0" />
+                              </a>
+                            </div>
+                          ))}
+                        </div>
                       </section>
                     )}
                     {mediaUrls.length > 0 && (

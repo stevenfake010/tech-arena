@@ -2,7 +2,16 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { Edit2, Trash2, User, AlertCircle, X, Check, Loader2, Zap, Hammer, Plus, Upload, CheckCircle, FileVideo } from 'lucide-react';
+import { Edit2, Trash2, User, AlertCircle, X, Check, Loader2, Zap, Hammer, Plus, Upload, CheckCircle, FileVideo, ExternalLink } from 'lucide-react';
+
+interface DemoLink { title: string; url: string; }
+function parseDemoLinks(raw: string | undefined | null): DemoLink[] {
+  if (!raw) return [{ title: '', url: '' }];
+  if (raw.trim().startsWith('[')) {
+    try { return JSON.parse(raw); } catch {}
+  }
+  return [{ title: '', url: raw }];
+}
 import { pinyin } from 'pinyin-pro';
 import { useUser } from '@/lib/hooks/useUser';
 import { RichTextEditor } from '@/components/ui/RichTextEditor';
@@ -63,6 +72,8 @@ export default function MyDemosPage() {
   const [keywordInput, setKeywordInput] = useState('');
   const [keywordTags, setKeywordTags] = useState<string[]>([]);
   const keywordInputRef = useRef<HTMLInputElement>(null);
+
+  const [demoLinks, setDemoLinks] = useState<DemoLink[]>([{ title: '', url: '' }]);
 
   // 媒体文件上传
   const [mediaFiles, setMediaFiles] = useState<string[]>([]);
@@ -205,6 +216,9 @@ export default function MyDemosPage() {
       solution: demo.solution || '',
       keywords: demo.keywords || '',
     });
+
+    // 初始化链接
+    setDemoLinks(parseDemoLinks(demo.demo_link));
 
     // 初始化媒体文件
     setMediaFiles(demo.media_urls || []);
@@ -367,7 +381,7 @@ export default function MyDemosPage() {
       const res = await fetch(`/api/demos/${editingDemo.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...form, media_urls: mediaFiles }),
+        body: JSON.stringify({ ...form, demo_link: JSON.stringify(demoLinks.filter(l => l.url.trim())), media_urls: mediaFiles }),
       });
 
       const data = await res.json();
@@ -736,18 +750,41 @@ export default function MyDemosPage() {
               <label className="block font-headline text-xl font-bold text-on-surface mb-1">
                 5. Show Us the Goods
               </label>
-              <p className="text-sm text-on-surface-variant/60">展示你的作品（Demo、文档、GitHub）</p>
+              <p className="text-sm text-on-surface-variant/60">展示你的作品（Demo、文档、GitHub），可添加多个链接</p>
             </div>
-            <input
-              className="w-full bg-surface-container-low border-0 border-b-2 border-outline focus:border-primary focus:ring-0 px-1 py-3 text-base transition-colors placeholder:text-outline-variant/50"
-              placeholder="Link to demo / doc / GitHub / 演示链接"
-              type="url"
-              value={form.demo_link}
-              onChange={e => updateField('demo_link', e.target.value)}
-            />
-            <p className="text-xs text-on-surface-variant/50 mt-2">
-              Redoc文档请提前开放权限
-            </p>
+            <div className="space-y-3">
+              {demoLinks.map((link, i) => (
+                <div key={i} className="flex gap-2 items-center">
+                  <input
+                    className="w-36 flex-shrink-0 bg-surface-container-low border-0 border-b-2 border-outline focus:border-primary focus:ring-0 px-1 py-3 text-base transition-colors placeholder:text-outline-variant/50"
+                    placeholder="标题（选填）"
+                    value={link.title}
+                    onChange={e => setDemoLinks(prev => prev.map((l, j) => j === i ? { ...l, title: e.target.value } : l))}
+                  />
+                  <input
+                    className="flex-1 bg-surface-container-low border-0 border-b-2 border-outline focus:border-primary focus:ring-0 px-1 py-3 text-base transition-colors placeholder:text-outline-variant/50"
+                    placeholder="链接地址"
+                    type="url"
+                    value={link.url}
+                    onChange={e => setDemoLinks(prev => prev.map((l, j) => j === i ? { ...l, url: e.target.value } : l))}
+                  />
+                  {demoLinks.length > 1 && (
+                    <button type="button" onClick={() => setDemoLinks(prev => prev.filter((_, j) => j !== i))} className="text-outline-variant hover:text-error transition-colors flex-shrink-0">
+                      <X size={18} />
+                    </button>
+                  )}
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={() => setDemoLinks(prev => [...prev, { title: '', url: '' }])}
+                className="flex items-center gap-1.5 text-sm text-on-surface-variant/60 hover:text-primary transition-colors"
+              >
+                <Plus size={15} />
+                添加链接
+              </button>
+              <p className="text-xs text-on-surface-variant/50">Redoc文档请提前开放权限</p>
+            </div>
           </div>
 
           {/* Media Upload - 可选 */}
