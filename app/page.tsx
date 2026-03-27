@@ -215,6 +215,11 @@ function EntryPortalContent() {
               </button>
             </div>
           </form>
+          
+          {/* Contact info */}
+          <p className="text-xs text-center text-on-surface-variant/60 mt-4">
+            如需调整登录名单，请联系恒宇
+          </p>
         </div>
       </div>
 

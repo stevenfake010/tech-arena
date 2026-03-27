@@ -23,8 +23,8 @@ const notoSerifSC = Noto_Serif_SC({
 });
 
 export const metadata: Metadata = {
-  title: "AI Demo Day | Xiaohongshu Strategy",
-  description: "AI Demo Day Platform - Xiaohongshu Strategy / Investment / User Research",
+  title: "AI Demo Day | Xiaohongshu",
+  description: "AI Demo Day Platform - Xiaohongshu Investment / User Research",
 };
 
 export default function RootLayout({
