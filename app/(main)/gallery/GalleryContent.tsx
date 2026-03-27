@@ -394,12 +394,12 @@ export default function GalleryContent() {
                   <div className="space-y-6">
                     {parseDemoLinks(selectedDemo.demo_link).length > 0 && (
                       <section>
-                        <p className="text-base font-extrabold text-on-surface mb-3">📎 作品链接</p>
+                        <p className="text-xs uppercase tracking-widest text-outline font-bold mb-3">Show Us the Goods / 作品链接</p>
                         <div className="space-y-2">
                           {parseDemoLinks(selectedDemo.demo_link).map((link, i) => (
                             <div key={i}>
                               <a
-                                className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
+                                className="inline-flex items-center gap-1.5 text-base font-bold text-primary underline"
                                 href={link.url}
                                 target="_blank"
                                 rel="noopener noreferrer"
