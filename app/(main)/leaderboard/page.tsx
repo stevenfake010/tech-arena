@@ -686,6 +686,24 @@ export default function LeaderboardPage() {
                       </div>
                     )}
                   </>
+                ) : previewItem ? (
+                  // 有 previewItem 但没有 previewDetail 时，显示基本信息
+                  <div className="space-y-5">
+                    <div className="pb-6 border-b border-outline-variant/20">
+                      <p className="text-xs uppercase tracking-widest text-secondary font-bold mb-2">简介</p>
+                      <p className="text-sm text-on-surface">{previewItem.summary}</p>
+                    </div>
+                    <div className="pb-6 border-b border-outline-variant/20">
+                      <p className="text-xs uppercase tracking-widest text-primary font-bold mb-2">赛道</p>
+                      <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+                        previewItem.track === 'optimizer' 
+                          ? 'bg-secondary/10 text-secondary' 
+                          : 'bg-tertiary/10 text-tertiary'
+                      }`}>
+                        {previewItem.track === 'optimizer' ? 'Optimizer' : 'Builder'}
+                      </span>
+                    </div>
+                  </div>
                 ) : (
                   <div className="flex items-center justify-center py-12 text-on-surface-variant text-sm">
                     暂无详细信息
