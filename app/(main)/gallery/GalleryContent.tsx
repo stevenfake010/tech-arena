@@ -48,7 +48,8 @@ function shuffleArray<T>(array: T[]): T[] {
   return shuffled;
 }
 
-const demosFetcher = (url: string) => fetch(url).then(r => r.json()).then(d => shuffleArray(d.demos || []));
+const demosFetcher = (url: string): Promise<Demo[]> => 
+  fetch(url).then(r => r.json()).then((d: { demos?: Demo[] }) => shuffleArray(d.demos || []));
 
 export default function GalleryContent() {
   const searchParams = useSearchParams();
