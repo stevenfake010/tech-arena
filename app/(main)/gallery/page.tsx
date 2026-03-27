@@ -1,3 +1,6 @@
+// 强制动态渲染，避免 shuffle 导致的 hydration mismatch
+export const dynamic = 'force-dynamic';
+
 import { Suspense } from 'react';
 import GalleryContent from './GalleryContent';
 
