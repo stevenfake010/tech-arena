@@ -710,7 +710,7 @@ export default function SubmitModal({ onClose, initialTrack }: SubmitModalProps)
             <div className="pt-4">
               <div className="flex items-center justify-between mb-3">
                 <label className="block text-sm text-on-surface-variant/60">
-                  截图/录屏等（选填，支持多个）
+                  截图等（选填，支持多个）
                 </label>
                 {mediaFiles.length > 0 && (
                   <span className="text-xs text-primary">已上传 {mediaFiles.length} 个文件</span>
