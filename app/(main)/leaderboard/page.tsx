@@ -94,7 +94,7 @@ export default function LeaderboardPage() {
   const myVotes = votesData?.votes || [];
 
   // Full demo details for right panel (background / solution / media / links)
-  const { data: allDemosData } = useSWR<{ demos: FullDemo[] }>(
+  const { data: allDemosData, error: demosError } = useSWR<{ demos: FullDemo[] }>(
     '/api/demos', jsonFetcher, { revalidateOnFocus: false, dedupingInterval: 60000 }
   );
   const demoDetails = useMemo(() => {
@@ -102,6 +102,9 @@ export default function LeaderboardPage() {
     allDemosData?.demos?.forEach(d => map.set(d.id, d));
     return map;
   }, [allDemosData]);
+  
+  // Demo 数据加载状态
+  const isDemosLoading = !allDemosData && !demosError;
 
   // Per-tab leaderboard data (lazy loaded)
   const [leaderboardData, setLeaderboardData] = useState<Record<string, LeaderboardItem[]>>({});
@@ -613,7 +616,15 @@ export default function LeaderboardPage() {
                 </div>
 
                 {/* 需要 previewDetail 的内容 */}
-                {previewDetail ? (
+                {isDemosLoading ? (
+                  <div className="flex items-center justify-center py-12 text-on-surface-variant text-sm gap-2">
+                    <Loader2 size={16} className="animate-spin" /> 加载详情中...
+                  </div>
+                ) : demosError ? (
+                  <div className="flex items-center justify-center py-12 text-error text-sm">
+                    加载失败，请刷新页面重试
+                  </div>
+                ) : previewDetail ? (
                   <>
                     {(previewDetail.background || previewDetail.solution) && (
                       <div className="space-y-5 pb-6 border-b border-outline-variant/20">
@@ -679,8 +690,8 @@ export default function LeaderboardPage() {
                     )}
                   </>
                 ) : (
-                  <div className="flex items-center justify-center py-12 text-on-surface-variant text-sm gap-2">
-                    <Loader2 size={16} className="animate-spin" /> 加载详情中...
+                  <div className="flex items-center justify-center py-12 text-on-surface-variant text-sm">
+                    暂无详细信息
                   </div>
                 )}
               </div>
