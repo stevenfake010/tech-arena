@@ -315,10 +315,10 @@ export default function LeaderboardPage() {
   // ── Render ──────────────────────────────────────────────────────────────────
 
   return (
-    <div className="flex flex-col h-[calc(100vh-60px)]">
+    <div className="flex flex-col md:h-[calc(100vh-60px)]">
 
       {/* ── Header ──────────────────────────────────────────────────────────── */}
-      <header className="flex-shrink-0 px-4 md:px-12 pt-4 pb-2">
+      <header className="flex-shrink-0 px-4 md:px-12 pt-4 pb-2 hidden md:block">
         <h2 className="font-headline text-2xl md:text-4xl font-bold text-on-surface">Demo Leaderboard</h2>
         <p className="text-sm text-on-surface-variant mt-0.5">
           最佳Demo各赛道 {BEST_DEMO_AWARDS.best_optimizer.maxVotes} 票 · 专项奖 1 票 · 评委权重 ×2 · 投后不可修改
@@ -349,7 +349,7 @@ export default function LeaderboardPage() {
       )}
 
       {/* ── Tab bar ─────────────────────────────────────────────────────────── */}
-      <div className="flex-shrink-0 px-4 md:px-12 pt-3 pb-2 flex items-center gap-2 md:gap-4 overflow-x-auto no-scrollbar">
+      <div className="flex-shrink-0 px-4 pr-14 md:px-12 pt-3 pb-2 flex items-center gap-2 md:gap-4 overflow-x-auto no-scrollbar">
         {/* Best Demo group */}
         <div className="flex items-center gap-1.5 md:gap-2 flex-shrink-0">
           <span className="text-xs font-bold text-on-surface-variant/50 uppercase tracking-wider whitespace-nowrap hidden md:inline">🏆 最佳Demo</span>
@@ -400,13 +400,13 @@ export default function LeaderboardPage() {
       </div>
 
       {/* ── Split pane ──────────────────────────────────────────────────────── */}
-      <section className="flex-1 flex flex-col md:flex-row md:gap-5 min-h-0 px-4 md:px-12 pb-20">
+      <section className="flex flex-col md:flex-row md:flex-1 md:gap-5 md:min-h-0 px-4 md:px-12 pb-20">
 
         {/* ── Left: list ────────────────────────────────────────────────────── */}
-        <div className={`${isMobile && showDetail ? 'hidden' : 'flex'} md:flex w-full md:w-[420px] flex-shrink-0 flex-col h-full overflow-hidden`}>
+        <div className={`${isMobile && showDetail ? 'hidden' : 'flex'} md:flex w-full md:w-[420px] flex-shrink-0 flex-col md:h-full md:overflow-hidden`}>
 
-          {/* Search bar */}
-          <div className={`flex-shrink-0 p-2 border border-b-0 border-outline-variant/20 rounded-t-xl bg-surface-container-low/50 border-t-2 ${
+          {/* Search bar — desktop only */}
+          <div className={`hidden md:block flex-shrink-0 p-2 border border-b-0 border-outline-variant/20 rounded-t-xl bg-surface-container-low/50 border-t-2 ${
             activeTab === 'optimizer' ? 'border-t-secondary/40' :
             activeTab === 'builder'   ? 'border-t-tertiary/40'  : 'border-t-primary/40'
           }`}>
@@ -423,7 +423,7 @@ export default function LeaderboardPage() {
           </div>
 
           {/* List */}
-          <div className="flex-1 overflow-y-auto border border-outline-variant/20 rounded-b-xl bg-surface-container-low/50">
+          <div className="md:flex-1 md:overflow-y-auto border border-outline-variant/20 rounded-xl md:rounded-t-none bg-surface-container-low/50">
             {loadingTabs.has(activeTab) ? (
               <div className="flex items-center justify-center py-12 text-on-surface-variant gap-2 text-sm">
                 <Loader2 size={16} className="animate-spin" /> 加载中...
@@ -523,7 +523,7 @@ export default function LeaderboardPage() {
         </div>
 
         {/* ── Right: detail ─────────────────────────────────────────────────── */}
-        <div className={`${isMobile && !showDetail ? 'hidden' : 'flex'} md:flex flex-1 bg-surface-container-low rounded-xl flex-col h-full overflow-hidden border border-outline-variant/10`}>
+        <div className={`${isMobile && !showDetail ? 'hidden' : 'flex'} md:flex md:flex-1 bg-surface-container-low rounded-xl flex-col md:h-full md:overflow-hidden border border-outline-variant/10`}>
           {previewItem ? (
             <>
               {/* Track color bar */}
@@ -536,7 +536,7 @@ export default function LeaderboardPage() {
               {isMobile && (
                 <button
                   onClick={() => setShowDetail(false)}
-                  className="md:hidden flex items-center gap-1 px-4 py-2.5 text-sm text-on-surface-variant border-b border-outline-variant/10 bg-surface-container-low flex-shrink-0"
+                  className="md:hidden sticky top-0 z-10 flex items-center gap-1 px-4 py-2.5 text-sm text-on-surface-variant border-b border-outline-variant/10 bg-surface-container-low flex-shrink-0"
                 >
                   <ChevronLeft size={16} />
                   <span>返回列表</span>
@@ -612,7 +612,7 @@ export default function LeaderboardPage() {
               </div>
 
               {/* Detail body */}
-              <div className="flex-1 overflow-y-auto px-4 md:px-8 py-6 space-y-6">
+              <div className="md:flex-1 md:overflow-y-auto px-4 md:px-8 py-6 space-y-6">
                 {/* 基本信息（不需要 previewDetail） */}
                 <div className="pb-6 border-b border-outline-variant/20">
                   <p className="text-xs uppercase tracking-widest text-outline font-bold mb-2">负责人</p>

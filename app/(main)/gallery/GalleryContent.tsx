@@ -180,18 +180,18 @@ export default function GalleryContent() {
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-60px)]">
+    <div className="flex flex-col md:h-[calc(100vh-60px)]">
       {/* Header */}
-      <header className="flex-shrink-0 mb-4 px-4 md:px-12 pt-4 pb-2">
+      <header className="flex-shrink-0 mb-4 px-4 md:px-12 pt-4 pb-2 hidden md:block">
         <div>
           <h2 className="font-headline text-2xl md:text-4xl font-bold tracking-tight text-on-surface">Demo Gallery</h2>
         </div>
       </header>
 
-      {/* Split Pane Layout - 独立滚动 */}
-      <section className="flex-1 flex flex-col md:flex-row md:gap-6 min-h-0 px-4 md:px-12 pb-4">
-        {/* Left Pane: Project List - 独立滚动 */}
-        <div className={`${isMobile && showDetail ? 'hidden' : 'flex'} md:flex w-full md:w-1/3 flex-col h-full overflow-hidden`}>
+      {/* Split Pane Layout */}
+      <section className="flex flex-col md:flex-row md:flex-1 md:gap-6 md:min-h-0 px-4 pr-14 md:px-12 pb-4">
+        {/* Left Pane: Project List */}
+        <div className={`${isMobile && showDetail ? 'hidden' : 'flex'} md:flex w-full md:w-1/3 flex-col md:h-full md:overflow-hidden`}>
           {/* Tab Bar */}
           <div className="flex-shrink-0 flex gap-1 p-1 bg-surface-container-low rounded-t-xl">
             <button
@@ -249,7 +249,7 @@ export default function GalleryContent() {
           </div>
 
           {/* Project List - 独立滚动区域 */}
-          <div className="flex-1 overflow-y-auto custom-scrollbar border-x border-b border-outline-variant/20 rounded-b-xl bg-surface-container-low/50">
+          <div className="md:flex-1 md:overflow-y-auto custom-scrollbar border-x border-b border-outline-variant/20 rounded-b-xl bg-surface-container-low/50">
             <div>
               {activeList.length === 0 ? (
                 <p className="text-center text-on-surface-variant text-sm py-8">暂无项目</p>
@@ -313,8 +313,8 @@ export default function GalleryContent() {
           </div>
         </div>
 
-        {/* Right Pane: Project Detail - 独立滚动 */}
-        <div className={`${isMobile && !showDetail ? 'hidden' : 'flex'} md:flex flex-1 bg-surface-container-low rounded-xl flex-col h-full overflow-hidden border border-outline-variant/10`}>
+        {/* Right Pane: Project Detail */}
+        <div className={`${isMobile && !showDetail ? 'hidden' : 'flex'} md:flex md:flex-1 bg-surface-container-low rounded-xl flex-col md:h-full md:overflow-hidden border border-outline-variant/10`}>
           {selectedDemo ? (
             <>
               {/* 彩色顶部细线 */}
@@ -323,7 +323,7 @@ export default function GalleryContent() {
               {isMobile && (
                 <button
                   onClick={() => setShowDetail(false)}
-                  className="md:hidden flex items-center gap-1 px-4 py-2.5 text-sm text-on-surface-variant border-b border-outline-variant/10 bg-surface-container-low flex-shrink-0"
+                  className="md:hidden sticky top-0 z-10 flex items-center gap-1 px-4 py-2.5 text-sm text-on-surface-variant border-b border-outline-variant/10 bg-surface-container-low flex-shrink-0"
                 >
                   <ChevronLeft size={16} />
                   <span>返回列表</span>
@@ -345,7 +345,7 @@ export default function GalleryContent() {
                   {selectedDemo.summary}
                 </p>
               </div>
-              <div className="flex-1 overflow-y-auto custom-scrollbar px-4 md:px-8 py-6">
+              <div className="md:flex-1 md:overflow-y-auto custom-scrollbar px-4 md:px-8 py-6">
                 <div className="flex flex-col gap-8">
                   {/* The Story - Why & How */}
                   {(selectedDemo.background || selectedDemo.solution) && (

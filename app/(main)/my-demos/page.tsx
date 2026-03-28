@@ -895,7 +895,7 @@ export default function MyDemosPage() {
   return (
     <div className="px-4 md:px-12 pb-20 md:pb-12 max-w-4xl">
       {/* Header */}
-      <header className="flex-shrink-0 mb-8 pt-4 pb-2">
+      <header className="flex-shrink-0 mb-4 md:mb-8 pt-4 pb-2 hidden md:block">
         <h2 className="font-headline text-2xl md:text-4xl font-bold tracking-tight text-on-surface">My Demo</h2>
         <p className="text-lg text-on-surface-variant mt-2">
           管理你提交或参与创作的 Demo

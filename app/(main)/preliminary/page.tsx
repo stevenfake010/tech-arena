@@ -301,9 +301,9 @@ export default function PreliminaryPage() {
   // ── Submitted / results view ──────────────────────────────────────────────────
   if (submitted || showResults) {
     return (
-      <div className="flex flex-col h-[calc(100vh-60px)]">
-        <header className="flex-shrink-0 px-4 md:px-12 pt-4 pb-2 flex items-center justify-between">
-          <h2 className="font-headline text-2xl md:text-4xl font-bold text-on-surface">海选投票</h2>
+      <div className="flex flex-col md:h-[calc(100vh-60px)]">
+        <header className="flex-shrink-0 px-4 md:px-12 pt-4 pb-2 flex items-center justify-end md:justify-between">
+          <h2 className="font-headline text-2xl md:text-4xl font-bold text-on-surface hidden md:block">海选投票</h2>
           {config.canViewResults && (
             <button
               onClick={() => setShowResults(v => !v)}
@@ -342,10 +342,10 @@ export default function PreliminaryPage() {
 
   // ── Voting layout (Gallery-style split pane) ──────────────────────────────────
   return (
-    <div className="flex flex-col h-[calc(100vh-60px)]">
+    <div className="flex flex-col md:h-[calc(100vh-60px)]">
 
       {/* ── Header ────────────────────────────────────────────────────────────── */}
-      <header className="flex-shrink-0 px-4 md:px-12 pt-4 pb-2">
+      <header className="flex-shrink-0 px-4 md:px-12 pt-4 pb-2 hidden md:block">
         <div className="flex items-end justify-between">
           <div>
             <h2 className="font-headline text-2xl md:text-4xl font-bold text-on-surface">海选投票</h2>
@@ -376,10 +376,10 @@ export default function PreliminaryPage() {
       )}
 
       {/* ── Split pane ────────────────────────────────────────────────────────── */}
-      <section className="flex-1 flex flex-col md:flex-row md:gap-5 min-h-0 px-4 md:px-12 pb-20"> {/* pb-20 for floating bar */}
+      <section className="flex flex-col md:flex-row md:flex-1 md:gap-5 md:min-h-0 px-4 pr-14 md:px-12 pb-20">
 
         {/* ── Left: list ──────────────────────────────────────────────────────── */}
-        <div className={`${isMobile && showDetail ? 'hidden' : 'flex'} md:flex w-full md:w-[320px] flex-shrink-0 flex-col h-full overflow-hidden`}>
+        <div className={`${isMobile && showDetail ? 'hidden' : 'flex'} md:flex w-full md:w-[320px] flex-shrink-0 flex-col md:h-full md:overflow-hidden`}>
 
           {/* Track tabs */}
           <div className="flex-shrink-0 flex gap-1 p-1 bg-surface-container-low rounded-t-xl">
@@ -408,7 +408,7 @@ export default function PreliminaryPage() {
           </div>
 
           {/* List */}
-          <div className="flex-1 overflow-y-auto border-x border-b border-outline-variant/20 rounded-b-xl bg-surface-container-low/50">
+          <div className="md:flex-1 md:overflow-y-auto border-x border-b border-outline-variant/20 rounded-b-xl bg-surface-container-low/50">
             {listDemos.length === 0 ? (
               <div className="flex items-center justify-center py-12 text-on-surface-variant text-sm">
                 <Loader2 size={16} className="animate-spin mr-2" />加载中...
@@ -471,7 +471,7 @@ export default function PreliminaryPage() {
         </div>
 
         {/* ── Right: detail ───────────────────────────────────────────────────── */}
-        <div className={`${isMobile && !showDetail ? 'hidden' : 'flex'} md:flex flex-1 bg-surface-container-low rounded-xl flex-col h-full overflow-hidden border border-outline-variant/10`}>
+        <div className={`${isMobile && !showDetail ? 'hidden' : 'flex'} md:flex md:flex-1 bg-surface-container-low rounded-xl flex-col md:h-full md:overflow-hidden border border-outline-variant/10`}>
           {detail ? (
             <>
               {/* Track color bar */}
@@ -481,7 +481,7 @@ export default function PreliminaryPage() {
               {isMobile && (
                 <button
                   onClick={() => setShowDetail(false)}
-                  className="md:hidden flex items-center gap-1 px-4 py-2.5 text-sm text-on-surface-variant border-b border-outline-variant/10 bg-surface-container-low flex-shrink-0"
+                  className="md:hidden sticky top-0 z-10 flex items-center gap-1 px-4 py-2.5 text-sm text-on-surface-variant border-b border-outline-variant/10 bg-surface-container-low flex-shrink-0"
                 >
                   <ChevronLeft size={16} />
                   <span>返回列表</span>
@@ -520,7 +520,7 @@ export default function PreliminaryPage() {
               </div>
 
               {/* Detail body */}
-              <div className="flex-1 overflow-y-auto px-4 md:px-8 py-6 space-y-6">
+              <div className="md:flex-1 md:overflow-y-auto px-4 md:px-8 py-6 space-y-6">
                 {(detail.background || detail.solution) && (
                   <div className="space-y-5 pb-6 border-b border-outline-variant/20">
                     {detail.background && (

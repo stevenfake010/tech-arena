@@ -93,7 +93,7 @@ export default function LeaderboardPreviewPage() {
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-60px)]">
+    <div className="flex flex-col md:h-[calc(100vh-60px)]">
 
       {/* ── Preview mode switcher ──────────────────────────────────────────── */}
       <div className="flex-shrink-0 border-b border-outline-variant/20 px-4 md:px-12 py-2 flex items-center gap-4 bg-surface-container-lowest">
@@ -119,7 +119,7 @@ export default function LeaderboardPreviewPage() {
       </div>
 
       {/* ── Header ──────────────────────────────────────────────────────────── */}
-      <header className="flex-shrink-0 px-4 md:px-12 pt-4 pb-2">
+      <header className="flex-shrink-0 px-4 md:px-12 pt-4 pb-2 hidden md:block">
         <h2 className="font-headline text-2xl md:text-4xl font-bold text-on-surface">Demo Leaderboard</h2>
         <p className="text-sm text-on-surface-variant mt-0.5">
           最佳Demo各赛道 3 票 · 专项奖 1 票 · 评委权重 ×2 · 投后不可修改
@@ -154,18 +154,18 @@ export default function LeaderboardPreviewPage() {
       </div>
 
       {/* ── Split pane ──────────────────────────────────────────────────────── */}
-      <section className="flex-1 flex flex-col md:flex-row md:gap-5 min-h-0 px-4 md:px-12 pb-20">
+      <section className="flex flex-col md:flex-row md:flex-1 md:gap-5 md:min-h-0 px-4 md:px-12 pb-20">
 
         {/* Left list */}
-        <div className={`${isMobile && showDetail ? 'hidden' : 'flex'} md:flex w-full md:w-[420px] flex-shrink-0 flex-col h-full overflow-hidden`}>
-          <div className="flex-shrink-0 p-2 border border-b-0 border-outline-variant/20 rounded-t-xl bg-surface-container-low/50 border-t-2 border-t-secondary/40">
+        <div className={`${isMobile && showDetail ? 'hidden' : 'flex'} md:flex w-full md:w-[420px] flex-shrink-0 flex-col md:h-full md:overflow-hidden`}>
+          <div className="hidden md:block flex-shrink-0 p-2 border border-b-0 border-outline-variant/20 rounded-t-xl bg-surface-container-low/50 border-t-2 border-t-secondary/40">
             <input
               readOnly
               placeholder="搜索项目或作者..."
               className="w-full bg-surface-container-lowest border border-outline-variant/30 text-sm px-3 py-2 rounded-lg placeholder:text-outline/60"
             />
           </div>
-          <div className="flex-1 overflow-y-auto border border-outline-variant/20 rounded-b-xl bg-surface-container-low/50">
+          <div className="md:flex-1 md:overflow-y-auto border border-outline-variant/20 rounded-xl md:rounded-t-none bg-surface-container-low/50">
             {sortedDemos.map((item, index) => {
               const showDivider = showResults && index === rankMap.size && rankMap.size > 0;
               const voted    = myVotes.some(v => v.demo_id === item.id);
@@ -245,13 +245,13 @@ export default function LeaderboardPreviewPage() {
         </div>
 
         {/* Right detail */}
-        <div className={`${isMobile && !showDetail ? 'hidden' : 'flex'} md:flex flex-1 bg-surface-container-low rounded-xl flex-col h-full overflow-hidden border border-outline-variant/10`}>
+        <div className={`${isMobile && !showDetail ? 'hidden' : 'flex'} md:flex md:flex-1 bg-surface-container-low rounded-xl flex-col md:h-full md:overflow-hidden border border-outline-variant/10`}>
           <div className="h-0.5 flex-shrink-0 bg-secondary" />
 
           {isMobile && (
             <button
               onClick={() => setShowDetail(false)}
-              className="md:hidden flex items-center gap-1 px-4 py-2.5 text-sm text-on-surface-variant border-b border-outline-variant/10 bg-surface-container-low flex-shrink-0"
+              className="md:hidden sticky top-0 z-10 flex items-center gap-1 px-4 py-2.5 text-sm text-on-surface-variant border-b border-outline-variant/10 bg-surface-container-low flex-shrink-0"
             >
               <ChevronLeft size={16} />
               <span>返回列表</span>
@@ -310,7 +310,7 @@ export default function LeaderboardPreviewPage() {
           </div>
 
           {/* Body */}
-          <div className="flex-1 overflow-y-auto px-4 md:px-8 py-6 space-y-6">
+          <div className="md:flex-1 md:overflow-y-auto px-4 md:px-8 py-6 space-y-6">
             <div className="space-y-5 pb-6 border-b border-outline-variant/20">
               <div>
                 <p className="text-xs uppercase tracking-widest text-secondary font-bold mb-2">Why / 为什么要做</p>
