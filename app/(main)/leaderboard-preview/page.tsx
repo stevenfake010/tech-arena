@@ -119,7 +119,7 @@ export default function LeaderboardPreviewPage() {
       </div>
 
       {/* ── Header ──────────────────────────────────────────────────────────── */}
-      <header className="flex-shrink-0 px-4 md:px-12 pt-4 pb-2 hidden md:block">
+      <header className="flex-shrink-0 px-4 md:px-12 pt-4 pb-2">
         <h2 className="font-headline text-2xl md:text-4xl font-bold text-on-surface">Demo Leaderboard</h2>
         <p className="text-sm text-on-surface-variant mt-0.5">
           最佳Demo各赛道 3 票 · 专项奖 1 票 · 评委权重 ×2 · 投后不可修改

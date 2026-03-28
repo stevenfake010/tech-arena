@@ -318,7 +318,7 @@ export default function LeaderboardPage() {
     <div className="flex flex-col md:h-[calc(100vh-60px)]">
 
       {/* ── Header ──────────────────────────────────────────────────────────── */}
-      <header className="flex-shrink-0 px-4 md:px-12 pt-4 pb-2 hidden md:block">
+      <header className="flex-shrink-0 px-4 md:px-12 pt-4 pb-2">
         <h2 className="font-headline text-2xl md:text-4xl font-bold text-on-surface">Demo Leaderboard</h2>
         <p className="text-sm text-on-surface-variant mt-0.5">
           最佳Demo各赛道 {BEST_DEMO_AWARDS.best_optimizer.maxVotes} 票 · 专项奖 1 票 · 评委权重 ×2 · 投后不可修改
@@ -349,7 +349,7 @@ export default function LeaderboardPage() {
       )}
 
       {/* ── Tab bar ─────────────────────────────────────────────────────────── */}
-      <div className="flex-shrink-0 px-4 pr-14 md:px-12 pt-3 pb-2 flex items-center gap-2 md:gap-4 overflow-x-auto no-scrollbar">
+      <div className="flex-shrink-0 px-4 md:px-12 pt-3 pb-2 flex items-center gap-2 md:gap-4 overflow-x-auto no-scrollbar">
         {/* Best Demo group */}
         <div className="flex items-center gap-1.5 md:gap-2 flex-shrink-0">
           <span className="text-xs font-bold text-on-surface-variant/50 uppercase tracking-wider whitespace-nowrap hidden md:inline">🏆 最佳Demo</span>

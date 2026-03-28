@@ -302,8 +302,8 @@ export default function PreliminaryPage() {
   if (submitted || showResults) {
     return (
       <div className="flex flex-col md:h-[calc(100vh-60px)]">
-        <header className="flex-shrink-0 px-4 md:px-12 pt-4 pb-2 flex items-center justify-end md:justify-between">
-          <h2 className="font-headline text-2xl md:text-4xl font-bold text-on-surface hidden md:block">海选投票</h2>
+        <header className="flex-shrink-0 px-4 md:px-12 pt-4 pb-2 flex items-center justify-between">
+          <h2 className="font-headline text-2xl md:text-4xl font-bold text-on-surface">海选投票</h2>
           {config.canViewResults && (
             <button
               onClick={() => setShowResults(v => !v)}
@@ -345,7 +345,7 @@ export default function PreliminaryPage() {
     <div className="flex flex-col md:h-[calc(100vh-60px)]">
 
       {/* ── Header ────────────────────────────────────────────────────────────── */}
-      <header className="flex-shrink-0 px-4 md:px-12 pt-4 pb-2 hidden md:block">
+      <header className="flex-shrink-0 px-4 md:px-12 pt-4 pb-2">
         <div className="flex items-end justify-between">
           <div>
             <h2 className="font-headline text-2xl md:text-4xl font-bold text-on-surface">海选投票</h2>
@@ -376,7 +376,7 @@ export default function PreliminaryPage() {
       )}
 
       {/* ── Split pane ────────────────────────────────────────────────────────── */}
-      <section className="flex flex-col md:flex-row md:flex-1 md:gap-5 md:min-h-0 px-4 pr-14 md:px-12 pb-20">
+      <section className="flex flex-col md:flex-row md:flex-1 md:gap-5 md:min-h-0 px-4 md:px-12 pb-20">
 
         {/* ── Left: list ──────────────────────────────────────────────────────── */}
         <div className={`${isMobile && showDetail ? 'hidden' : 'flex'} md:flex w-full md:w-[320px] flex-shrink-0 flex-col md:h-full md:overflow-hidden`}>

@@ -182,14 +182,14 @@ export default function GalleryContent() {
   return (
     <div className="flex flex-col md:h-[calc(100vh-60px)]">
       {/* Header */}
-      <header className="flex-shrink-0 mb-4 px-4 md:px-12 pt-4 pb-2 hidden md:block">
+      <header className="flex-shrink-0 mb-4 px-4 md:px-12 pt-4 pb-2">
         <div>
           <h2 className="font-headline text-2xl md:text-4xl font-bold tracking-tight text-on-surface">Demo Gallery</h2>
         </div>
       </header>
 
       {/* Split Pane Layout */}
-      <section className="flex flex-col md:flex-row md:flex-1 md:gap-6 md:min-h-0 px-4 pr-14 md:px-12 pb-4">
+      <section className="flex flex-col md:flex-row md:flex-1 md:gap-6 md:min-h-0 px-4 md:px-12 pb-4">
         {/* Left Pane: Project List */}
         <div className={`${isMobile && showDetail ? 'hidden' : 'flex'} md:flex w-full md:w-1/3 flex-col md:h-full md:overflow-hidden`}>
           {/* Tab Bar */}
