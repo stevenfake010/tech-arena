@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
-import { PRO_JUDGE_WEIGHT, NORMAL_WEIGHT, BEST_DEMO_AWARDS, SPECIAL_AWARDS } from '@/lib/constants';
+import { BEST_DEMO_AWARDS, SPECIAL_AWARDS } from '@/lib/constants';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -52,11 +52,7 @@ export async function GET(request: Request) {
   
   const { data: votes, error: votesError } = await supabase
     .from('votes')
-    .select(`
-      demo_id,
-      vote_type,
-      voter:voter_id(id, role)
-    `)
+    .select('demo_id')
     .eq('vote_type', voteType)
     .in('demo_id', demoIds) as { data: any[]; error: any };
 
@@ -64,17 +60,37 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: votesError.message }, { status: 500 });
   }
 
-  // 计算分数（考虑评委权重）
+  // 计算分数（每票均等权重 1）
   const scores: Record<number, { score: number; vote_count: number }> = {};
-  
+
   for (const vote of (votes || [])) {
     const demoId = vote.demo_id;
     if (!scores[demoId]) {
       scores[demoId] = { score: 0, vote_count: 0 };
     }
-    const weight = (vote.voter as any)?.role === 'pro_judge' ? PRO_JUDGE_WEIGHT : NORMAL_WEIGHT;
-    scores[demoId].score += weight;
+    scores[demoId].score += 1;
     scores[demoId].vote_count += 1;
+  }
+
+  // 读取管理员加票配置
+  const { data: bonusConfig } = await supabase
+    .from('site_config')
+    .select('value')
+    .eq('key', 'bonus_votes')
+    .maybeSingle() as { data: { value: string } | null };
+
+  if (bonusConfig?.value) {
+    try {
+      const bonusVotes: Array<{ demo_id: number; vote_type: string; bonus: number }> = JSON.parse(bonusConfig.value);
+      for (const bv of bonusVotes) {
+        if (bv.vote_type === voteType && demoIds.includes(bv.demo_id) && bv.bonus > 0) {
+          if (!scores[bv.demo_id]) {
+            scores[bv.demo_id] = { score: 0, vote_count: 0 };
+          }
+          scores[bv.demo_id].score += bv.bonus;
+        }
+      }
+    } catch {}
   }
 
   // 组装 leaderboard
@@ -90,7 +106,7 @@ export async function GET(request: Request) {
     keywords: demo.keywords,
     submitted_by: demo.submitted_by,
     score: scores[demo.id]?.score || 0,
-    vote_count: scores[demo.id]?.score || 0,  // 展示加权后的票数（评委权重×2）
+    vote_count: scores[demo.id]?.vote_count || 0,
   }));
 
   // 按拼音排序（前端会根据投票状态重新排序）

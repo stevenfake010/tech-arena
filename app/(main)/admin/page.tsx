@@ -92,6 +92,18 @@ export default function AdminPage() {
   const [navPreliminaryVisible, setNavPreliminaryVisible] = useState(false);
   const [navConfigLoading, setNavConfigLoading] = useState(false);
 
+  // 加票管理
+  interface BonusVoteEntry { demo_id: number; vote_type: string; bonus: number; }
+  interface BonusDemoOption { id: number; name: string; track: string; }
+  const [bonusVotes, setBonusVotes] = useState<BonusVoteEntry[]>([]);
+  const [bonusDemos, setBonusDemos] = useState<BonusDemoOption[]>([]);
+  const [bonusLoading, setBonusLoading] = useState(false);
+  const [bonusSaving, setBonusSaving] = useState(false);
+  const [newBonusDemoId, setNewBonusDemoId] = useState('');
+  const [newBonusVoteType, setNewBonusVoteType] = useState('best_optimizer');
+  const [newBonusCount, setNewBonusCount] = useState('1');
+  const [bonusDemoSearch, setBonusDemoSearch] = useState('');
+
   // 海选投票配置
   const [prelimEnabled, setPrelimEnabled] = useState(false);
   const [prelimMode, setPrelimMode] = useState<'A' | 'B'>('A');
@@ -212,8 +224,11 @@ export default function AdminPage() {
   };
 
   useEffect(() => {
-    if (!loading && activeTab === 'settings') loadSiteStatus();
-    if (!loading && activeTab === 'settings') loadPrelimConfig();
+    if (!loading && activeTab === 'settings') {
+      loadSiteStatus();
+      loadPrelimConfig();
+      loadBonusVotes();
+    }
   }, [activeTab, loading]);
 
   // 切换提交开关
@@ -463,6 +478,64 @@ export default function AdminPage() {
     } finally {
       setNavConfigLoading(false);
     }
+  };
+
+  // 加载加票配置
+  const loadBonusVotes = async () => {
+    setBonusLoading(true);
+    try {
+      const res = await fetch('/api/admin/bonus-votes');
+      const data = await res.json();
+      if (res.ok) {
+        setBonusVotes(data.bonusVotes || []);
+        setBonusDemos(data.demos || []);
+      }
+    } catch {}
+    finally { setBonusLoading(false); }
+  };
+
+  // 保存加票配置
+  const saveBonusVotes = async (updated: BonusVoteEntry[]) => {
+    setBonusSaving(true);
+    try {
+      const res = await fetch('/api/admin/bonus-votes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bonusVotes: updated }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setBonusVotes(updated);
+        setResult({ type: 'success', message: '加票配置已保存' });
+      } else {
+        setResult({ type: 'error', message: data.error || '保存失败' });
+      }
+    } catch {
+      setResult({ type: 'error', message: '网络错误' });
+    } finally {
+      setBonusSaving(false);
+    }
+  };
+
+  const addBonusVote = () => {
+    const demoId = parseInt(newBonusDemoId, 10);
+    const bonus = parseInt(newBonusCount, 10);
+    if (!demoId || !newBonusVoteType || bonus <= 0) return;
+    // merge or add
+    const existing = bonusVotes.findIndex(b => b.demo_id === demoId && b.vote_type === newBonusVoteType);
+    let updated: BonusVoteEntry[];
+    if (existing >= 0) {
+      updated = bonusVotes.map((b, i) => i === existing ? { ...b, bonus } : b);
+    } else {
+      updated = [...bonusVotes, { demo_id: demoId, vote_type: newBonusVoteType, bonus }];
+    }
+    saveBonusVotes(updated);
+    setNewBonusDemoId('');
+    setNewBonusCount('1');
+  };
+
+  const removeBonusVote = (idx: number) => {
+    saveBonusVotes(bonusVotes.filter((_, i) => i !== idx));
   };
 
   // 加载海选结果
@@ -1029,6 +1102,133 @@ export default function AdminPage() {
                     {navConfigLoading ? <Loader2 size={14} className="animate-spin" /> : navPreliminaryVisible ? '隐藏' : '显示'}
                   </button>
                 </div>
+              </div>
+            </section>
+
+            {/* ─── 加票管理 ─── */}
+            <section>
+              <h2 className="text-lg font-bold text-on-surface mb-4 flex items-center gap-2">
+                <Trophy size={18} className="text-primary" />
+                加票管理
+              </h2>
+              <div className="bg-surface-container-low rounded-xl border border-outline-variant/20 p-6 space-y-5">
+                <p className="text-xs text-on-surface-variant">为特定项目在特定奖项下额外加票（不影响普通投票计数）。</p>
+
+                {/* 新增加票 */}
+                <div className="flex flex-wrap gap-3 items-end">
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs font-medium text-on-surface-variant">项目</label>
+                    <div className="flex flex-col gap-1 min-w-[220px]">
+                      <input
+                        type="text"
+                        placeholder="搜索项目名称..."
+                        value={bonusDemoSearch}
+                        onChange={e => { setBonusDemoSearch(e.target.value); setNewBonusDemoId(''); }}
+                        className="px-3 py-2 bg-surface border border-outline-variant/30 rounded-lg text-sm focus:border-primary focus:outline-none"
+                      />
+                      <select
+                        value={newBonusDemoId}
+                        onChange={e => setNewBonusDemoId(e.target.value)}
+                        size={Math.min(6, bonusDemos.filter(d => !bonusDemoSearch || d.name.includes(bonusDemoSearch)).length + 1)}
+                        className="px-3 py-1 bg-surface border border-outline-variant/30 rounded-lg text-sm focus:border-primary focus:outline-none"
+                      >
+                        <option value="">请选择项目</option>
+                        {bonusDemos
+                          .filter(d => !bonusDemoSearch || d.name.toLowerCase().includes(bonusDemoSearch.toLowerCase()))
+                          .map(d => (
+                            <option key={d.id} value={d.id}>
+                              [{d.track === 'optimizer' ? 'O' : 'B'}] {d.name}
+                            </option>
+                          ))}
+                      </select>
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs font-medium text-on-surface-variant">奖项</label>
+                    <select
+                      value={newBonusVoteType}
+                      onChange={e => setNewBonusVoteType(e.target.value)}
+                      className="px-3 py-2 bg-surface border border-outline-variant/30 rounded-lg text-sm focus:border-primary focus:outline-none"
+                    >
+                      <option value="best_optimizer">最佳 Optimizer</option>
+                      <option value="best_builder">最佳 Builder</option>
+                      <option value="special_brain">🧠 最脑洞</option>
+                      <option value="special_infectious">🔥 最感染力</option>
+                      <option value="special_useful">💎 最实用</option>
+                    </select>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs font-medium text-on-surface-variant">加票数</label>
+                    <input
+                      type="number"
+                      min={1}
+                      max={999}
+                      value={newBonusCount}
+                      onChange={e => setNewBonusCount(e.target.value)}
+                      className="w-20 px-3 py-2 bg-surface border border-outline-variant/30 rounded-lg text-sm focus:border-primary focus:outline-none"
+                    />
+                  </div>
+                  <button
+                    onClick={addBonusVote}
+                    disabled={bonusSaving || !newBonusDemoId}
+                    className="px-4 py-2 bg-primary text-on-primary rounded-lg text-sm font-medium hover:opacity-90 transition-colors flex items-center gap-2 disabled:opacity-50"
+                  >
+                    {bonusSaving ? <Loader2 size={14} className="animate-spin" /> : <PlusCircle size={14} />}
+                    添加
+                  </button>
+                </div>
+
+                {/* 当前加票列表 */}
+                {bonusLoading ? (
+                  <div className="flex justify-center py-4"><Loader2 size={18} className="animate-spin text-on-surface-variant" /></div>
+                ) : bonusVotes.length === 0 ? (
+                  <p className="text-sm text-on-surface-variant text-center py-2">暂无加票记录</p>
+                ) : (
+                  <div className="rounded-xl border border-outline-variant/10 overflow-hidden">
+                    <table className="w-full">
+                      <thead className="bg-surface-container/60">
+                        <tr>
+                          <th className="py-2 px-4 text-xs text-on-surface-variant font-medium text-left">项目</th>
+                          <th className="py-2 px-4 text-xs text-on-surface-variant font-medium text-left">奖项</th>
+                          <th className="py-2 px-4 text-xs text-on-surface-variant font-medium text-right">加票数</th>
+                          <th className="py-2 px-3 text-xs text-on-surface-variant font-medium text-right">操作</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-outline-variant/10">
+                        {bonusVotes.map((bv, idx) => {
+                          const demo = bonusDemos.find(d => d.id === bv.demo_id);
+                          const voteTypeLabels: Record<string, string> = {
+                            best_optimizer: '最佳 Optimizer',
+                            best_builder: '最佳 Builder',
+                            special_brain: '🧠 最脑洞',
+                            special_infectious: '🔥 最感染力',
+                            special_useful: '💎 最实用',
+                          };
+                          return (
+                            <tr key={idx} className="hover:bg-surface-container/40 transition-colors">
+                              <td className="py-2 px-4 text-sm text-on-surface">
+                                {demo ? demo.name : `#${bv.demo_id}`}
+                              </td>
+                              <td className="py-2 px-4 text-xs text-on-surface-variant">
+                                {voteTypeLabels[bv.vote_type] || bv.vote_type}
+                              </td>
+                              <td className="py-2 px-4 text-right font-bold text-on-surface">+{bv.bonus}</td>
+                              <td className="py-2 px-3 text-right">
+                                <button
+                                  onClick={() => removeBonusVote(idx)}
+                                  disabled={bonusSaving}
+                                  className="p-1.5 text-error hover:bg-error/10 rounded-lg transition-colors disabled:opacity-50"
+                                >
+                                  <Trash2 size={14} />
+                                </button>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </div>
             </section>
 

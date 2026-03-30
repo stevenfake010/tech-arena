@@ -258,7 +258,7 @@ export default function PreliminaryPage() {
               <CheckCircle size={32} className="text-secondary" />
             </div>
             <h3 className="font-headline text-2xl font-bold mb-2">海选已提交</h3>
-            <p className="text-on-surface-variant">感谢你的参与，结果将在周二晚间公布。</p>
+            <p className="text-on-surface-variant">感谢你的参与，结果将在周二公布。</p>
           </div>
         </div>
       </div>
