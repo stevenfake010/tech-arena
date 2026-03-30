@@ -377,16 +377,16 @@ export default function PreliminaryPage() {
                     onClick={() => { setPreviewDemo(demo); if (isMobile) setShowDetail(true); }}
                   >
                     <div className="flex items-start justify-between gap-2 mb-0.5">
-                      <h3 className="font-headline text-sm font-bold leading-snug line-clamp-2 text-on-surface flex-1 min-w-0">{demo.name}</h3>
-                      <span className="text-xs text-on-surface-variant/50 flex-shrink-0 mt-0.5">
+                      <h3 className="font-headline text-base font-bold leading-tight line-clamp-2 text-on-surface flex-1 min-w-0">{demo.name}</h3>
+                      <span className="text-xs text-outline flex-shrink-0 mt-0.5">
                         {demo.submitter1_name}{demo.submitter2_name ? ` +1` : ''}
                       </span>
                     </div>
-                    <p className="text-xs text-on-surface-variant/60 line-clamp-1 mb-1.5">{demo.summary}</p>
+                    <p className="text-sm text-on-surface-variant line-clamp-1 mb-1.5">{demo.summary}</p>
                     {keywords.length > 0 && (
                       <div className="flex items-center gap-1 flex-wrap">
                         {keywords.map((kw, i) => (
-                          <span key={i} className={`text-[11px] px-1.5 py-0.5 rounded ${
+                          <span key={i} className={`text-xs px-1.5 py-0.5 rounded ${
                             activeTrack === 'optimizer' ? 'bg-secondary/10 text-secondary' : 'bg-tertiary/10 text-tertiary'
                           }`}>{kw}</span>
                         ))}
