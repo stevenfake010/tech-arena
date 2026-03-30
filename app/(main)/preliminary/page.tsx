@@ -285,6 +285,12 @@ export default function PreliminaryPage() {
         </div>
       </header>
 
+      {/* ── 截止通知 ──────────────────────────────────────────────────────────── */}
+      <div className="mx-4 md:mx-12 mb-2 mt-1 px-4 py-2.5 bg-amber-50 border border-amber-200 rounded-xl flex items-center gap-2 text-sm text-amber-800 flex-shrink-0">
+        <span className="text-base">⏰</span>
+        <span>海选截止 <strong>3月31日（周二）中午 12:00</strong>，请尽快完成投票</span>
+      </div>
+
       {/* ── Toast ─────────────────────────────────────────────────────────────── */}
       {message && (
         <div className={`mx-4 md:mx-12 mb-2 p-3 rounded-xl flex items-center gap-3 text-sm flex-shrink-0 ${

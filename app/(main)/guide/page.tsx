@@ -10,9 +10,9 @@ export default function GuidePage() {
 
   const agenda = [
     { time: '13:30 – 13:45', title: '开场白', title2: '& 规则介绍', sub1: null, sub2: null, track: null },
-    { time: '13:45 起', title: 'Optimizer', title2: '赛道路演', sub1: '约 2–2.5 小时', sub2: '10–15 个项目', track: 'optimizer' },
+    { time: '13:45 起', title: 'Optimizer', title2: '赛道路演', sub1: '约 2–2.5 小时', sub2: null, track: 'optimizer' },
     { time: '中场', title: '茶歇', title2: null, sub1: null, sub2: null, track: null },
-    { time: '接续', title: 'Builder', title2: '赛道路演', sub1: '约 2–2.5 小时', sub2: '10–15 个项目', track: 'builder' },
+    { time: '接续', title: 'Builder', title2: '赛道路演', sub1: '约 2–2.5 小时', sub2: null, track: 'builder' },
     { time: '18:45–19:00', title: '结语', title2: '& 评奖', sub1: null, sub2: null, track: null },
   ];
 
@@ -186,7 +186,7 @@ export default function GuidePage() {
                 </p>
                 {item.sub1 && (
                   <p className="text-xs text-on-surface-variant/60 mt-1.5 leading-relaxed">
-                    {item.sub1}<br />{item.sub2}
+                    {item.sub1}{item.sub2 && <><br />{item.sub2}</>}
                   </p>
                 )}
               </div>
