@@ -288,7 +288,7 @@ export default function PreliminaryPage() {
       {/* ── 截止通知 ──────────────────────────────────────────────────────────── */}
       <div className="mx-4 md:mx-12 mb-2 mt-1 px-4 py-2.5 bg-amber-50 border border-amber-200 rounded-xl flex items-center gap-2 text-sm text-amber-800 flex-shrink-0">
         <span className="text-base">⏰</span>
-        <span>海选截止 <strong>3月30日（周一）24:00</strong>，请尽快完成投票</span>
+        <span>海选截止 <strong>3月30日（周一）24:00</strong></span>
       </div>
 
       {/* ── Toast ─────────────────────────────────────────────────────────────── */}
