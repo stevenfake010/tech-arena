@@ -97,7 +97,7 @@ function EntryPortalContent() {
   }
 
   return (
-    <main className="relative h-screen w-full bg-surface overflow-hidden">
+    <main className="relative min-h-screen w-full bg-surface overflow-y-auto">
       {/* Background Grid */}
       <div className="absolute inset-0 z-0 opacity-[0.08] pointer-events-none overflow-hidden">
         <div className="w-full h-full" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, #767c74 1px, transparent 0)', backgroundSize: '48px 48px' }} />
@@ -115,7 +115,7 @@ function EntryPortalContent() {
       </header>
 
       {/* Main Content - Registration Card */}
-      <div className="relative z-10 h-full flex items-center justify-center p-6 sm:p-12 pt-24">
+      <div className="relative z-10 min-h-screen flex flex-col items-center justify-center p-6 sm:p-12 pt-24 pb-12">
         <div className="w-full max-w-md bg-white p-10 sm:p-12 flex flex-col gap-8 shadow-[0_40px_80px_-15px_rgba(0,0,0,0.08)] border border-surface-container-high/50">
           <header className="flex flex-col gap-3">
             <h2 className="text-3xl font-headline font-bold leading-tight text-on-surface">{t.login.registration}</h2>
@@ -216,13 +216,13 @@ function EntryPortalContent() {
             </div>
           </form>
         </div>
-      </div>
 
-      {/* Footer Contact Info */}
-      <div className="fixed bottom-6 left-0 right-0 z-20 text-center">
-        <p className="text-xs text-on-surface-variant/50">
-          如需调整登录名单，请联系恒宇
-        </p>
+        {/* Footer Contact Info */}
+        <div className="mt-6 text-center">
+          <p className="text-xs text-on-surface-variant/50">
+            如需调整登录名单，请联系恒宇
+          </p>
+        </div>
       </div>
 
       {/* Left Edge Decoration */}
