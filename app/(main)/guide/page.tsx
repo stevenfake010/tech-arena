@@ -99,10 +99,11 @@ export default function GuidePage() {
 
   const agenda = [
     { time: '13:30 – 13:45', title: '开场白', title2: '& 规则介绍', sub1: null, sub2: null, track: null },
-    { time: '13:45 起', title: 'Optimizer', title2: '赛道路演', sub1: '约 2.5 小时', sub2: null, track: 'optimizer' },
-    { time: '中场', title: '茶歇', title2: null, sub1: null, sub2: null, track: null },
-    { time: '接续', title: 'Builder', title2: '赛道路演', sub1: '约 2.5 小时', sub2: null, track: 'builder' },
-    { time: '', title: '结语 & 评奖', title2: null, sub1: '25分钟', sub2: null, track: null },
+    { time: '13:45 – 16:15', title: 'Optimizer', title2: '赛道路演', sub1: '项目展演、投票、评委点评', sub2: null, track: 'optimizer' },
+    { time: '16:15 – 16:30', title: '茶歇', title2: null, sub1: null, sub2: null, track: null },
+    { time: '16:30 – 19:00', title: 'Builder', title2: '赛道路演', sub1: '项目展演、投票、评委点评', sub2: null, track: 'builder' },
+    { time: '19:00 – 19:10', title: '茶歇', title2: null, sub1: null, sub2: null, track: null },
+    { time: '19:10 – 19:45', title: '颁奖典礼', title2: '评委点评、结语', sub1: null, sub2: null, track: null },
   ];
 
   function openSubmit(track: 'optimizer' | 'builder') {
@@ -138,22 +139,22 @@ export default function GuidePage() {
             onClick={() => openSubmit('optimizer')}
             className="group text-left rounded-xl bg-surface-container-low border-x border-b border-outline-variant/15 border-t-[3px] border-t-secondary hover:shadow-md transition-all"
           >
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-4">
+            <div className="p-4">
+              <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <span className="text-xl">⚡</span>
                   <span className="font-headline text-xl font-bold text-on-surface">Optimizer</span>
                 </div>
                 <span className="text-xs font-semibold text-secondary bg-secondary/10 px-2.5 py-1 rounded-full">个人参赛</span>
               </div>
-              <div className="space-y-3 mb-5">
+              <div className="space-y-2 mb-3">
                 <div>
                   <span className="text-xs font-bold text-secondary bg-secondary/10 px-1.5 py-0.5 rounded">原则</span>
-                  <p className="text-sm text-on-surface-variant mt-1.5 leading-relaxed">重构工作流，极致提高效率，用 AI 把自己武装成全能战士</p>
+                  <p className="text-sm text-on-surface-variant mt-1 leading-relaxed">重构工作流，极致提高效率，用 AI 把自己武装成全能战士</p>
                 </div>
                 <div>
                   <span className="text-xs font-bold text-secondary bg-secondary/10 px-1.5 py-0.5 rounded">实现形式</span>
-                  <p className="text-sm text-on-surface-variant mt-1.5">AI Skills、AI Workflow 等</p>
+                  <p className="text-sm text-on-surface-variant mt-1">AI Skills、AI Workflow 等</p>
                 </div>
               </div>
               <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-secondary group-hover:gap-3 transition-all duration-200">
@@ -167,22 +168,22 @@ export default function GuidePage() {
             onClick={() => openSubmit('builder')}
             className="group text-left rounded-xl bg-surface-container-low border-x border-b border-outline-variant/15 border-t-[3px] border-t-tertiary hover:shadow-md transition-all"
           >
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-4">
+            <div className="p-4">
+              <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <span className="text-xl">🛠️</span>
                   <span className="font-headline text-xl font-bold text-on-surface">Builder</span>
                 </div>
                 <span className="text-xs font-semibold text-tertiary bg-tertiary/10 px-2.5 py-1 rounded-full">≤ 2 人</span>
               </div>
-              <div className="space-y-3 mb-5">
+              <div className="space-y-2 mb-3">
                 <div>
                   <span className="text-xs font-bold text-tertiary bg-tertiary/10 px-1.5 py-0.5 rounded">原则</span>
-                  <p className="text-sm text-on-surface-variant mt-1.5 leading-relaxed">设计一个小红书功能，或是有小红书 DNA 的有趣独立产品</p>
+                  <p className="text-sm text-on-surface-variant mt-1 leading-relaxed">设计一个小红书功能，或是有小红书 DNA 的有趣独立产品</p>
                 </div>
                 <div>
                   <span className="text-xs font-bold text-tertiary bg-tertiary/10 px-1.5 py-0.5 rounded">实现形式</span>
-                  <p className="text-sm text-on-surface-variant mt-1.5">产品 Demo/概念，或可以落地的产品</p>
+                  <p className="text-sm text-on-surface-variant mt-1">产品 Demo/概念，或可以落地的产品</p>
                 </div>
               </div>
               <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-tertiary group-hover:gap-3 transition-all duration-200">
@@ -193,62 +194,18 @@ export default function GuidePage() {
         </div>
       </section>
 
-      {/* ── 时间线（横向）── */}
+      {/* ── Demo Day日程 ── */}
       <section className="mb-12">
-        <SectionTitle>时间线</SectionTitle>
-        <div className="mb-8" />
-        <div className="relative flex flex-col md:flex-row">
-          <div
-            className="absolute top-[9px] h-px bg-outline-variant/30 hidden md:block"
-            style={{ left: 'calc(12.5%)', right: 'calc(12.5%)' }}
-          />
-          <div className="absolute left-[8px] top-0 bottom-0 w-px bg-outline-variant/30 md:hidden" />
-          {timeline.map((item, i) => (
-            <div key={i} className="flex-1 flex flex-row md:flex-col items-center md:items-center gap-3 md:gap-0 py-2 md:py-0">
-              <div className={`w-[18px] h-[18px] rounded-full border-2 relative z-10 mb-0 md:mb-4 flex-shrink-0 ${
-                item.highlight
-                  ? 'bg-secondary border-secondary shadow-sm shadow-secondary/30'
-                  : 'bg-surface border-outline-variant/50'
-              }`} />
-              <div className="text-left md:text-center px-1">
-                <p className={`text-sm font-semibold leading-snug mb-1 ${item.highlight ? 'text-secondary' : 'text-on-surface'}`}>
-                  {item.title}
-                </p>
-                <p className="text-xs text-on-surface-variant">{item.date} {item.day}</p>
-                <p className={`text-xs font-mono ${item.highlight ? 'text-secondary/80' : 'text-on-surface-variant/50'}`}>
-                  @ {item.time}
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ── 当天议程 ── */}
-      <section className="mb-12">
-        <SectionTitle>当天日程</SectionTitle>
+        <SectionTitle>Demo Day日程</SectionTitle>
 
         {/* 地点 + 规则 + 奖项 信息条 */}
-        <div className="rounded-xl border border-outline-variant/15 bg-surface-container-low divide-y md:divide-y-0 md:divide-x divide-outline-variant/15 flex flex-col md:flex-row mb-4 overflow-hidden">
-          <div className="flex-1 px-5 py-4">
-            <p className="text-xs font-bold text-outline/60 uppercase tracking-wider mb-2">地点</p>
-            <p className="text-sm text-on-surface font-medium leading-relaxed">
-              LuOne30F-复兴中路<br />
-              北京中海国际大厦 B座12AF-B12AH03
-            </p>
-          </div>
-          <div className="flex-1 px-5 py-4">
-            <p className="text-xs font-bold text-outline/60 uppercase tracking-wider mb-2">路演规则</p>
-            <p className="text-sm text-on-surface font-medium">5 分钟展演 + 2 分钟 QA</p>
-          </div>
-          <div className="flex-1 px-5 py-4">
-            <p className="text-xs font-bold text-outline/60 uppercase tracking-wider mb-2">奖项设置</p>
-            <p className="text-sm text-on-surface font-medium">每赛道评选前 3 名，另设 3 个整体专项奖</p>
-          </div>
+        <div className="text-sm text-on-surface-variant mb-4 space-y-1">
+          <p>📍 上海：LuOne 30F · 复兴中路</p>
+          <p>📍 北京：中海国际大厦 B座 12AF · B12AH03</p>
         </div>
 
         {/* 横向议程卡片 */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-6 gap-3">
           {agenda.map((item, i) => (
             <div
               key={i}
@@ -284,14 +241,24 @@ export default function GuidePage() {
         </div>
       </section>
 
-      {/* ── 路演顺序 ── */}
+      {/* ── 路演规则 ── */}
       <section className="mb-12">
-        <SectionTitle>路演顺序</SectionTitle>
-        <p className="text-sm text-on-surface-variant mb-2">
-          以下为当天路演出场顺序，每个 Demo <span className="font-semibold text-on-surface">5 分钟展演 + 2 分钟 QA</span>。
+        <SectionTitle>路演规则</SectionTitle>
+        <p className="text-sm text-on-surface-variant mb-4">
+          每个 Demo <span className="font-semibold text-on-surface">5 分钟展演 + 2 分钟 QA</span>
         </p>
-        <p className="text-xs text-on-surface-variant/60 mb-6 italic">
-          顺序随机，不分先后
+        <div className="space-y-3 mb-6">
+          <div className="rounded-xl border border-outline-variant/15 bg-surface-container-low px-5 py-4">
+            <p className="text-sm font-bold text-on-surface mb-1.5">5 分钟展演</p>
+            <p className="text-sm text-on-surface-variant leading-relaxed">会严格控制时间，请提前排练好展示，并调试好投屏</p>
+          </div>
+          <div className="rounded-xl border border-outline-variant/15 bg-surface-container-low px-5 py-4">
+            <p className="text-sm font-bold text-on-surface mb-1.5">2 分钟 QA</p>
+            <p className="text-sm text-on-surface-variant leading-relaxed">每个项目 1 个观众问题 + 1 个评委问题；观众问题请提前在留言广场提问，主持人会在留言广场选择问题</p>
+          </div>
+        </div>
+        <p className="text-sm text-on-surface-variant mb-4">
+          以下为<span className="font-semibold text-on-surface">当天路演出场顺序</span>，顺序随机，不分先后
         </p>
 
         {(() => {
@@ -391,6 +358,37 @@ export default function GuidePage() {
         })()}
       </section>
 
+
+      {/* ── 时间线（横向）── */}
+      <section className="mb-12">
+        <SectionTitle>时间线</SectionTitle>
+        <div className="mb-8" />
+        <div className="relative flex flex-col md:flex-row">
+          <div
+            className="absolute top-[9px] h-px bg-outline-variant/30 hidden md:block"
+            style={{ left: 'calc(12.5%)', right: 'calc(12.5%)' }}
+          />
+          <div className="absolute left-[8px] top-0 bottom-0 w-px bg-outline-variant/30 md:hidden" />
+          {timeline.map((item, i) => (
+            <div key={i} className="flex-1 flex flex-row md:flex-col items-center md:items-center gap-3 md:gap-0 py-2 md:py-0">
+              <div className={`w-[18px] h-[18px] rounded-full border-2 relative z-10 mb-0 md:mb-4 flex-shrink-0 ${
+                item.highlight
+                  ? 'bg-secondary border-secondary shadow-sm shadow-secondary/30'
+                  : 'bg-surface border-outline-variant/50'
+              }`} />
+              <div className="text-left md:text-center px-1">
+                <p className={`text-sm font-semibold leading-snug mb-1 ${item.highlight ? 'text-secondary' : 'text-on-surface'}`}>
+                  {item.title}
+                </p>
+                <p className="text-xs text-on-surface-variant">{item.date} {item.day}</p>
+                <p className={`text-xs font-mono ${item.highlight ? 'text-secondary/80' : 'text-on-surface-variant/50'}`}>
+                  @ {item.time}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
 
       {/* ── Footer ── */}
       <p className="text-sm text-on-surface-variant/40 italic pt-6 border-t border-outline-variant/15">
