@@ -72,6 +72,24 @@ export default function AdminPage() {
   const [editingNotice, setEditingNotice] = useState('');
   const [isEditingNotice, setIsEditingNotice] = useState(false);
 
+  // 按奖项投票开关
+  const AWARD_CONFIGS = [
+    { key: 'best_optimizer',   icon: '⚡', label: 'Optimizer 最佳Demo' },
+    { key: 'best_builder',     icon: '🛠️', label: 'Builder 最佳Demo' },
+    { key: 'special_brain',    icon: '🧠', label: '专项奖 · 最脑洞' },
+    { key: 'special_infectious', icon: '🔥', label: '专项奖 · 最感染力' },
+    { key: 'special_useful',   icon: '💎', label: '专项奖 · 最实用' },
+  ];
+  const [votingOpenAwards, setVotingOpenAwards] = useState<Record<string, boolean>>({
+    best_optimizer: false, best_builder: false,
+    special_brain: false, special_infectious: false, special_useful: false,
+  });
+  const [awardToggleLoading, setAwardToggleLoading] = useState<string | null>(null);
+  const [votingAwardNotices, setVotingAwardNotices] = useState<Record<string, string>>({});
+  const [editingAwardNotice, setEditingAwardNotice] = useState<string | null>(null);
+  const [awardNoticeInput, setAwardNoticeInput] = useState('');
+  const [awardNoticeSaving, setAwardNoticeSaving] = useState(false);
+
   // 数据工具
   const [seedLoading, setSeedLoading] = useState(false);
   const [clearLoading, setClearLoading] = useState(false);
@@ -210,6 +228,8 @@ export default function AdminPage() {
       setNavPreliminaryVisible(data.navPreliminaryVisible ?? false);
       setLeaderboardResultsVisible(data.leaderboardResultsVisible ?? false);
       setEligibleIds(data.leaderboardEligibleIds ?? []);
+      if (data.votingOpenAwards) setVotingOpenAwards(data.votingOpenAwards);
+      if (data.votingAwardNotices) setVotingAwardNotices(data.votingAwardNotices);
     } catch (error) {
       console.error('Failed to load site status:', error);
     }
@@ -285,6 +305,55 @@ export default function AdminPage() {
       setResult({ type: 'error', message: error.message });
     } finally {
       setVotingLoading(false);
+    }
+  };
+
+  // 切换单个奖项投票
+  const toggleAwardVoting = async (awardKey: string, enabled: boolean) => {
+    setAwardToggleLoading(awardKey);
+    const updated = { ...votingOpenAwards, [awardKey]: enabled };
+    try {
+      const res = await fetch('/api/config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ votingOpenAwards: updated }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setVotingOpenAwards(updated);
+        const award = AWARD_CONFIGS.find(a => a.key === awardKey);
+        setResult({ type: 'success', message: enabled ? `✅ ${award?.label} 投票已开放` : `🔒 ${award?.label} 投票已关闭` });
+      } else {
+        setResult({ type: 'error', message: data.error || '操作失败' });
+      }
+    } catch (error: any) {
+      setResult({ type: 'error', message: error.message });
+    } finally {
+      setAwardToggleLoading(null);
+    }
+  };
+
+  // 保存单个奖项提示语
+  const saveAwardNotice = async (awardKey: string) => {
+    setAwardNoticeSaving(true);
+    const updated = { ...votingAwardNotices, [awardKey]: awardNoticeInput };
+    try {
+      const res = await fetch('/api/config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ votingAwardNotices: updated }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setVotingAwardNotices(updated);
+        setEditingAwardNotice(null);
+      } else {
+        setResult({ type: 'error', message: data.error || '保存失败' });
+      }
+    } catch (error: any) {
+      setResult({ type: 'error', message: error.message });
+    } finally {
+      setAwardNoticeSaving(false);
     }
   };
 
@@ -1073,84 +1142,94 @@ export default function AdminPage() {
                   </p>
                 </div>
 
-                {/* 投票控制 */}
-                <div className={`bg-surface-container-low rounded-xl border p-6 ${
-                  siteStatus?.isVotingOpen ? 'border-secondary/40' : 'border-outline-variant/20'
-                }`}>
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-3">
-                      <div className={`p-2 rounded-lg ${siteStatus?.isVotingOpen ? 'bg-secondary/10' : 'bg-error/10'}`}>
-                        {siteStatus?.isVotingOpen
-                          ? <Unlock size={20} className="text-secondary" />
-                          : <Lock size={20} className="text-error" />}
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-on-surface">Demo 投票</h3>
-                        <p className={`text-sm font-medium ${siteStatus?.isVotingOpen ? 'text-secondary' : 'text-error'}`}>
-                          {siteStatus === null ? '加载中…' : siteStatus.isVotingOpen ? '已开放' : '已关闭'}
-                        </p>
-                      </div>
+                {/* 投票控制 — 按奖项 */}
+                <div className="bg-surface-container-low rounded-xl border border-outline-variant/20 overflow-hidden">
+                  <div className="px-5 py-4 border-b border-outline-variant/10 flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-secondary/10">
+                      <Trophy size={18} className="text-secondary" />
                     </div>
-                    <button
-                      onClick={() => toggleVoting(!siteStatus?.isVotingOpen)}
-                      disabled={votingLoading || needsSetup || siteStatus === null}
-                      className={`px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-all active:scale-95 disabled:opacity-50 ${
-                        siteStatus?.isVotingOpen
-                          ? 'bg-error text-on-error hover:opacity-90'
-                          : 'bg-secondary text-on-secondary hover:opacity-90'
-                      }`}
-                    >
-                      {votingLoading
-                        ? <Loader2 size={14} className="animate-spin" />
-                        : siteStatus?.isVotingOpen
-                          ? <><Lock size={14} />关闭投票</>
-                          : <><Unlock size={14} />开放投票</>
-                      }
-                    </button>
+                    <div>
+                      <h3 className="font-semibold text-on-surface">奖项投票开关</h3>
+                      <p className="text-xs text-on-surface-variant">独立控制每个奖项的投票开放状态</p>
+                    </div>
+                  </div>
+                  <div className="divide-y divide-outline-variant/10">
+                    {AWARD_CONFIGS.map(award => {
+                      const isOpen = votingOpenAwards[award.key] === true;
+                      const isLoading = awardToggleLoading === award.key;
+                      const notice = votingAwardNotices[award.key] || '';
+                      const isEditingThisNotice = editingAwardNotice === award.key;
+                      return (
+                        <div key={award.key} className="px-5 py-3">
+                          {/* Row: icon + label + status + toggle */}
+                          <div className="flex items-center gap-3">
+                            <span className="text-base">{award.icon}</span>
+                            <span className="flex-1 text-sm text-on-surface font-medium">{award.label}</span>
+                            <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${isOpen ? 'bg-secondary/10 text-secondary' : 'bg-outline/10 text-outline'}`}>
+                              {isOpen ? '已开放' : '已关闭'}
+                            </span>
+                            <button
+                              onClick={() => toggleAwardVoting(award.key, !isOpen)}
+                              disabled={isLoading || needsSetup}
+                              className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-all active:scale-95 disabled:opacity-50 ${
+                                isOpen ? 'bg-error/10 text-error hover:bg-error/20' : 'bg-secondary/10 text-secondary hover:bg-secondary/20'
+                              }`}
+                            >
+                              {isLoading
+                                ? <Loader2 size={12} className="animate-spin" />
+                                : isOpen
+                                  ? <><Lock size={12} />关闭</>
+                                  : <><Unlock size={12} />开放</>
+                              }
+                            </button>
+                          </div>
+                          {/* Notice: shown only when closed */}
+                          {!isOpen && (
+                            <div className="mt-2 ml-7">
+                              {isEditingThisNotice ? (
+                                <div className="flex items-center gap-2">
+                                  <input
+                                    autoFocus
+                                    type="text"
+                                    value={awardNoticeInput}
+                                    onChange={e => setAwardNoticeInput(e.target.value)}
+                                    placeholder="关闭时显示的提示语（可为空）"
+                                    className="flex-1 text-xs bg-surface-container border border-outline-variant/30 rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-primary"
+                                  />
+                                  <button
+                                    onClick={() => saveAwardNotice(award.key)}
+                                    disabled={awardNoticeSaving}
+                                    className="px-2.5 py-1.5 bg-secondary text-on-secondary rounded-lg text-xs font-medium hover:opacity-90 disabled:opacity-50"
+                                  >
+                                    {awardNoticeSaving ? <Loader2 size={11} className="animate-spin" /> : '保存'}
+                                  </button>
+                                  <button
+                                    onClick={() => setEditingAwardNotice(null)}
+                                    className="px-2.5 py-1.5 text-xs text-on-surface-variant hover:bg-surface-container-high rounded-lg"
+                                  >
+                                    取消
+                                  </button>
+                                </div>
+                              ) : (
+                                <div className="flex items-center gap-2">
+                                  <span className="text-xs text-on-surface-variant/60 flex-1 italic">
+                                    {notice || '未设置提示语'}
+                                  </span>
+                                  <button
+                                    onClick={() => { setEditingAwardNotice(award.key); setAwardNoticeInput(notice); }}
+                                    className="text-xs text-primary hover:underline flex-shrink-0"
+                                  >
+                                    {notice ? '编辑' : '添加提示语'}
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
 
-                  {/* 投票公告 */}
-                  <div className="mt-3 pt-3 border-t border-outline-variant/10">
-                    <p className="text-xs text-on-surface-variant mb-2">投票关闭时显示的公告</p>
-                    {isEditingNotice ? (
-                      <div className="space-y-2">
-                        <textarea
-                          value={editingNotice}
-                          onChange={(e) => setEditingNotice(e.target.value)}
-                          placeholder="例如：投票将于 4月1日 12:00 开始"
-                          className="w-full p-2.5 bg-surface-container-low border border-outline-variant/30 rounded-lg text-sm focus:border-primary focus:outline-none resize-none"
-                          rows={2}
-                        />
-                        <div className="flex gap-2">
-                          <button
-                            onClick={saveNotice}
-                            disabled={votingLoading}
-                            className="px-3 py-1.5 bg-secondary text-on-secondary rounded-lg text-xs font-medium hover:opacity-90 transition-colors"
-                          >
-                            保存
-                          </button>
-                          <button
-                            onClick={() => { setIsEditingNotice(false); setEditingNotice(siteStatus?.notice || ''); }}
-                            className="px-3 py-1.5 bg-surface-container-high text-on-surface rounded-lg text-xs hover:bg-surface-container-highest transition-colors"
-                          >
-                            取消
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="flex items-start gap-2">
-                        <p className="text-xs text-on-surface flex-1 leading-relaxed">
-                          {siteStatus?.notice || '暂无公告'}
-                        </p>
-                        <button
-                          onClick={() => setIsEditingNotice(true)}
-                          className="text-primary text-xs hover:underline flex-shrink-0"
-                        >
-                          编辑
-                        </button>
-                      </div>
-                    )}
-                  </div>
                 </div>
               </div>
             </section>

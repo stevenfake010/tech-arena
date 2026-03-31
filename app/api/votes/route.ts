@@ -3,26 +3,29 @@ import { getSupabaseAdmin } from '@/lib/supabase';
 import { cookies } from 'next/headers';
 import { VOTE_TYPES, BEST_DEMO_AWARDS, SPECIAL_AWARDS, type VoteTypeId } from '@/lib/constants';
 
-// 检查投票是否开放
-async function isVotingOpen(supabase: any): Promise<{ open: boolean; notice: string }> {
-  // 从数据库获取配置
+// 检查某个奖项的投票是否开放
+async function isAwardVotingOpen(supabase: any, voteType: string): Promise<{ open: boolean; notice: string }> {
   const { data: config } = await supabase
     .from('site_config')
     .select('*')
-    .in('key', ['voting_enabled', 'voting_notice']) as { data: any[]; error: any };
-  
-  // 解析配置
+    .in('key', ['voting_open_awards', 'voting_award_notices']) as { data: any[]; error: any };
+
   const configMap: Record<string, string> = {};
   if (config && Array.isArray(config)) {
-    config.forEach((item: any) => {
-      configMap[item.key] = item.value || '';
-    });
+    config.forEach((item: any) => { configMap[item.key] = item.value || ''; });
   }
-  
-  const enabled = configMap['voting_enabled'] === 'true';
-  const notice = configMap['voting_notice'] || '投票暂未开始，敬请期待';
-  
-  return { open: enabled, notice };
+
+  const awardsMap: Record<string, boolean> = (() => {
+    try { return JSON.parse(configMap['voting_open_awards'] || '{}'); } catch { return {}; }
+  })();
+
+  const noticesMap: Record<string, string> = (() => {
+    try { return JSON.parse(configMap['voting_award_notices'] || '{}'); } catch { return {}; }
+  })();
+
+  const open = awardsMap[voteType] === true;
+  const notice = noticesMap[voteType] || '该奖项投票暂未开放';
+  return { open, notice };
 }
 
 async function getCurrentUser() {
@@ -68,16 +71,16 @@ export async function POST(request: Request) {
 
   const supabase = getSupabaseAdmin();
 
-  // 检查投票是否开放
-  const votingCheck = await isVotingOpen(supabase);
-  if (!votingCheck.open) {
-    return NextResponse.json({ error: votingCheck.notice }, { status: 403 });
-  }
-
   const { demo_id, vote_type } = await request.json();
 
   if (!demo_id || !vote_type) {
     return NextResponse.json({ error: '参数缺失' }, { status: 400 });
+  }
+
+  // 检查该奖项投票是否开放
+  const awardCheck = await isAwardVotingOpen(supabase, vote_type);
+  if (!awardCheck.open) {
+    return NextResponse.json({ error: awardCheck.notice }, { status: 403 });
   }
 
   const voteConfig = VOTE_TYPES[vote_type as VoteTypeId];

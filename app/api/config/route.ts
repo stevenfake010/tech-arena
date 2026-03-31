@@ -26,7 +26,7 @@ export async function GET() {
   const { data: config, error } = await supabase
     .from('site_config')
     .select('*')
-    .in('key', ['voting_enabled', 'voting_notice', 'submission_enabled', 'nav_leaderboard_visible', 'nav_preliminary_visible', 'leaderboard_results_visible', 'leaderboard_eligible_ids']) as { data: any[]; error: any };
+    .in('key', ['voting_enabled', 'voting_notice', 'submission_enabled', 'nav_leaderboard_visible', 'nav_preliminary_visible', 'leaderboard_results_visible', 'leaderboard_eligible_ids', 'voting_open_awards', 'voting_award_notices']) as { data: any[]; error: any };
 
   // 表不存在的错误
   if (error && error.code === '42P01') {
@@ -52,6 +52,15 @@ export async function GET() {
 
   const isVotingOpen = configMap['voting_enabled'] === 'true';
   const notice = configMap['voting_notice'] || (isVotingOpen ? '' : '投票暂未开始，敬请期待');
+
+  const DEFAULT_AWARDS = { best_optimizer: false, best_builder: false, special_brain: false, special_infectious: false, special_useful: false };
+  const votingOpenAwards: Record<string, boolean> = (() => {
+    try { return { ...DEFAULT_AWARDS, ...JSON.parse(configMap['voting_open_awards'] || '{}') }; } catch { return DEFAULT_AWARDS; }
+  })();
+
+  const votingAwardNotices: Record<string, string> = (() => {
+    try { return JSON.parse(configMap['voting_award_notices'] || '{}'); } catch { return {}; }
+  })();
   // submission_enabled 默认为 true（未配置时视为开放）
   const isSubmissionOpen = configMap['submission_enabled'] !== 'false';
 
@@ -73,6 +82,8 @@ export async function GET() {
     navPreliminaryVisible,
     leaderboardResultsVisible,
     leaderboardEligibleIds,
+    votingOpenAwards,
+    votingAwardNotices,
   });
 }
 
@@ -83,7 +94,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: '无权访问' }, { status: 403 });
   }
   
-  const { enabled, notice, submissionEnabled, navLeaderboardVisible, navPreliminaryVisible, leaderboardResultsVisible, leaderboardEligibleIds } = await request.json();
+  const { enabled, notice, submissionEnabled, navLeaderboardVisible, navPreliminaryVisible, leaderboardResultsVisible, leaderboardEligibleIds, votingOpenAwards, votingAwardNotices } = await request.json();
 
   const supabase = getSupabaseAdmin();
 
@@ -128,6 +139,14 @@ export async function POST(request: Request) {
 
   if (leaderboardEligibleIds !== undefined && Array.isArray(leaderboardEligibleIds)) {
     updates.push({ key: 'leaderboard_eligible_ids', value: JSON.stringify(leaderboardEligibleIds) });
+  }
+
+  if (votingOpenAwards !== undefined && typeof votingOpenAwards === 'object') {
+    updates.push({ key: 'voting_open_awards', value: JSON.stringify(votingOpenAwards) });
+  }
+
+  if (votingAwardNotices !== undefined && typeof votingAwardNotices === 'object') {
+    updates.push({ key: 'voting_award_notices', value: JSON.stringify(votingAwardNotices) });
   }
 
   // 批量 upsert

@@ -86,7 +86,7 @@ function getTabConfig(tab: TabType) {
 export default function LeaderboardPage() {
   const { user } = useUser();
 
-  const { data: votingStatus } = useSWR<{ isVotingOpen: boolean; notice: string; leaderboardResultsVisible: boolean; leaderboardEligibleIds: number[] }>(
+  const { data: votingStatus } = useSWR<{ isVotingOpen: boolean; notice: string; leaderboardResultsVisible: boolean; leaderboardEligibleIds: number[]; votingOpenAwards: Record<string, boolean>; votingAwardNotices: Record<string, string> }>(
     '/api/config', jsonFetcher, { revalidateOnFocus: false, dedupingInterval: 30000 }
   );
   const { data: votesData, mutate: mutateVotes } = useSWR<{ votes: Vote[] }>(
@@ -255,7 +255,8 @@ export default function LeaderboardPage() {
   const isPreviewVoted    = previewId !== null && myVotes.some(v => v.demo_id === previewId && v.vote_type === currentVoteType);
   const isPreviewSelected = previewId !== null && selectedVotes.some(v => v.demo_id === previewId && v.vote_type === currentVoteType);
   const isPreviewMyDemo   = !!(previewItem && user && previewItem.submitted_by === user.id);
-  const isVotingClosed    = !!(votingStatus && !votingStatus.isVotingOpen);
+  // Per-award voting status: closed if config loaded and award not explicitly open
+  const isVotingClosed    = !!(votingStatus && !votingStatus.votingOpenAwards?.[currentVoteType]);
 
   // ── Vote toggling ───────────────────────────────────────────────────────────
 
@@ -339,9 +340,9 @@ export default function LeaderboardPage() {
 
       {/* ── Notices ─────────────────────────────────────────────────────────── */}
       {isVotingClosed && (
-        <div className="mx-4 md:mx-12 mt-2 flex-shrink-0 p-3 bg-error-container rounded-xl text-on-error-container flex items-center gap-2 text-sm">
+        <div className="mx-4 md:mx-12 mt-2 flex-shrink-0 p-3 bg-surface-container-low rounded-xl text-on-surface-variant flex items-center gap-2 text-sm">
           <Lock size={15} className="flex-shrink-0" />
-          <span className="font-medium">投票暂未开始：{votingStatus!.notice}</span>
+          <span>{votingStatus?.votingAwardNotices?.[currentVoteType] || `「${tabCfg.label}」奖项投票暂未开放`}</span>
         </div>
       )}
       {!user && !isVotingClosed && (
@@ -368,6 +369,7 @@ export default function LeaderboardPage() {
           <div className="flex gap-1 p-1 bg-surface-container-low rounded-xl">
             {TABS.filter(t => t.group === 'best').map(tab => {
               const done = myVotes.some(v => v.vote_type === tab.voteType);
+              const open = votingStatus?.votingOpenAwards?.[tab.voteType] === true;
               return (
                 <button
                   key={tab.id}
@@ -379,7 +381,7 @@ export default function LeaderboardPage() {
                   }`}
                 >
                   {tab.icon} {tab.label}
-                  {done && <CheckCircle size={11} className="opacity-60" />}
+                  {done ? <CheckCircle size={11} className="opacity-60" /> : !open && <Lock size={10} className="opacity-40" />}
                 </button>
               );
             })}
@@ -394,6 +396,7 @@ export default function LeaderboardPage() {
           <div className="flex gap-1 p-1 bg-surface-container-low rounded-xl">
             {TABS.filter(t => t.group === 'special').map(tab => {
               const done = myVotes.some(v => v.vote_type === tab.voteType);
+              const open = votingStatus?.votingOpenAwards?.[tab.voteType] === true;
               return (
                 <button
                   key={tab.id}
@@ -403,7 +406,7 @@ export default function LeaderboardPage() {
                   }`}
                 >
                   {tab.icon} {tab.label}
-                  {done && <CheckCircle size={11} className="opacity-60" />}
+                  {done ? <CheckCircle size={11} className="opacity-60" /> : !open && <Lock size={10} className="opacity-40" />}
                 </button>
               );
             })}
