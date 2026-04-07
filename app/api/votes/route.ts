@@ -96,7 +96,7 @@ export async function POST(request: Request) {
     .single() as { data: any; error: any };
 
   if (demoError || !demo) {
-    return NextResponse.json({ error: 'Demo 不存在' }, { status: 404 });
+    return NextResponse.json({ error: 'Skill 不存在' }, { status: 404 });
   }
 
   // 最佳Demo奖需要验证赛道匹配

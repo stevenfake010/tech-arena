@@ -1,26 +1,15 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
-// 不需要密码保护的路径
-const PUBLIC_PATHS = ['/password', '/api/auth/verify-password']
+// 密码保护已移除，所有路径均可访问
 
 export function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl
+  const response = NextResponse.next()
 
-  // 检查是否是公开路径
-  if (PUBLIC_PATHS.some(path => pathname.startsWith(path))) {
-    return NextResponse.next()
-  }
+  // 清除旧站点密码 cookie，避免遗留
+  response.cookies.delete('site_auth')
 
-  // 检查是否已验证（通过 cookie）
-  const isAuthenticated = request.cookies.get('site_auth')?.value === 'true'
-
-  if (!isAuthenticated) {
-    // 未验证，重定向到密码页
-    return NextResponse.redirect(new URL('/password', request.url))
-  }
-
-  return NextResponse.next()
+  return response
 }
 
 export const config = {

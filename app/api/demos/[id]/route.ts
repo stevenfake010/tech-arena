@@ -58,7 +58,7 @@ export async function GET(
     .single() as { data: any; error: any };
 
   if (error || !demo) {
-    return NextResponse.json({ error: 'Demo 不存在' }, { status: 404 });
+    return NextResponse.json({ error: 'Skill 不存在' }, { status: 404 });
   }
 
   return NextResponse.json({
@@ -83,7 +83,7 @@ export async function PUT(
   // 检查权限
   const hasPermission = await checkPermission(demoId, user);
   if (!hasPermission) {
-    return NextResponse.json({ error: '没有权限修改此 Demo' }, { status: 403 });
+    return NextResponse.json({ error: '没有权限修改此 Skill' }, { status: 403 });
   }
 
   const body = await request.json();
@@ -177,7 +177,7 @@ export async function DELETE(
   // 检查权限
   const hasPermission = await checkPermission(demoId, user);
   if (!hasPermission) {
-    return NextResponse.json({ error: '没有权限删除此 Demo' }, { status: 403 });
+    return NextResponse.json({ error: '没有权限删除此 Skill' }, { status: 403 });
   }
 
   const supabase = getSupabaseAdmin();

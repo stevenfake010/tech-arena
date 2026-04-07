@@ -66,7 +66,7 @@ export default function PasswordPage() {
             textAlign: 'center',
           }}
         >
-          AI Demo Day
+          Tech Arena
         </h1>
         
         <form onSubmit={handleSubmit}>

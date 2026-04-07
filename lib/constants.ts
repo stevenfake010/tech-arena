@@ -1,57 +1,57 @@
 export const TRACKS = {
-  optimizer: { id: 'optimizer', label: 'Optimizer', labelCn: 'Optimizer 赛道', color: 'secondary', maxMembers: 1 },
-  builder: { id: 'builder', label: 'Builder', labelCn: 'Builder 赛道', color: 'tertiary', maxMembers: 2 },
+  lightning_coder: { id: 'lightning_coder', label: 'Lightning Coder', labelCn: 'Lightning Coder 赛道', color: 'secondary', maxMembers: 2 },
+  insighter: { id: 'insighter', label: 'Insighter', labelCn: 'Insighter 赛道', color: 'tertiary', maxMembers: 2 },
 } as const;
 
 export type TrackId = keyof typeof TRACKS;
 
-// 最佳Demo奖 - 每个赛道评选3个，每人每赛道3票
+// 最佳Skill奖 - 每个赛道评选3个，每人每赛道3票
 export const BEST_DEMO_AWARDS = {
-  best_optimizer: {
-    id: 'best_optimizer',
-    label: 'Best Demo - Optimizer',
-    labelCn: '最佳 Demo - Optimizer 赛道',
-    track: 'optimizer',
+  best_lightning_coder: {
+    id: 'best_lightning_coder',
+    label: 'Best Skill - Lightning Coder',
+    labelCn: '最佳 Skill - Lightning Coder 赛道',
+    track: 'lightning_coder',
     maxVotes: 3,
-    description: '评选最优秀的 Optimizer 项目（前3名获奖）',
-    descriptionEn: 'Vote for the best Optimizer projects (Top 3 win)'
+    description: '评选最优秀的 Lightning Coder 项目（前3名获奖）',
+    descriptionEn: 'Vote for the best Lightning Coder projects (Top 3 win)'
   },
-  best_builder: {
-    id: 'best_builder',
-    label: 'Best Demo - Builder',
-    labelCn: '最佳 Demo - Builder 赛道',
-    track: 'builder',
+  best_insighter: {
+    id: 'best_insighter',
+    label: 'Best Skill - Insighter',
+    labelCn: '最佳 Skill - Insighter 赛道',
+    track: 'insighter',
     maxVotes: 3,
-    description: '评选最优秀的 Builder 项目（前3名获奖）',
-    descriptionEn: 'Vote for the best Builder projects (Top 3 win)'
+    description: '评选最优秀的 Insighter 项目（前3名获奖）',
+    descriptionEn: 'Vote for the best Insighter projects (Top 3 win)'
   },
 } as const;
 
 // 专项奖 - 共3个，不分赛道，每人每个奖选1个
 export const SPECIAL_AWARDS = {
-  special_brain: { 
-    id: 'special_brain', 
-    label: '🧠 Brain Blast Award', 
-    labelCn: '🧠 最脑洞Demo奖',
-    track: null, 
+  special_brain: {
+    id: 'special_brain',
+    label: '🧠 Brain Blast Award',
+    labelCn: '🧠 最脑洞Skill奖',
+    track: null,
     maxVotes: 1,
     description: '选出1个你认为最有创意和想象力的项目',
     descriptionEn: 'Most creative and imaginative project'
   },
-  special_infectious: { 
-    id: 'special_infectious', 
-    label: '🔥 Most Infectious Award', 
-    labelCn: '🔥 最感染力Demo奖',
-    track: null, 
+  special_infectious: {
+    id: 'special_infectious',
+    label: '🔥 Most Infectious Award',
+    labelCn: '🔥 最感染力Skill奖',
+    track: null,
     maxVotes: 1,
     description: '选出1个你认为现场展示效果最好、最有感染力的项目',
     descriptionEn: 'Most persuasive and inspiring presentation'
   },
-  special_useful: { 
-    id: 'special_useful', 
-    label: '💎 Most Useful Award', 
-    labelCn: '💎 最实用Demo奖',
-    track: null, 
+  special_useful: {
+    id: 'special_useful',
+    label: '💎 Most Useful Award',
+    labelCn: '💎 最实用Skill奖',
+    track: null,
     maxVotes: 1,
     description: '选出1个你认为最实用、最能助力日常工作的项目',
     descriptionEn: 'Most practical and problem-solving project'
@@ -75,8 +75,8 @@ export interface PrelimConfig {
   enabled: boolean;
   mode: 'A' | 'B';           // A = total pool; B = per-track
   totalRequired: number;      // Mode A: how many total
-  optimizerRequired: number;  // Mode B: how many from optimizer
-  builderRequired: number;    // Mode B: how many from builder
+  optimizerRequired: number;  // Mode B: how many from optimizer (legacy key, kept for compat)
+  builderRequired: number;    // Mode B: how many from builder (legacy key, kept for compat)
   notice: string;             // shown when disabled
   resultsRoles: string[];     // roles that can view results
 }
@@ -112,3 +112,25 @@ export function parsePrelimConfig(configMap: Record<string, string>, userRole?: 
   const canViewResults = userRole ? resultsRoles.includes(userRole) : false;
   return { enabled, mode, totalRequired, optimizerRequired, builderRequired, notice, resultsRoles, canViewResults };
 }
+
+// 参赛部门清单
+export const DEPARTMENTS = [
+  '增长算法',
+  'Ushuaia',
+  'Pevek',
+  '国际化算法',
+  '引擎架构',
+  '生态算法',
+  '国际化TnS',
+  '平台算法二组',
+  '推荐算法一组',
+  '推荐算法二组',
+  '推荐算法三组',
+  '客服算法',
+  '搜索算法',
+  'Super Intelligence',
+  '社区工程部',
+  '社区战略组',
+] as const;
+
+export type Department = typeof DEPARTMENTS[number];

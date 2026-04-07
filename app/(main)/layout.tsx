@@ -14,21 +14,21 @@ const SubmitModal = dynamic(() => import('@/components/submit/SubmitModal'), { s
 function MainLayoutContent({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const [showSubmit, setShowSubmit] = useState(false);
-  const [submitTrack, setSubmitTrack] = useState<'optimizer' | 'builder' | undefined>(undefined);
+  const [submitTrack, setSubmitTrack] = useState<'lightning_coder' | 'insighter' | undefined>(undefined);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const { user } = useUser();
 
   // 监听来自页面的提交 Demo 事件，支持传入初始赛道
   useEffect(() => {
     const handleOpenSubmit = (e: Event) => {
-      const track = (e as CustomEvent).detail?.track as 'optimizer' | 'builder' | undefined;
+      const track = (e as CustomEvent).detail?.track as 'lightning_coder' | 'insighter' | undefined;
       handleSubmitClick(track);
     };
     window.addEventListener('openSubmit', handleOpenSubmit);
     return () => window.removeEventListener('openSubmit', handleOpenSubmit);
   }, [user]);
 
-  const handleSubmitClick = (track?: 'optimizer' | 'builder') => {
+  const handleSubmitClick = (track?: 'lightning_coder' | 'insighter') => {
     if (user) {
       setSubmitTrack(track);
       setShowSubmit(true);
@@ -58,7 +58,7 @@ function MainLayoutContent({ children }: { children: React.ReactNode }) {
               <h3 className="text-lg font-bold">需要登录</h3>
             </div>
             <p className="text-on-surface-variant mb-6">
-              游客模式只能浏览内容，提交 Demo 需要先登录。
+              游客模式只能浏览内容，提交 Skill 需要先登录。
             </p>
             <div className="flex gap-3">
               <button

@@ -2,55 +2,36 @@
 
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Compass, LayoutGrid, Trophy, MessageSquare, Plus, LogIn, LogOut, FolderOpen, UserCircle, X, ListChecks } from 'lucide-react';
+import { Compass, LayoutGrid, Trophy, MessageSquare, Plus, LogIn, LogOut, FolderOpen, UserCircle, X, ListChecks, Lock } from 'lucide-react';
 import { useLanguage } from '@/components/LanguageProvider';
 import { useUser } from '@/lib/hooks/useUser';
 import useSWR from 'swr';
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 
 const configFetcher = (url: string) => fetch(url).then(r => r.json());
-
-const DEADLINE = new Date('2026-03-30T04:00:00Z');
-
-function useCountdown() {
-  const calc = useCallback(() => {
-    const diff = DEADLINE.getTime() - Date.now();
-    if (diff <= 0) return null;
-    const d = Math.floor(diff / 86400000);
-    const h = Math.floor((diff % 86400000) / 3600000);
-    const m = Math.floor((diff % 3600000) / 60000);
-    const s = Math.floor((diff % 60000) / 1000);
-    return { d, h, m, s };
-  }, []);
-  const [time, setTime] = useState(calc);
-  useEffect(() => {
-    const id = setInterval(() => setTime(calc()), 1000);
-    return () => clearInterval(id);
-  }, [calc]);
-  return time;
-}
 
 export default function Sidebar({ onSubmitClick }: { onSubmitClick: () => void }) {
   const pathname = usePathname();
   const router = useRouter();
   const { user, isLoading: loading, mutate } = useUser();
   const { t } = useLanguage();
-  const countdown = useCountdown();
   const [showProfile, setShowProfile] = useState(false);
   const { data: siteConfig } = useSWR('/api/config', configFetcher, { revalidateOnFocus: false });
 
   const showLeaderboard = siteConfig?.navLeaderboardVisible ?? true;
   const showPreliminary = siteConfig?.navPreliminaryVisible ?? false;
-  const showSubmitButton = siteConfig?.isSubmissionOpen ?? true;
+  const showMyDemos = siteConfig?.navMyDemosVisible ?? false;
+  const showSquare = siteConfig?.navSquareVisible ?? false;
+  const isSubmissionOpen = siteConfig?.isSubmissionOpen ?? true;
 
   const NAV_ITEMS = useMemo(() => [
     { href: '/guide', label: t.nav.guide, icon: Compass },
     { href: '/gallery', label: t.nav.gallery, icon: LayoutGrid },
     ...(showLeaderboard ? [{ href: '/leaderboard', label: t.nav.leaderboard, icon: Trophy }] : []),
     ...(showPreliminary ? [{ href: '/preliminary', label: t.nav.preliminary, icon: ListChecks }] : []),
-    ...(user ? [{ href: '/my-demos', label: t.nav.myDemos, icon: FolderOpen }] : []),
-    { href: '/square', label: t.nav.square, icon: MessageSquare },
-  ], [showLeaderboard, showPreliminary, user, t]);
+    ...(showMyDemos && user ? [{ href: '/my-demos', label: t.nav.myDemos, icon: FolderOpen }] : []),
+    ...(showSquare ? [{ href: '/square', label: t.nav.square, icon: MessageSquare }] : []),
+  ], [showLeaderboard, showPreliminary, showMyDemos, showSquare, user, t]);
 
   const handleActionClick = () => {
     if (user) {
@@ -122,7 +103,7 @@ export default function Sidebar({ onSubmitClick }: { onSubmitClick: () => void }
                   </div>
                   <div>
                     <p className="font-medium text-on-surface-variant">游客模式</p>
-                    <p className="text-xs text-on-surface-variant/60 mt-0.5">登录后可提交 Demo 和投票</p>
+                    <p className="text-xs text-on-surface-variant/60 mt-0.5">登录后可提交 Skill 和投票</p>
                   </div>
                 </div>
               )}
@@ -144,7 +125,7 @@ export default function Sidebar({ onSubmitClick }: { onSubmitClick: () => void }
                     className="flex items-center gap-3 px-4 py-3.5 rounded-xl hover:bg-surface-container-low transition-colors"
                   >
                     <FolderOpen size={20} className="text-on-surface-variant" />
-                    <span className="font-medium text-on-surface chinese-text">我的 Demo</span>
+                    <span className="font-medium text-on-surface chinese-text">我的 Skill</span>
                   </Link>
                   <button
                     onClick={handleLogoutFromSheet}
@@ -173,8 +154,8 @@ export default function Sidebar({ onSubmitClick }: { onSubmitClick: () => void }
       <aside className="h-screen w-64 fixed left-0 top-0 bg-[#f3f4ee] hidden md:flex flex-col pt-10 pb-8 px-6 gap-y-4 z-50">
         {/* Branding */}
         <div className="mb-8 px-2">
-          <h1 className="text-3xl font-headline font-bold text-on-surface leading-tight">AI Demo Day</h1>
-          <p className="text-sm text-on-surface-variant mt-2">小红书战略 / 投资 / 用户研究</p>
+          <h1 className="text-3xl font-headline font-bold text-on-surface leading-tight">Tech Arena</h1>
+          <p className="text-sm text-on-surface-variant mt-2">小红书社区算法 / 研发</p>
         </div>
 
         {/* Navigation */}
@@ -201,27 +182,27 @@ export default function Sidebar({ onSubmitClick }: { onSubmitClick: () => void }
 
         {/* Action Button - Submit or Login */}
         <div className="px-2 mb-4">
-          {!loading && (showSubmitButton || !user) && (
+          {!loading && (user || (!user && isSubmissionOpen)) && (
             <button
-              onClick={handleActionClick}
-              className={`w-full flex flex-col items-center justify-center gap-0.5 py-3 px-4 rounded-lg transition-all shadow-sm active:scale-95 ${
+              onClick={isSubmissionOpen ? handleActionClick : undefined}
+              className={`w-full flex flex-col items-center justify-center gap-0.5 py-3 px-4 rounded-lg transition-all shadow-sm ${
                 user
-                  ? 'bg-[#1A1A1A] text-white hover:opacity-90'
-                  : 'bg-surface-container-high text-on-surface hover:bg-surface-container-highest border border-outline-variant/30'
+                  ? isSubmissionOpen
+                    ? 'bg-[#1A1A1A] text-white hover:opacity-90 active:scale-95'
+                    : 'bg-surface-container-high text-on-surface-variant opacity-60 cursor-not-allowed'
+                  : 'bg-surface-container-high text-on-surface hover:bg-surface-container-highest border border-outline-variant/30 active:scale-95'
               }`}
             >
               {user ? (
                 <>
                   <div className="flex items-center gap-2">
-                    <Plus size={16} strokeWidth={2.5} />
-                    <span className="font-headline font-bold tracking-tight text-base chinese-text">{t.nav.submit}</span>
-                  </div>
-                  {countdown ? (
-                    <span className="text-[11px] opacity-60 tabular-nums">
-                      {countdown.d > 0 ? `${countdown.d}天 ` : ''}{String(countdown.h).padStart(2,'0')}:{String(countdown.m).padStart(2,'0')}:{String(countdown.s).padStart(2,'0')} 后截止
+                    {isSubmissionOpen ? <Plus size={16} strokeWidth={2.5} /> : <Lock size={16} strokeWidth={2.5} />}
+                    <span className="font-headline font-bold tracking-tight text-base chinese-text">
+                      {isSubmissionOpen ? t.nav.submit : '已截止'}
                     </span>
-                  ) : (
-                    <span className="text-[11px] opacity-60">已截止</span>
+                  </div>
+                  {isSubmissionOpen && (
+                    <span className="text-[11px] opacity-60">提交通道开放中</span>
                   )}
                 </>
               ) : (
@@ -268,7 +249,7 @@ export default function Sidebar({ onSubmitClick }: { onSubmitClick: () => void }
           ...(showLeaderboard ? [{ href: '/leaderboard', label: t.nav.leaderboard, icon: Trophy }] : []),
           ...(showPreliminary ? [{ href: '/preliminary', label: t.nav.preliminary, icon: ListChecks }] : []),
           ...(!showLeaderboard && !showPreliminary ? [{ href: '/leaderboard', label: t.nav.leaderboard, icon: Trophy }] : []),
-          { href: '/square', label: t.nav.square, icon: MessageSquare },
+          ...(showSquare ? [{ href: '/square', label: t.nav.square, icon: MessageSquare }] : []),
         ].slice(0, 2); // 右侧最多显示 2 个
         const leftNav = [
           { href: '/guide',   label: t.nav.guide,   icon: Compass },
@@ -296,18 +277,24 @@ export default function Sidebar({ onSubmitClick }: { onSubmitClick: () => void }
               );
             })}
 
-            {/* Center FAB — 海选页隐藏，避免与选择条重叠；提交关闭时对已登录用户隐藏，游客始终显示登录 */}
-            {!loading && (showSubmitButton || !user) && pathname !== '/preliminary' && (
+            {/* Center FAB — 海选页隐藏，避免与选择条重叠；提交关闭时对已登录用户显示已截止，游客始终显示登录 */}
+            {!loading && (isSubmissionOpen || !user) && pathname !== '/preliminary' && (
               <button
-                onClick={handleActionClick}
-                className={`flex flex-col items-center justify-center gap-0.5 w-14 h-14 -mt-5 rounded-2xl shadow-lg active:scale-95 transition-all ${
+                onClick={isSubmissionOpen ? handleActionClick : undefined}
+                className={`flex flex-col items-center justify-center gap-0.5 w-14 h-14 -mt-5 rounded-2xl shadow-lg transition-all ${
                   user
-                    ? 'bg-[#1A1A1A] text-white'
-                    : 'bg-[#1A1A1A] text-white'
+                    ? isSubmissionOpen
+                      ? 'bg-[#1A1A1A] text-white active:scale-95'
+                      : 'bg-surface-container-high text-on-surface-variant opacity-60'
+                    : 'bg-[#1A1A1A] text-white active:scale-95'
                 }`}
               >
-                {user ? <Plus size={22} strokeWidth={2.5} /> : <LogIn size={20} strokeWidth={2} />}
-                <span className="text-[9px] font-bold leading-tight">{user ? t.nav.submit : t.nav.login}</span>
+                {user ? (
+                  isSubmissionOpen ? <Plus size={22} strokeWidth={2.5} /> : <Lock size={20} strokeWidth={2} />
+                ) : <LogIn size={20} strokeWidth={2} />}
+                <span className="text-[9px] font-bold leading-tight">
+                  {user ? (isSubmissionOpen ? t.nav.submit : '已截止') : t.nav.login}
+                </span>
               </button>
             )}
 

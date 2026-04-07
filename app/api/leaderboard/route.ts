@@ -4,7 +4,7 @@ import { BEST_DEMO_AWARDS, SPECIAL_AWARDS } from '@/lib/constants';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const voteType = searchParams.get('vote_type') || 'best_optimizer';
+  const voteType = searchParams.get('vote_type') || 'best_lightning_coder';
 
   const supabase = getSupabaseAdmin();
 

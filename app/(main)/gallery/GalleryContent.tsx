@@ -22,7 +22,7 @@ interface Demo {
   id: number;
   name: string;
   summary: string;
-  track: 'optimizer' | 'builder';
+  track: 'lightning_coder' | 'insighter';
   demo_link: string | null;
   submitter1_name: string;
   submitter1_dept: string;
@@ -55,7 +55,7 @@ export default function GalleryContent() {
   const [selectedDemo, setSelectedDemo] = useState<Demo | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
-  const [activeTrack, setActiveTrack] = useState<'optimizer' | 'builder'>('optimizer');
+  const [activeTrack, setActiveTrack] = useState<'lightning_coder' | 'insighter'>('lightning_coder');
   
   // Lightbox 状态
   const [lightboxOpen, setLightboxOpen] = useState(false);
@@ -103,7 +103,7 @@ export default function GalleryContent() {
             setActiveTrack(foundDemo.track);
           } else {
             setSelectedDemo(demosList[0] || null);
-            setActiveTrack(demosList[0]?.track || 'optimizer');
+            setActiveTrack(demosList[0]?.track || 'lightning_coder');
           }
         } else if (queryFromUrl) {
           // ?q=<name> 搜索并自动选中第一个匹配项
@@ -123,11 +123,11 @@ export default function GalleryContent() {
             if (isMobile) setShowDetail(true);
           } else {
             setSelectedDemo(demosList[0] || null);
-            setActiveTrack(demosList[0]?.track || 'optimizer');
+            setActiveTrack(demosList[0]?.track || 'lightning_coder');
           }
         } else {
           setSelectedDemo(demosList[0] || null);
-          setActiveTrack(demosList[0]?.track || 'optimizer');
+          setActiveTrack(demosList[0]?.track || 'lightning_coder');
         }
       })
       .catch(err => {
@@ -139,44 +139,59 @@ export default function GalleryContent() {
       });
   }, [demoIdFromUrl, queryFromUrl]);
 
-  const optimizerDemos = demos.filter(d => d.track === 'optimizer');
-  const builderDemos = demos.filter(d => d.track === 'builder');
+  // 监听删除事件，删除后主动刷新列表
+  useEffect(() => {
+    const handleDemoDeleted = () => {
+      fetch('/api/demos')
+        .then(r => r.ok ? r.json() : Promise.reject())
+        .then((data: { demos?: Demo[] }) => {
+          const demosList = shuffleArray(data.demos || []);
+          setDemos(demosList);
+        })
+        .catch(() => {});
+    };
+    window.addEventListener('demo-deleted', handleDemoDeleted);
+    return () => window.removeEventListener('demo-deleted', handleDemoDeleted);
+  }, []);
+
+  const lightningCoderDemos = demos.filter(d => d.track === 'lightning_coder');
+  const insighterDemos = demos.filter(d => d.track === 'insighter');
 
   // 使用 useMemo 缓存过滤结果，避免重复计算
   // 搜索时去掉各类引号再比较，避免 DB 里存 "财报哨兵" 而搜索词为 财报哨兵 时匹配失败
   const nq = (s: string) => s.replace(/["""'''\u2018\u2019\u201c\u201d]/g, '').toLowerCase();
 
-  const filteredOptimizer = useMemo(() => {
+  const filteredLightningCoder = useMemo(() => {
     const q = nq(debouncedQuery);
-    if (!q) return optimizerDemos;
-    return optimizerDemos.filter(d =>
+    if (!q) return lightningCoderDemos;
+    return lightningCoderDemos.filter(d =>
       nq(d.name).includes(q) ||
       d.summary.toLowerCase().includes(q) ||
       d.submitter1_name.toLowerCase().includes(q) ||
       (d.submitter2_name && d.submitter2_name.toLowerCase().includes(q)) ||
       (d.keywords && d.keywords.toLowerCase().includes(q))
     );
-  }, [optimizerDemos, debouncedQuery]);
+  }, [lightningCoderDemos, debouncedQuery]);
 
-  const filteredBuilder = useMemo(() => {
+  const filteredInsighter = useMemo(() => {
     const q = nq(debouncedQuery);
-    if (!q) return builderDemos;
-    return builderDemos.filter(d =>
+    if (!q) return insighterDemos;
+    return insighterDemos.filter(d =>
       nq(d.name).includes(q) ||
       d.summary.toLowerCase().includes(q) ||
       d.submitter1_name.toLowerCase().includes(q) ||
       (d.submitter2_name && d.submitter2_name.toLowerCase().includes(q)) ||
       (d.keywords && d.keywords.toLowerCase().includes(q))
     );
-  }, [builderDemos, debouncedQuery]);
+  }, [insighterDemos, debouncedQuery]);
 
-  const activeList = activeTrack === 'optimizer' ? filteredOptimizer : filteredBuilder;
+  const activeList = activeTrack === 'lightning_coder' ? filteredLightningCoder : filteredInsighter;
 
-  const handleSwitchTrack = useCallback((track: 'optimizer' | 'builder') => {
+  const handleSwitchTrack = useCallback((track: 'lightning_coder' | 'insighter') => {
     setActiveTrack(track);
-    const list = track === 'optimizer' ? optimizerDemos : builderDemos;
+    const list = track === 'lightning_coder' ? lightningCoderDemos : insighterDemos;
     if (list.length > 0) setSelectedDemo(list[0]);
-  }, [optimizerDemos, builderDemos]);
+  }, [lightningCoderDemos, insighterDemos]);
 
   // 安全解析 media_urls（可能是 JSONB 数组或字符串）
   function parseMediaUrls(mediaUrls: string | string[] | null | undefined): string[] {
@@ -209,7 +224,7 @@ export default function GalleryContent() {
       {/* Header */}
       <header className="flex-shrink-0 mb-4 px-4 md:px-12 pt-4 pb-2">
         <div>
-          <h2 className="font-headline text-2xl md:text-4xl font-bold tracking-tight text-on-surface">Demo Gallery</h2>
+          <h2 className="font-headline text-2xl md:text-4xl font-bold tracking-tight text-on-surface">Skill Gallery</h2>
         </div>
       </header>
 
@@ -220,46 +235,46 @@ export default function GalleryContent() {
           {/* Tab Bar */}
           <div className="flex-shrink-0 flex gap-1 p-1 bg-surface-container-low rounded-t-xl">
             <button
-              onClick={() => handleSwitchTrack('optimizer')}
+              onClick={() => handleSwitchTrack('lightning_coder')}
               className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-headline text-base font-bold transition-all ${
-                activeTrack === 'optimizer'
+                activeTrack === 'lightning_coder'
                   ? 'bg-secondary text-on-secondary shadow-sm'
                   : 'text-on-surface-variant hover:bg-surface-container-high'
               }`}
             >
               <span>⚡</span>
-              <span>Optimizer</span>
+              <span>Lightning Coder</span>
               <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-normal ${
-                activeTrack === 'optimizer'
+                activeTrack === 'lightning_coder'
                   ? 'bg-on-secondary/20 text-on-secondary'
                   : 'bg-surface-container-high text-on-surface-variant'
               }`}>
-                {filteredOptimizer.length}
+                {filteredLightningCoder.length}
               </span>
             </button>
             <button
-              onClick={() => handleSwitchTrack('builder')}
+              onClick={() => handleSwitchTrack('insighter')}
               className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-headline text-base font-bold transition-all ${
-                activeTrack === 'builder'
+                activeTrack === 'insighter'
                   ? 'bg-tertiary text-on-tertiary shadow-sm'
                   : 'text-on-surface-variant hover:bg-surface-container-high'
               }`}
             >
               <span>🛠️</span>
-              <span>Builder</span>
+              <span>Insighter</span>
               <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-normal ${
-                activeTrack === 'builder'
+                activeTrack === 'insighter'
                   ? 'bg-on-tertiary/20 text-on-tertiary'
                   : 'bg-surface-container-high text-on-surface-variant'
               }`}>
-                {filteredBuilder.length}
+                {filteredInsighter.length}
               </span>
             </button>
           </div>
 
           {/* Search - inside the container, between tab and list */}
           <div className={`flex-shrink-0 px-2 pt-2 border-x border-outline-variant/20 bg-surface-container-low/50 ${
-            activeTrack === 'optimizer' ? 'border-t-2 border-t-secondary/30' : 'border-t-2 border-t-tertiary/30'
+            activeTrack === 'lightning_coder' ? 'border-t-2 border-t-secondary/30' : 'border-t-2 border-t-tertiary/30'
           }`}>
             <div className="relative">
               <input
@@ -292,7 +307,7 @@ export default function GalleryContent() {
                     onClick={() => { setSelectedDemo(demo); if (isMobile) setShowDetail(true); }}
                     className={`p-3 cursor-pointer transition-all group border-l-2 ${
                       isSelected
-                        ? activeTrack === 'optimizer'
+                        ? activeTrack === 'lightning_coder'
                           ? 'bg-surface-container-lowest border-secondary'
                           : 'bg-surface-container-lowest border-tertiary'
                         : 'hover:bg-surface-container-high border-transparent'
@@ -317,7 +332,7 @@ export default function GalleryContent() {
                       <div className="flex flex-wrap gap-1">
                         {visibleKeywords.map((kw, i) => (
                           <span key={i} className={`text-xs px-1.5 py-0.5 rounded ${
-                            activeTrack === 'optimizer'
+                            activeTrack === 'lightning_coder'
                               ? 'bg-secondary/10 text-secondary'
                               : 'bg-tertiary/10 text-tertiary'
                           }`}>
@@ -344,7 +359,7 @@ export default function GalleryContent() {
           {selectedDemo ? (
             <>
               {/* 彩色顶部细线 */}
-              <div className={`h-0.5 flex-shrink-0 ${selectedDemo.track === 'optimizer' ? 'bg-secondary' : 'bg-tertiary'}`} />
+              <div className={`h-0.5 flex-shrink-0 ${selectedDemo.track === 'lightning_coder' ? 'bg-secondary' : 'bg-tertiary'}`} />
               {/* Mobile back button */}
               {isMobile && (
                 <button
@@ -358,13 +373,13 @@ export default function GalleryContent() {
               <div className="px-4 md:px-8 pt-5 pb-4 flex-shrink-0 border-b border-outline-variant/10 bg-surface-container-low">
                 <div className="flex items-center gap-3 mb-2">
                   <span className={`px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide rounded ${
-                    selectedDemo.track === 'optimizer'
+                    selectedDemo.track === 'lightning_coder'
                       ? 'bg-secondary/10 text-secondary'
                       : 'bg-tertiary/10 text-tertiary'
                   }`}>
                     {selectedDemo.track}
                   </span>
-                  <span className="text-lg">{selectedDemo.track === 'optimizer' ? '⚡️' : '🛠️'}</span>
+                  <span className="text-lg">{selectedDemo.track === 'lightning_coder' ? '⚡️' : '🛠️'}</span>
                 </div>
                 <h1 className="text-3xl font-headline font-bold text-on-surface">{selectedDemo.name}</h1>
                 <p className="mt-3 text-base text-on-surface-variant leading-relaxed">
@@ -489,7 +504,7 @@ export default function GalleryContent() {
             </>
           ) : (
             <div className="flex-1 flex items-center justify-center text-on-surface-variant overflow-y-auto custom-scrollbar">
-              <p>暂无项目，请先提交 Demo</p>
+              <p>暂无项目，请先提交 Skill</p>
             </div>
           )}
         </div>

@@ -54,7 +54,7 @@ export async function POST() {
     .select('id, track, submitted_by') as { data: any[]; error: any };
 
   if (demosError || !demos || demos.length === 0) {
-    return NextResponse.json({ error: '没有 Demo 项目，请先生成测试数据' }, { status: 400 });
+    return NextResponse.json({ error: '没有 Skill 项目，请先生成测试数据' }, { status: 400 });
   }
 
   // 获取所有普通用户（排除 admin）

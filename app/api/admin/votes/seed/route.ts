@@ -33,11 +33,11 @@ export async function POST() {
     .select('id, track, submitted_by') as { data: any[]; error: any };
 
   if (demosError || !allDemos?.length) {
-    return NextResponse.json({ error: '没有找到 Demo 项目，请先生成测试项目' }, { status: 400 });
+    return NextResponse.json({ error: '没有找到 Skill 项目，请先生成测试项目' }, { status: 400 });
   }
 
-  const optimizerDemos = allDemos.filter(d => d.track === 'optimizer');
-  const builderDemos   = allDemos.filter(d => d.track === 'builder');
+  const lightningCoderDemos = allDemos.filter(d => d.track === 'lightning_coder');
+  const insighterDemos   = allDemos.filter(d => d.track === 'insighter');
 
   // 获取所有非 admin 用户
   const { data: users, error: usersError } = await supabase
@@ -60,8 +60,8 @@ export async function POST() {
   );
 
   const VOTE_CONFIGS = [
-    { voteType: 'best_optimizer', maxVotes: BEST_DEMO_AWARDS.best_optimizer.maxVotes, pool: optimizerDemos },
-    { voteType: 'best_builder',   maxVotes: BEST_DEMO_AWARDS.best_builder.maxVotes,   pool: builderDemos   },
+    { voteType: 'best_lightning_coder', maxVotes: BEST_DEMO_AWARDS.best_lightning_coder.maxVotes, pool: lightningCoderDemos },
+    { voteType: 'best_insighter',       maxVotes: BEST_DEMO_AWARDS.best_insighter.maxVotes,      pool: insighterDemos   },
     { voteType: 'special_brain',       maxVotes: SPECIAL_AWARDS.special_brain.maxVotes,       pool: allDemos },
     { voteType: 'special_infectious',  maxVotes: SPECIAL_AWARDS.special_infectious.maxVotes,  pool: allDemos },
     { voteType: 'special_useful',      maxVotes: SPECIAL_AWARDS.special_useful.maxVotes,       pool: allDemos },

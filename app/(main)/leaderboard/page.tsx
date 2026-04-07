@@ -34,7 +34,7 @@ interface FullDemo {
   id: number;
   name: string;
   summary: string;
-  track: 'optimizer' | 'builder';
+  track: 'lightning_coder' | 'insighter';
   demo_link: string | null;
   submitter1_name: string;
   submitter1_dept: string;
@@ -51,7 +51,7 @@ interface Vote { demo_id: number; vote_type: string; }
 interface SelectedVote { demo_id: number; vote_type: string; }
 interface DemoLink { title: string; url: string; }
 
-type TabType = 'optimizer' | 'builder' | 'special_brain' | 'special_infectious' | 'special_useful';
+type TabType = 'lightning_coder' | 'insighter' | 'special_brain' | 'special_infectious' | 'special_useful';
 
 const jsonFetcher = (url: string) => fetch(url).then(r => r.json());
 
@@ -70,8 +70,8 @@ function parseMediaUrls(v: string | string[] | null | undefined): string[] {
 // ── Tab config ─────────────────────────────────────────────────────────────────
 
 const TABS: { id: TabType; icon: string; label: string; group: 'best' | 'special'; voteType: string; maxVotes: number }[] = [
-  { id: 'optimizer',           icon: '⚡',  label: 'Optimizer', group: 'best',    voteType: 'best_optimizer',    maxVotes: BEST_DEMO_AWARDS.best_optimizer.maxVotes },
-  { id: 'builder',             icon: '🛠️', label: 'Builder',   group: 'best',    voteType: 'best_builder',      maxVotes: BEST_DEMO_AWARDS.best_builder.maxVotes },
+  { id: 'lightning_coder',           icon: '⚡',  label: 'Lightning Coder', group: 'best',    voteType: 'best_lightning_coder', maxVotes: BEST_DEMO_AWARDS.best_lightning_coder.maxVotes },
+  { id: 'insighter',             icon: '🛠️', label: 'Insighter',   group: 'best',    voteType: 'best_insighter',      maxVotes: BEST_DEMO_AWARDS.best_insighter.maxVotes },
   { id: 'special_brain',       icon: '🧠',  label: '最脑洞',    group: 'special', voteType: 'special_brain',     maxVotes: SPECIAL_AWARDS.special_brain.maxVotes },
   { id: 'special_infectious',  icon: '🔥',  label: '最感染力',  group: 'special', voteType: 'special_infectious', maxVotes: SPECIAL_AWARDS.special_infectious.maxVotes },
   { id: 'special_useful',      icon: '💎',  label: '最实用',    group: 'special', voteType: 'special_useful',    maxVotes: SPECIAL_AWARDS.special_useful.maxVotes },
@@ -113,7 +113,7 @@ export default function LeaderboardPage() {
 
   const [selectedVotes, setSelectedVotes] = useState<SelectedVote[]>([]);
   const [submitting, setSubmitting] = useState(false);
-  const [activeTab, setActiveTab]   = useState<TabType>('optimizer');
+  const [activeTab, setActiveTab]   = useState<TabType>('lightning_coder');
   const [message, setMessage]       = useState<{ text: string; type: 'success' | 'error' } | null>(null);
   const [previewId, setPreviewId]   = useState<number | null>(null);
   const [searchQuery, setSearchQuery]     = useState('');
@@ -165,7 +165,7 @@ export default function LeaderboardPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => { loadTabData('optimizer'); }, []);
+  useEffect(() => { loadTabData('lightning_coder'); }, []);
 
   useEffect(() => {
     if (!loadedTabs.has(activeTab)) loadTabData(activeTab);
@@ -324,7 +324,7 @@ export default function LeaderboardPage() {
   // ── Track color helpers ─────────────────────────────────────────────────────
 
   function trackColor(track: string) {
-    return track === 'optimizer' ? 'secondary' : track === 'builder' ? 'tertiary' : 'primary';
+    return track === 'lightning_coder' ? 'secondary' : track === 'insighter' ? 'tertiary' : 'primary';
   }
 
   // ── Render ──────────────────────────────────────────────────────────────────
@@ -334,9 +334,9 @@ export default function LeaderboardPage() {
 
       {/* ── Header ──────────────────────────────────────────────────────────── */}
       <header className="flex-shrink-0 px-4 md:px-12 pt-4 pb-2">
-        <h2 className="font-headline text-2xl md:text-4xl font-bold text-on-surface">Demo Leaderboard</h2>
+        <h2 className="font-headline text-2xl md:text-4xl font-bold text-on-surface">Skill Leaderboard</h2>
         <p className="text-sm text-on-surface-variant mt-0.5">
-          最佳Demo各赛道 {BEST_DEMO_AWARDS.best_optimizer.maxVotes} 票 · 专项奖 1 票 · 投后不可修改{showResults ? '' : ' · 结果待公布'}
+          最佳Skill各赛道 {BEST_DEMO_AWARDS.best_lightning_coder.maxVotes} 票 · 专项奖 1 票 · 投后不可修改{showResults ? '' : ' · 结果待公布'}
         </p>
       </header>
 
@@ -365,9 +365,9 @@ export default function LeaderboardPage() {
 
       {/* ── Tab bar ─────────────────────────────────────────────────────────── */}
       <div className="flex-shrink-0 px-4 md:px-12 pt-3 pb-2 flex items-center gap-2 md:gap-4 overflow-x-auto no-scrollbar">
-        {/* Best Demo group */}
+        {/* Best Skill group */}
         <div className="flex items-center gap-1.5 md:gap-2 flex-shrink-0">
-          <span className="text-xs font-bold text-on-surface-variant/50 uppercase tracking-wider whitespace-nowrap hidden md:inline">🏆 最佳Demo</span>
+          <span className="text-xs font-bold text-on-surface-variant/50 uppercase tracking-wider whitespace-nowrap hidden md:inline">🏆 最佳Skill</span>
           <div className="flex gap-1 p-1 bg-surface-container-low rounded-xl">
             {TABS.filter(t => t.group === 'best').map(tab => {
               const done = myVotes.some(v => v.vote_type === tab.voteType);
@@ -378,7 +378,7 @@ export default function LeaderboardPage() {
                   onClick={() => handleSwitchTab(tab.id)}
                   className={`flex items-center gap-1 md:gap-1.5 px-2.5 md:px-4 py-1.5 md:py-2 rounded-lg font-headline text-sm md:text-base font-bold transition-all whitespace-nowrap ${
                     activeTab === tab.id
-                      ? tab.id === 'optimizer' ? 'bg-secondary text-on-secondary shadow-sm' : 'bg-tertiary text-on-tertiary shadow-sm'
+                      ? tab.id === 'lightning_coder' ? 'bg-secondary text-on-secondary shadow-sm' : 'bg-tertiary text-on-tertiary shadow-sm'
                       : 'text-on-surface-variant hover:bg-surface-container-high'
                   }`}
                 >
@@ -424,8 +424,8 @@ export default function LeaderboardPage() {
 
           {/* Search bar */}
           <div className={`flex-shrink-0 p-2 border border-b-0 border-outline-variant/20 rounded-t-xl bg-surface-container-low/50 border-t-2 ${
-            activeTab === 'optimizer' ? 'border-t-secondary/40' :
-            activeTab === 'builder'   ? 'border-t-tertiary/40'  : 'border-t-primary/40'
+            activeTab === 'lightning_coder' ? 'border-t-secondary/40' :
+            activeTab === 'insighter'   ? 'border-t-tertiary/40'  : 'border-t-primary/40'
           }`}>
             <div className="relative">
               <input
@@ -519,8 +519,8 @@ export default function LeaderboardPage() {
                       <div className="flex items-center gap-1 flex-wrap">
                         {keywords.map((kw, i) => (
                           <span key={i} className={`text-xs px-2 py-0.5 rounded ${
-                            activeTab === 'optimizer' ? 'bg-secondary/10 text-secondary' :
-                            activeTab === 'builder'   ? 'bg-tertiary/10 text-tertiary'   :
+                            activeTab === 'lightning_coder' ? 'bg-secondary/10 text-secondary' :
+                            activeTab === 'insighter'   ? 'bg-tertiary/10 text-tertiary'   :
                                                         'bg-primary/10 text-primary'
                           }`}>{kw}</span>
                         ))}
@@ -546,8 +546,8 @@ export default function LeaderboardPage() {
             <>
               {/* Track color bar */}
               <div className={`h-0.5 flex-shrink-0 ${
-                previewItem.track === 'optimizer' ? 'bg-secondary' :
-                previewItem.track === 'builder'   ? 'bg-tertiary'  : 'bg-primary'
+                previewItem.track === 'lightning_coder' ? 'bg-secondary' :
+                previewItem.track === 'insighter'   ? 'bg-tertiary'  : 'bg-primary'
               }`} />
 
               {/* Mobile back button */}
@@ -567,15 +567,15 @@ export default function LeaderboardPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1.5">
                       <span className={`px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide rounded ${
-                        previewItem.track === 'optimizer' ? 'bg-secondary/10 text-secondary' :
-                        previewItem.track === 'builder'   ? 'bg-tertiary/10 text-tertiary'   :
+                        previewItem.track === 'lightning_coder' ? 'bg-secondary/10 text-secondary' :
+                        previewItem.track === 'insighter'   ? 'bg-tertiary/10 text-tertiary'   :
                                                             'bg-primary/10 text-primary'
                       }`}>
                         {previewItem.track}
                       </span>
                       <span className="text-lg leading-none">
-                        {previewItem.track === 'optimizer' ? '⚡️' :
-                         previewItem.track === 'builder'   ? '🛠️' :
+                        {previewItem.track === 'lightning_coder' ? '⚡️' :
+                         previewItem.track === 'insighter'   ? '🛠️' :
                          TABS.find(t => t.voteType === currentVoteType)?.icon ?? '⭐'}
                       </span>
                     </div>
@@ -737,11 +737,11 @@ export default function LeaderboardPage() {
                     <div className="pb-6 border-b border-outline-variant/20">
                       <p className="text-xs uppercase tracking-widest text-primary font-bold mb-2">赛道</p>
                       <span className={`text-xs px-2 py-1 rounded-full font-medium ${
-                        previewItem.track === 'optimizer' 
+                        previewItem.track === 'lightning_coder' 
                           ? 'bg-secondary/10 text-secondary' 
                           : 'bg-tertiary/10 text-tertiary'
                       }`}>
-                        {previewItem.track === 'optimizer' ? 'Optimizer' : 'Builder'}
+                        {previewItem.track === 'lightning_coder' ? 'Lightning Coder' : 'Insighter'}
                       </span>
                     </div>
                   </div>

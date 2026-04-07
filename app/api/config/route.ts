@@ -26,7 +26,7 @@ export async function GET() {
   const { data: config, error } = await supabase
     .from('site_config')
     .select('*')
-    .in('key', ['voting_enabled', 'voting_notice', 'submission_enabled', 'nav_leaderboard_visible', 'nav_preliminary_visible', 'leaderboard_results_visible', 'leaderboard_eligible_ids', 'voting_open_awards', 'voting_award_notices']) as { data: any[]; error: any };
+    .in('key', ['voting_enabled', 'voting_notice', 'submission_enabled', 'nav_leaderboard_visible', 'nav_preliminary_visible', 'nav_myDemos_visible', 'nav_square_visible', 'leaderboard_results_visible', 'leaderboard_eligible_ids', 'voting_open_awards', 'voting_award_notices']) as { data: any[]; error: any };
 
   // 表不存在的错误
   if (error && error.code === '42P01') {
@@ -64,9 +64,11 @@ export async function GET() {
   // submission_enabled 默认为 true（未配置时视为开放）
   const isSubmissionOpen = configMap['submission_enabled'] !== 'false';
 
-  // 导航可见性配置（默认：leaderboard 显示，preliminary 隐藏）
+  // 导航可见性配置（默认：leaderboard 显示，preliminary/myDemos 隐藏，square 隐藏）
   const navLeaderboardVisible = configMap['nav_leaderboard_visible'] !== 'false';
   const navPreliminaryVisible = configMap['nav_preliminary_visible'] === 'true';
+  const navMyDemosVisible = configMap['nav_myDemos_visible'] === 'true';
+  const navSquareVisible = configMap['nav_square_visible'] === 'true';
   // 投票结果可见性（默认隐藏，需 admin 开放）
   const leaderboardResultsVisible = configMap['leaderboard_results_visible'] === 'true';
 
@@ -80,6 +82,8 @@ export async function GET() {
     notice,
     navLeaderboardVisible,
     navPreliminaryVisible,
+    navMyDemosVisible,
+    navSquareVisible,
     leaderboardResultsVisible,
     leaderboardEligibleIds,
     votingOpenAwards,
@@ -94,7 +98,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: '无权访问' }, { status: 403 });
   }
   
-  const { enabled, notice, submissionEnabled, navLeaderboardVisible, navPreliminaryVisible, leaderboardResultsVisible, leaderboardEligibleIds, votingOpenAwards, votingAwardNotices } = await request.json();
+  const { enabled, notice, submissionEnabled, navLeaderboardVisible, navPreliminaryVisible, navMyDemosVisible, navSquareVisible, leaderboardResultsVisible, leaderboardEligibleIds, votingOpenAwards, votingAwardNotices } = await request.json();
 
   const supabase = getSupabaseAdmin();
 
@@ -131,6 +135,14 @@ export async function POST(request: Request) {
 
   if (navPreliminaryVisible !== undefined) {
     updates.push({ key: 'nav_preliminary_visible', value: navPreliminaryVisible ? 'true' : 'false' });
+  }
+
+  if (navMyDemosVisible !== undefined) {
+    updates.push({ key: 'nav_myDemos_visible', value: navMyDemosVisible ? 'true' : 'false' });
+  }
+
+  if (navSquareVisible !== undefined) {
+    updates.push({ key: 'nav_square_visible', value: navSquareVisible ? 'true' : 'false' });
   }
 
   if (leaderboardResultsVisible !== undefined) {

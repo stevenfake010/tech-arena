@@ -43,7 +43,7 @@ const SUBMITTER_MAP: Record<string, string> = {
   'Expeditions | Your travel stories': '初一 + 也英',
   '【App真实上线可玩】Pensieve : Your Exclusive biographer': '阿瑟 + 高斯',
   '三张地图': '维勒 + 阿列',
-  'AI Demo Day网站': '恒宇 + 阿瑟',
+  'Tech Arena网站': '恒宇 + 阿瑟',
   '展览体温计 — 看展的真实评价，一眼可见': '璃茉',
   'Project Spark：点亮中低活用户的feed': '也英 + 杰特',
   'Project Lumière': '莉露 + 米法',
@@ -69,14 +69,14 @@ function getSubmitter(name: string) {
   return '';
 }
 
-interface DemoItem { name: string; track: 'optimizer' | 'builder'; submitter: string; }
+interface DemoItem { name: string; track: 'lightning_coder' | 'insighter'; submitter: string; }
 
-const OPTIMIZER_DEMOS: DemoItem[] = OPTIMIZER_ORDER.map(name => ({ name, track: 'optimizer', submitter: getSubmitter(name) }));
-const BUILDER_DEMOS: DemoItem[]   = BUILDER_ORDER.map(name => ({ name, track: 'builder', submitter: getSubmitter(name) }));
+const OPTIMIZER_DEMOS: DemoItem[] = OPTIMIZER_ORDER.map(name => ({ name, track: 'lightning_coder', submitter: getSubmitter(name) }));
+const BUILDER_DEMOS: DemoItem[]   = BUILDER_ORDER.map(name => ({ name, track: 'insighter', submitter: getSubmitter(name) }));
 
-function getDemoTrack(name: string): 'optimizer' | 'builder' | null {
-  if (OPTIMIZER_ORDER.includes(name)) return 'optimizer';
-  if (BUILDER_ORDER.includes(name)) return 'builder';
+function getDemoTrack(name: string): 'lightning_coder' | 'insighter' | null {
+  if (OPTIMIZER_ORDER.includes(name)) return 'lightning_coder';
+  if (BUILDER_ORDER.includes(name)) return 'insighter';
   return null;
 }
 
@@ -94,7 +94,7 @@ function DemoPickerRow({
   selected: boolean;
   onPick: (name: string) => void;
 }) {
-  const isOpt = item.track === 'optimizer';
+  const isOpt = item.track === 'lightning_coder';
   return (
     <button
       type="button"
@@ -200,7 +200,7 @@ function DemoPicker({
               {filteredOpt.length > 0 && (
                 <section>
                   <div className="px-5 py-2 flex items-center gap-2">
-                    <span className="text-xs font-semibold text-secondary/60 uppercase tracking-widest">⚡ Optimizer</span>
+                    <span className="text-xs font-semibold text-secondary/60 uppercase tracking-widest">⚡ Lightning Coder</span>
                     <span className="flex-1 h-px bg-outline-variant/15" />
                   </div>
                   {filteredOpt.map(item => (
@@ -211,7 +211,7 @@ function DemoPicker({
               {filteredBld.length > 0 && (
                 <section className="mt-1">
                   <div className="px-5 py-2 flex items-center gap-2">
-                    <span className="text-xs font-semibold text-tertiary/60 uppercase tracking-widest">🛠️ Builder</span>
+                    <span className="text-xs font-semibold text-tertiary/60 uppercase tracking-widest">🛠️ Insighter</span>
                     <span className="flex-1 h-px bg-outline-variant/15" />
                   </div>
                   {filteredBld.map(item => (
@@ -252,7 +252,7 @@ function FilterDropdown({
   }, []);
 
   const label = value
-    ? <><span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${getDemoTrack(value) === 'optimizer' ? 'bg-secondary' : 'bg-tertiary'}`} /><span className="truncate max-w-[180px]">{value}</span></>
+    ? <><span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${getDemoTrack(value) === 'lightning_coder' ? 'bg-secondary' : 'bg-tertiary'}`} /><span className="truncate max-w-[180px]">{value}</span></>
     : <span className="text-on-surface-variant">全部项目</span>;
 
   return (
@@ -276,13 +276,13 @@ function FilterDropdown({
             </button>
           </div>
 
-          {(['optimizer', 'builder'] as const).map(track => {
+          {(['lightning_coder', 'insighter'] as const).map(track => {
             const demos = demosWithQuestions.filter(d => getDemoTrack(d) === track);
             if (demos.length === 0) return null;
             return (
               <div key={track} className="border-t border-outline-variant/10 py-1">
-                <p className={`px-4 py-1 text-xs font-bold uppercase tracking-wider ${track === 'optimizer' ? 'text-secondary/60' : 'text-tertiary/60'}`}>
-                  {track === 'optimizer' ? '⚡ Optimizer' : '🛠️ Builder'}
+                <p className={`px-4 py-1 text-xs font-bold uppercase tracking-wider ${track === 'lightning_coder' ? 'text-secondary/60' : 'text-tertiary/60'}`}>
+                  {track === 'lightning_coder' ? '⚡ Lightning Coder' : '🛠️ Insighter'}
                 </p>
                 {demos.map(demo => (
                   <button
@@ -292,7 +292,7 @@ function FilterDropdown({
                       value === demo ? 'font-medium bg-surface-container' : 'text-on-surface-variant hover:bg-surface-container'
                     }`}
                   >
-                    <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${track === 'optimizer' ? 'bg-secondary' : 'bg-tertiary'}`} />
+                    <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${track === 'lightning_coder' ? 'bg-secondary' : 'bg-tertiary'}`} />
                     <span className="truncate">{demo}</span>
                   </button>
                 ))}
@@ -432,7 +432,7 @@ export default function SquarePage() {
                   onClick={() => setPickerOpen(true)}
                   className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border text-left transition-all ${
                     selectedDemo
-                      ? selectedTrack === 'optimizer'
+                      ? selectedTrack === 'lightning_coder'
                         ? 'border-secondary/40 bg-secondary/5'
                         : 'border-tertiary/40 bg-tertiary/5'
                       : 'border-outline-variant/30 bg-surface-container hover:border-outline-variant/60'
@@ -440,18 +440,18 @@ export default function SquarePage() {
                 >
                   {selectedDemo ? (
                     <>
-                      <span className={`w-2 h-2 rounded-full flex-shrink-0 ${selectedTrack === 'optimizer' ? 'bg-secondary' : 'bg-tertiary'}`} />
+                      <span className={`w-2 h-2 rounded-full flex-shrink-0 ${selectedTrack === 'lightning_coder' ? 'bg-secondary' : 'bg-tertiary'}`} />
                       <span className="flex-1 text-sm font-medium text-on-surface leading-snug">{selectedDemo}</span>
                       <span className={`text-xs font-semibold px-2 py-0.5 rounded-full flex-shrink-0 ${
-                        selectedTrack === 'optimizer' ? 'bg-secondary/10 text-secondary' : 'bg-tertiary/10 text-tertiary'
+                        selectedTrack === 'lightning_coder' ? 'bg-secondary/10 text-secondary' : 'bg-tertiary/10 text-tertiary'
                       }`}>
-                        {selectedTrack === 'optimizer' ? 'Optimizer' : 'Builder'}
+                        {selectedTrack === 'lightning_coder' ? 'Lightning Coder' : 'Insighter'}
                       </span>
                     </>
                   ) : (
                     <>
                       <span className="w-2 h-2 rounded-full bg-outline/20 flex-shrink-0" />
-                      <span className="flex-1 text-sm text-outline">选择要提问的 Demo 项目...</span>
+                      <span className="flex-1 text-sm text-outline">选择要提问的 Skill 项目...</span>
                       <ChevronDown size={15} className="text-outline flex-shrink-0" />
                     </>
                   )}
@@ -545,20 +545,20 @@ export default function SquarePage() {
                 {/* Demo target header */}
                 {message.category && (
                   <div className={`px-4 py-2.5 flex items-start gap-2 border-b border-outline-variant/10 ${
-                    track === 'optimizer' ? 'bg-secondary/5' :
-                    track === 'builder'   ? 'bg-tertiary/5' : 'bg-surface-container'
+                    track === 'lightning_coder' ? 'bg-secondary/5' :
+                    track === 'insighter'   ? 'bg-tertiary/5' : 'bg-surface-container'
                   }`}>
                     <span className={`text-sm font-medium flex-1 leading-snug line-clamp-2 ${
-                      track === 'optimizer' ? 'text-secondary' :
-                      track === 'builder'   ? 'text-tertiary' : 'text-on-surface'
+                      track === 'lightning_coder' ? 'text-secondary' :
+                      track === 'insighter'   ? 'text-tertiary' : 'text-on-surface'
                     }`}>
                       向 <span className="font-semibold">{message.category}</span> 提问
                     </span>
                     <span className={`text-xs px-1.5 py-0.5 rounded font-medium flex-shrink-0 mt-0.5 ${
-                      track === 'optimizer' ? 'bg-secondary/10 text-secondary/70' :
-                      track === 'builder'   ? 'bg-tertiary/10 text-tertiary/70' : ''
+                      track === 'lightning_coder' ? 'bg-secondary/10 text-secondary/70' :
+                      track === 'insighter'   ? 'bg-tertiary/10 text-tertiary/70' : ''
                     }`}>
-                      {track === 'optimizer' ? 'Optimizer' : track === 'builder' ? 'Builder' : ''}
+                      {track === 'lightning_coder' ? 'Lightning Coder' : track === 'insighter' ? 'Insighter' : ''}
                     </span>
                   </div>
                 )}

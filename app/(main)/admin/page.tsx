@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import {
   CheckCircle, AlertCircle, Check, Loader2, PlusCircle, Trash2, Trash,
   LayoutGrid, Trophy, MessageSquare, Search, ChevronLeft, ChevronRight,
-  X, Lock, Unlock, FileEdit, Settings, Database, ShieldAlert,
+  X, Lock, Unlock, FileEdit, Settings, Database, ShieldAlert, FolderOpen,
 } from 'lucide-react';
 
 interface Demo {
@@ -74,8 +74,8 @@ export default function AdminPage() {
 
   // 按奖项投票开关
   const AWARD_CONFIGS = [
-    { key: 'best_optimizer',   icon: '⚡', label: 'Optimizer 最佳Demo' },
-    { key: 'best_builder',     icon: '🛠️', label: 'Builder 最佳Demo' },
+    { key: 'best_optimizer',   icon: '⚡', label: 'Lightning Coder 最佳Demo' },
+    { key: 'best_builder',     icon: '🛠️', label: 'Insighter 最佳Demo' },
     { key: 'special_brain',    icon: '🧠', label: '专项奖 · 最脑洞' },
     { key: 'special_infectious', icon: '🔥', label: '专项奖 · 最感染力' },
     { key: 'special_useful',   icon: '💎', label: '专项奖 · 最实用' },
@@ -109,6 +109,8 @@ export default function AdminPage() {
   // 导航配置
   const [navLeaderboardVisible, setNavLeaderboardVisible] = useState(true);
   const [navPreliminaryVisible, setNavPreliminaryVisible] = useState(false);
+  const [navMyDemosVisible, setNavMyDemosVisible] = useState(false);
+  const [navSquareVisible, setNavSquareVisible] = useState(false);
   const [navConfigLoading, setNavConfigLoading] = useState(false);
   // 投票结果可见性
   const [leaderboardResultsVisible, setLeaderboardResultsVisible] = useState(false);
@@ -134,8 +136,8 @@ export default function AdminPage() {
   const [prelimEnabled, setPrelimEnabled] = useState(false);
   const [prelimMode, setPrelimMode] = useState<'A' | 'B'>('A');
   const [prelimTotal, setPrelimTotal] = useState('30');
-  const [prelimOptimizer, setPrelimOptimizer] = useState('15');
-  const [prelimBuilder, setPrelimBuilder] = useState('15');
+  const [prelimLightningCoder, setPrelimLightningCoder] = useState('15');
+  const [prelimInsighter, setPrelimInsighter] = useState('15');
   const [prelimRoles, setPrelimRoles] = useState<string[]>(['admin']);
   const [prelimNotice, setPrelimNotice] = useState('');
   const [prelimLoading, setPrelimLoading] = useState(false);
@@ -226,6 +228,8 @@ export default function AdminPage() {
       setNeedsSetup(data.error === 'TABLE_NOT_FOUND');
       setNavLeaderboardVisible(data.navLeaderboardVisible ?? true);
       setNavPreliminaryVisible(data.navPreliminaryVisible ?? false);
+      setNavMyDemosVisible(data.navMyDemosVisible ?? false);
+      setNavSquareVisible(data.navSquareVisible ?? false);
       setLeaderboardResultsVisible(data.leaderboardResultsVisible ?? false);
       setEligibleIds(data.leaderboardEligibleIds ?? []);
       if (data.votingOpenAwards) setVotingOpenAwards(data.votingOpenAwards);
@@ -245,8 +249,8 @@ export default function AdminPage() {
           setPrelimEnabled(data.config.enabled ?? false);
           setPrelimMode(data.config.mode ?? 'A');
           setPrelimTotal(String(data.config.totalRequired ?? 30));
-          setPrelimOptimizer(String(data.config.optimizerRequired ?? 15));
-          setPrelimBuilder(String(data.config.builderRequired ?? 15));
+          setPrelimLightningCoder(String(data.config.optimizerRequired ?? 15));
+          setPrelimInsighter(String(data.config.builderRequired ?? 15));
           setPrelimRoles(data.config.resultsRoles ?? ['admin']);
           setPrelimNotice(data.config.notice ?? '');
         }
@@ -273,7 +277,7 @@ export default function AdminPage() {
       });
       const data = await res.json();
       if (data.success) {
-        setResult({ type: 'success', message: enabled ? '✅ Demo 提交已开启' : '🔒 Demo 提交已关闭（已提交的 Demo 仍可编辑）' });
+        setResult({ type: 'success', message: enabled ? '✅ Skill 提交已开启' : '🔒 Skill 提交已关闭（已提交的 Skill 仍可编辑）' });
         loadSiteStatus();
       } else {
         setResult({ type: 'error', message: data.error || '操作失败' });
@@ -541,8 +545,8 @@ export default function AdminPage() {
           enabled: prelimEnabled,
           mode: prelimMode,
           totalRequired: parseInt(prelimTotal, 10),
-          optimizerCount: parseInt(prelimOptimizer, 10),
-          builderCount: parseInt(prelimBuilder, 10),
+          optimizerCount: parseInt(prelimLightningCoder, 10),
+          builderCount: parseInt(prelimInsighter, 10),
           resultsRoles: prelimRoles,
           notice: prelimNotice,
         }),
@@ -580,18 +584,25 @@ export default function AdminPage() {
   };
 
   // 保存导航配置
-  const saveNavConfig = async (leaderboard: boolean, preliminary: boolean) => {
+  const saveNavConfig = async (leaderboard: boolean, preliminary: boolean, myDemos: boolean, square: boolean) => {
     setNavConfigLoading(true);
     try {
       const res = await fetch('/api/config', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ navLeaderboardVisible: leaderboard, navPreliminaryVisible: preliminary }),
+        body: JSON.stringify({
+          navLeaderboardVisible: leaderboard,
+          navPreliminaryVisible: preliminary,
+          navMyDemosVisible: myDemos,
+          navSquareVisible: square,
+        }),
       });
       const data = await res.json();
       if (data.success) {
         setNavLeaderboardVisible(leaderboard);
         setNavPreliminaryVisible(preliminary);
+        setNavMyDemosVisible(myDemos);
+        setNavSquareVisible(square);
         setResult({ type: 'success', message: '导航配置已更新' });
       } else {
         setResult({ type: 'error', message: data.error || '保存失败' });
@@ -930,11 +941,11 @@ export default function AdminPage() {
                           </td>
                           <td className="px-4 py-3">
                             <span className={`px-2 py-1 rounded text-xs font-medium ${
-                              demo.track === 'optimizer'
+                              demo.track === 'lightning_coder'
                                 ? 'bg-secondary/10 text-secondary'
                                 : 'bg-tertiary/10 text-tertiary'
                             }`}>
-                              {demo.track === 'optimizer' ? 'Optimizer' : 'Builder'}
+                              {demo.track === 'lightning_coder' ? 'Lightning Coder' : 'Insighter'}
                             </span>
                           </td>
                           <td className="px-4 py-3">
@@ -1112,7 +1123,7 @@ export default function AdminPage() {
                           : <Lock size={20} className="text-error" />}
                       </div>
                       <div>
-                        <h3 className="font-semibold text-on-surface">Demo 提交</h3>
+                        <h3 className="font-semibold text-on-surface">Skill 提交</h3>
                         <p className={`text-sm font-medium ${siteStatus?.isSubmissionOpen !== false ? 'text-secondary' : 'text-error'}`}>
                           {siteStatus === null ? '加载中…' : siteStatus.isSubmissionOpen !== false ? '已开放' : '已关闭'}
                         </p>
@@ -1137,8 +1148,8 @@ export default function AdminPage() {
                   </div>
                   <p className="text-xs text-on-surface-variant">
                     {siteStatus?.isSubmissionOpen !== false
-                      ? '用户可以提交新 Demo。关闭后不再接受新提交，但已提交的 Demo 仍可编辑。'
-                      : '提交通道已关闭。已提交的 Demo 仍可由原作者编辑。'}
+                      ? '用户可以提交新 Skill。关闭后不再接受新提交，但已提交的 Skill 仍可编辑。'
+                      : '提交通道已关闭。已提交的 Skill 仍可由原作者编辑。'}
                   </p>
                 </div>
 
@@ -1247,14 +1258,14 @@ export default function AdminPage() {
                   <div className="flex items-center gap-3">
                     <Trophy size={18} className="text-on-surface-variant" />
                     <div>
-                      <span className="font-medium text-on-surface text-sm">Demo 投票</span>
+                      <span className="font-medium text-on-surface text-sm">Skill 投票</span>
                       <span className={`ml-2 text-xs font-medium ${navLeaderboardVisible ? 'text-secondary' : 'text-on-surface-variant'}`}>
                         {navLeaderboardVisible ? '显示中' : '已隐藏'}
                       </span>
                     </div>
                   </div>
                   <button
-                    onClick={() => saveNavConfig(!navLeaderboardVisible, navPreliminaryVisible)}
+                    onClick={() => saveNavConfig(!navLeaderboardVisible, navPreliminaryVisible, navMyDemosVisible, navSquareVisible)}
                     disabled={navConfigLoading}
                     className={`px-4 py-2 rounded-lg text-sm font-medium transition-all active:scale-95 disabled:opacity-50 ${
                       navLeaderboardVisible
@@ -1270,14 +1281,14 @@ export default function AdminPage() {
                   <div className="flex items-center gap-3">
                     <Trophy size={18} className="text-on-surface-variant" />
                     <div>
-                      <span className="font-medium text-on-surface text-sm">Demo 海选</span>
+                      <span className="font-medium text-on-surface text-sm">Skill 海选</span>
                       <span className={`ml-2 text-xs font-medium ${navPreliminaryVisible ? 'text-secondary' : 'text-on-surface-variant'}`}>
                         {navPreliminaryVisible ? '显示中' : '已隐藏'}
                       </span>
                     </div>
                   </div>
                   <button
-                    onClick={() => saveNavConfig(navLeaderboardVisible, !navPreliminaryVisible)}
+                    onClick={() => saveNavConfig(navLeaderboardVisible, !navPreliminaryVisible, navMyDemosVisible, navSquareVisible)}
                     disabled={navConfigLoading}
                     className={`px-4 py-2 rounded-lg text-sm font-medium transition-all active:scale-95 disabled:opacity-50 ${
                       navPreliminaryVisible
@@ -1286,6 +1297,52 @@ export default function AdminPage() {
                     }`}
                   >
                     {navConfigLoading ? <Loader2 size={14} className="animate-spin" /> : navPreliminaryVisible ? '隐藏' : '显示'}
+                  </button>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <FolderOpen size={18} className="text-on-surface-variant" />
+                    <div>
+                      <span className="font-medium text-on-surface text-sm">我的 Skill</span>
+                      <span className={`ml-2 text-xs font-medium ${navMyDemosVisible ? 'text-secondary' : 'text-on-surface-variant'}`}>
+                        {navMyDemosVisible ? '显示中' : '已隐藏'}
+                      </span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => saveNavConfig(navLeaderboardVisible, navPreliminaryVisible, !navMyDemosVisible, navSquareVisible)}
+                    disabled={navConfigLoading}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all active:scale-95 disabled:opacity-50 ${
+                      navMyDemosVisible
+                        ? 'bg-error/10 text-error border border-error/30 hover:bg-error/20'
+                        : 'bg-secondary text-on-secondary hover:opacity-90'
+                    }`}
+                  >
+                    {navConfigLoading ? <Loader2 size={14} className="animate-spin" /> : navMyDemosVisible ? '隐藏' : '显示'}
+                  </button>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <MessageSquare size={18} className="text-on-surface-variant" />
+                    <div>
+                      <span className="font-medium text-on-surface text-sm">提问广场</span>
+                      <span className={`ml-2 text-xs font-medium ${navSquareVisible ? 'text-secondary' : 'text-on-surface-variant'}`}>
+                        {navSquareVisible ? '显示中' : '已隐藏'}
+                      </span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => saveNavConfig(navLeaderboardVisible, navPreliminaryVisible, navMyDemosVisible, !navSquareVisible)}
+                    disabled={navConfigLoading}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all active:scale-95 disabled:opacity-50 ${
+                      navSquareVisible
+                        ? 'bg-error/10 text-error border border-error/30 hover:bg-error/20'
+                        : 'bg-secondary text-on-secondary hover:opacity-90'
+                    }`}
+                  >
+                    {navConfigLoading ? <Loader2 size={14} className="animate-spin" /> : navSquareVisible ? '隐藏' : '显示'}
                   </button>
                 </div>
               </div>
@@ -1314,11 +1371,11 @@ export default function AdminPage() {
                     className="text-xs px-3 py-1.5 rounded-lg bg-surface-container border border-outline-variant/30 hover:bg-surface-container-high transition-colors"
                   >清空</button>
                 </div>
-                {/* Optimizer */}
-                {(['optimizer', 'builder'] as const).map(track => (
+                {/* Lightning Coder */}
+                {(['lightning_coder', 'insighter'] as const).map(track => (
                   <div key={track}>
                     <p className="text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-2">
-                      {track === 'optimizer' ? '⚡ Optimizer' : '🛠️ Builder'}
+                      {track === 'lightning_coder' ? '⚡ Lightning Coder' : '🛠️ Insighter'}
                     </p>
                     <div className="space-y-1">
                       {bonusDemos.filter(d => d.track === track).map(d => (
@@ -1349,7 +1406,7 @@ export default function AdminPage() {
                   <div className="flex flex-col">
                     <span className="font-medium text-on-surface text-sm">对外公开排名结果</span>
                     <span className="text-xs text-on-surface-variant mt-0.5">
-                      开启后，所有用户可在 Demo 投票页看到实时排名和票数
+                      开启后，所有用户可在 Skill 投票页看到实时排名和票数
                     </span>
                     <span className={`text-xs font-medium mt-1 ${leaderboardResultsVisible ? 'text-secondary' : 'text-on-surface-variant'}`}>
                       当前：{leaderboardResultsVisible ? '✅ 已公开' : '🔒 隐藏中'}
@@ -1402,7 +1459,7 @@ export default function AdminPage() {
                           .filter(d => !bonusDemoSearch || d.name.toLowerCase().includes(bonusDemoSearch.toLowerCase()))
                           .map(d => (
                             <option key={d.id} value={d.id}>
-                              [{d.track === 'optimizer' ? 'O' : 'B'}] {d.name}
+                              [{d.track === 'lightning_coder' ? 'O' : 'B'}] {d.name}
                             </option>
                           ))}
                       </select>
@@ -1415,8 +1472,8 @@ export default function AdminPage() {
                       onChange={e => setNewBonusVoteType(e.target.value)}
                       className="px-3 py-2 bg-surface border border-outline-variant/30 rounded-lg text-sm focus:border-primary focus:outline-none"
                     >
-                      <option value="best_optimizer">最佳 Optimizer</option>
-                      <option value="best_builder">最佳 Builder</option>
+                      <option value="best_optimizer">最佳 Lightning Coder</option>
+                      <option value="best_builder">最佳 Insighter</option>
                       <option value="special_brain">🧠 最脑洞</option>
                       <option value="special_infectious">🔥 最感染力</option>
                       <option value="special_useful">💎 最实用</option>
@@ -1463,8 +1520,8 @@ export default function AdminPage() {
                         {bonusVotes.map((bv, idx) => {
                           const demo = bonusDemos.find(d => d.id === bv.demo_id);
                           const voteTypeLabels: Record<string, string> = {
-                            best_optimizer: '最佳 Optimizer',
-                            best_builder: '最佳 Builder',
+                            best_optimizer: '最佳 Lightning Coder',
+                            best_builder: '最佳 Insighter',
                             special_brain: '🧠 最脑洞',
                             special_infectious: '🔥 最感染力',
                             special_useful: '💎 最实用',
@@ -1509,7 +1566,7 @@ export default function AdminPage() {
                 <div className="bg-surface-container-low rounded-xl border border-outline-variant/20 p-6">
                   <h3 className="font-semibold text-on-surface mb-1">生成测试数据</h3>
                   <p className="text-xs text-on-surface-variant mb-4">
-                    自动生成 10 个 Optimizer、10 个 Builder 项目及 8 条留言，用于测试演示。
+                    自动生成 10 个 Lightning Coder、10 个 Insighter 项目及 8 条留言，用于测试演示。
                   </p>
                   <button
                     onClick={generateTestData}
@@ -1523,7 +1580,7 @@ export default function AdminPage() {
 
                 {/* 生成 + 清空投票 */}
                 <div className="bg-surface-container-low rounded-xl border border-outline-variant/20 p-6 space-y-3">
-                  <h3 className="font-semibold text-on-surface mb-1">Demo 投票测试数据</h3>
+                  <h3 className="font-semibold text-on-surface mb-1">Skill 投票测试数据</h3>
                   <p className="text-xs text-on-surface-variant">
                     为尚未投票的用户随机生成测试投票记录（5 个奖项），或清空所有投票记录。与海选投票相互独立。
                   </p>
@@ -1551,7 +1608,7 @@ export default function AdminPage() {
                 <div className="bg-surface-container-low rounded-xl border border-error/40 p-6">
                   <h3 className="font-semibold text-error mb-1">⚠️ 清空所有数据</h3>
                   <p className="text-xs text-on-surface-variant mb-4">
-                    删除全部 Demo、投票及留言数据。<strong className="text-error">不可恢复，请谨慎操作。</strong>
+                    删除全部 Skill、投票及留言数据。<strong className="text-error">不可恢复，请谨慎操作。</strong>
                   </p>
                   <button
                     onClick={clearTestData}
@@ -1590,13 +1647,13 @@ export default function AdminPage() {
 
                 {showPrelimResults && prelimResults !== null && (
                   <div className="space-y-4">
-                    {(['optimizer', 'builder'] as const).map(track => {
+                    {(['lightning_coder', 'insighter'] as const).map(track => {
                       const items = prelimResults.filter(r => r.track === track);
                       if (items.length === 0) return null;
                       return (
                         <div key={track}>
                           <h3 className="text-sm font-semibold text-on-surface mb-2">
-                            {track === 'optimizer' ? '⚡ Optimizer 赛道' : '🛠️ Builder 赛道'}
+                            {track === 'lightning_coder' ? '⚡ Lightning Coder 赛道' : '🛠️ Insighter 赛道'}
                           </h3>
                           <div className="rounded-xl border border-outline-variant/10 overflow-hidden">
                             <table className="w-full">
@@ -1697,7 +1754,7 @@ export default function AdminPage() {
                     <p className="text-xs text-on-surface-variant mt-1.5">
                       {prelimMode === 'A'
                         ? '模式 A：从所有项目中选出总计 N 个，不限赛道'
-                        : '模式 B：分别从 Optimizer 和 Builder 赛道各选 N 个'}
+                        : '模式 B：分别从 Lightning Coder 和 Insighter 赛道各选 N 个'}
                     </p>
                   </div>
 
@@ -1717,24 +1774,24 @@ export default function AdminPage() {
                   ) : (
                     <div className="flex gap-6">
                       <div>
-                        <label className="text-sm font-medium text-on-surface">Optimizer 赛道选几个</label>
+                        <label className="text-sm font-medium text-on-surface">Lightning Coder 赛道选几个</label>
                         <input
                           type="number"
                           min={1}
                           max={999}
-                          value={prelimOptimizer}
-                          onChange={e => setPrelimOptimizer(e.target.value)}
+                          value={prelimLightningCoder}
+                          onChange={e => setPrelimLightningCoder(e.target.value)}
                           className="mt-1 w-24 px-3 py-2 bg-surface border border-outline-variant/30 rounded-lg text-sm focus:border-primary focus:outline-none"
                         />
                       </div>
                       <div>
-                        <label className="text-sm font-medium text-on-surface">Builder 赛道选几个</label>
+                        <label className="text-sm font-medium text-on-surface">Insighter 赛道选几个</label>
                         <input
                           type="number"
                           min={1}
                           max={999}
-                          value={prelimBuilder}
-                          onChange={e => setPrelimBuilder(e.target.value)}
+                          value={prelimInsighter}
+                          onChange={e => setPrelimInsighter(e.target.value)}
                           className="mt-1 w-24 px-3 py-2 bg-surface border border-outline-variant/30 rounded-lg text-sm focus:border-primary focus:outline-none"
                         />
                       </div>

@@ -20,7 +20,7 @@ interface Demo {
   id: number;
   name: string;
   summary: string;
-  track: 'optimizer' | 'builder';
+  track: 'lightning_coder' | 'insighter';
   demo_link?: string;
   submitter1_name: string;
   submitter1_dept: string;
@@ -57,7 +57,7 @@ export default function MyDemosPage() {
   const [form, setForm] = useState({
     name: '',
     summary: '',
-    track: '' as 'optimizer' | 'builder' | '',
+    track: '' as 'lightning_coder' | 'insighter' | '',
     demo_link: '',
     submitter1_name: '',
     submitter1_dept: '',
@@ -94,7 +94,7 @@ export default function MyDemosPage() {
   const dropdownRef1 = useRef<HTMLDivElement>(null);
   const dropdownRef2 = useRef<HTMLDivElement>(null);
 
-  const isOptimizer = form.track === 'optimizer';
+  const isLightningCoder = form.track === 'lightning_coder';
 
   // 文件上传处理
   async function handleFileUpload(files: FileList | null) {
@@ -260,7 +260,7 @@ export default function MyDemosPage() {
 
   function updateField(field: string, value: string) {
     setForm(prev => ({ ...prev, [field]: value }));
-    if (field === 'track' && value === 'optimizer') {
+    if (field === 'track' && value === 'lightning_coder') {
       setForm(prev => ({ 
         ...prev, 
         [field]: value, 
@@ -352,18 +352,12 @@ export default function MyDemosPage() {
       return;
     }
 
-    // Optimizer 不能有第二提交人
-    if (form.track === 'optimizer' && form.submitter2_name) {
-      setError('Optimizer 赛道仅允许单人提报');
-      return;
-    }
-
     // 验证提交人
     if (!selectedUser1 || selectedUser1.department !== form.submitter1_dept) {
       setError('第一位提交人信息不匹配，请重新选择');
       return;
     }
-    if (form.track === 'builder' && form.submitter2_name) {
+    if (form.submitter2_name) {
       if (!selectedUser2 || selectedUser2.department !== form.submitter2_dept) {
         setError('第二位提交人信息不匹配，请重新选择');
         return;
@@ -409,6 +403,7 @@ export default function MyDemosPage() {
       if (res.ok) {
         setShowDeleteConfirm(null);
         fetchMyDemos();
+        window.dispatchEvent(new CustomEvent('demo-deleted'));
       } else {
         const data = await res.json();
         alert(data.error || '删除失败');
@@ -421,11 +416,11 @@ export default function MyDemosPage() {
   }
 
   function getTrackLabel(track: string) {
-    return track === 'optimizer' ? '⚡ Optimizer' : '🛠️ Builder';
+    return track === 'lightning_coder' ? '⚡ Lightning Coder' : '🛠️ Insighter';
   }
 
   function getTrackColor(track: string) {
-    return track === 'optimizer' 
+    return track === 'lightning_coder' 
       ? 'bg-secondary/10 text-secondary' 
       : 'bg-tertiary/10 text-tertiary';
   }
@@ -443,7 +438,7 @@ export default function MyDemosPage() {
     return (
       <div className="px-4 md:px-12 pt-4 pb-20 md:pb-12 max-w-5xl">
         <div className="flex items-center justify-between mb-8">
-          <h2 className="font-headline text-2xl md:text-3xl font-bold text-on-surface">编辑 Demo</h2>
+          <h2 className="font-headline text-2xl md:text-3xl font-bold text-on-surface">编辑 Skill</h2>
           <button 
             onClick={cancelEdit} 
             className="p-2 hover:bg-surface-container rounded-full transition-colors"
@@ -470,7 +465,7 @@ export default function MyDemosPage() {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <label className={`relative flex items-start gap-4 p-5 rounded-lg border-2 cursor-pointer transition-all ${
-                form.track === 'optimizer' 
+                form.track === 'lightning_coder' 
                   ? 'border-secondary bg-secondary-container/30' 
                   : 'border-outline-variant/30 hover:border-outline'
               }`}>
@@ -478,20 +473,20 @@ export default function MyDemosPage() {
                   type="radio"
                   name="track"
                   value="optimizer"
-                  checked={form.track === 'optimizer'}
+                  checked={form.track === 'lightning_coder'}
                   onChange={e => updateField('track', e.target.value)}
                   className="mt-1"
                 />
                 <div>
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-lg">⚡️</span>
-                    <span className="font-bold text-on-surface">Optimizer</span>
+                    <span className="font-bold text-on-surface">Lightning Coder</span>
                   </div>
                   <p className="text-xs text-on-surface-variant/80 leading-relaxed">重构工作流，用 AI 把自己武装成全能战士</p>
                 </div>
               </label>
               <label className={`relative flex items-start gap-4 p-5 rounded-lg border-2 cursor-pointer transition-all ${
-                form.track === 'builder' 
+                form.track === 'insighter' 
                   ? 'border-tertiary bg-tertiary-container/30' 
                   : 'border-outline-variant/30 hover:border-outline'
               }`}>
@@ -499,14 +494,14 @@ export default function MyDemosPage() {
                   type="radio"
                   name="track"
                   value="builder"
-                  checked={form.track === 'builder'}
+                  checked={form.track === 'insighter'}
                   onChange={e => updateField('track', e.target.value)}
                   className="mt-1"
                 />
                 <div>
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-lg">🛠️</span>
-                    <span className="font-bold text-on-surface">Builder</span>
+                    <span className="font-bold text-on-surface">Insighter</span>
                   </div>
                   <p className="text-xs text-on-surface-variant/80 leading-relaxed">设计小红书功能，或是有小红书 DNA 的独立产品</p>
                 </div>
@@ -521,7 +516,7 @@ export default function MyDemosPage() {
                 2. Who's the Mastermind
               </label>
               <p className="text-sm text-on-surface-variant/60">
-                {!form.track ? '请先选择赛道' : isOptimizer ? 'Optimizer 赛道：仅限单人' : 'Builder 赛道：可单人或组队'}
+                {!form.track ? '请先选择赛道' : isLightningCoder ? 'Lightning Coder 赛道：可单人或组队' : 'Insighter 赛道：可单人或组队'}
               </p>
             </div>
             
@@ -574,8 +569,8 @@ export default function MyDemosPage() {
               </div>
             </div>
 
-            {/* Member 2 - 仅 Builder 显示 */}
-            {form.track === 'builder' && (
+            {/* Member 2 - 仅 Insighter 显示 */}
+            {form.track === 'insighter' && (
               <div className="space-y-2">
                 <label className="block text-xs font-bold uppercase tracking-[0.12em] text-on-surface-variant">
                   薯名 2（可选）
@@ -750,7 +745,7 @@ export default function MyDemosPage() {
               <label className="block font-headline text-xl font-bold text-on-surface mb-1">
                 5. Show Us the Goods
               </label>
-              <p className="text-sm text-on-surface-variant/60">展示你的作品（Demo、文档、GitHub等），可添加多个链接</p>
+              <p className="text-sm text-on-surface-variant/60">展示你的作品（Skill、文档、GitHub等），可添加多个链接</p>
             </div>
             <div className="space-y-3">
               {demoLinks.map((link, i) => (
@@ -896,9 +891,9 @@ export default function MyDemosPage() {
     <div className="px-4 md:px-12 pb-20 md:pb-12 max-w-4xl">
       {/* Header */}
       <header className="flex-shrink-0 mb-8 pt-4 pb-2">
-        <h2 className="font-headline text-2xl md:text-4xl font-bold tracking-tight text-on-surface">My Demo</h2>
+        <h2 className="font-headline text-2xl md:text-4xl font-bold tracking-tight text-on-surface">My Skill</h2>
         <p className="text-lg text-on-surface-variant mt-2">
-          管理你提交或参与创作的 Demo
+          管理你提交或参与创作的 Skill
         </p>
       </header>
 
@@ -906,12 +901,12 @@ export default function MyDemosPage() {
       {/* Demo List */}
       {demos.length === 0 ? (
         <div className="text-center py-16 text-on-surface-variant bg-surface-container-low rounded-xl">
-          <p className="mb-4">暂无 Demo</p>
+          <p className="mb-4">暂无 Skill</p>
           <button
             onClick={() => window.dispatchEvent(new CustomEvent('openSubmit'))}
             className="px-6 py-2 bg-primary text-on-primary rounded-md text-sm hover:opacity-90 transition-opacity"
           >
-            去提交 Demo
+            去提交 Skill
           </button>
         </div>
       ) : (
@@ -982,7 +977,7 @@ export default function MyDemosPage() {
               {showDeleteConfirm === demo.id && (
                 <div className="mt-4 p-4 bg-error-container/50 rounded-lg border border-error/20">
                   <p className="text-sm text-on-error-container mb-3">
-                    确定要删除这个 Demo 吗？此操作不可恢复。
+                    确定要删除这个 Skill 吗？此操作不可恢复。
                   </p>
                   <div className="flex justify-end gap-2">
                     <button

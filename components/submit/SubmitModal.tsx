@@ -17,7 +17,7 @@ interface UserOption {
 
 interface SubmitModalProps {
   onClose: () => void;
-  initialTrack?: 'optimizer' | 'builder';
+  initialTrack?: 'lightning_coder' | 'insighter';
 }
 
 const DEADLINE = new Date('2026-03-30T04:00:00Z'); // 东八区 12:00 = UTC 04:00
@@ -86,7 +86,7 @@ export default function SubmitModal({ onClose, initialTrack }: SubmitModalProps)
   const dropdownRef1 = useRef<HTMLDivElement>(null);
   const dropdownRef2 = useRef<HTMLDivElement>(null);
 
-  const isOptimizer = form.track === 'optimizer';
+  const isLightningCoder = form.track === 'lightning_coder';
 
   // 加载用户列表
   useEffect(() => {
@@ -170,7 +170,7 @@ export default function SubmitModal({ onClose, initialTrack }: SubmitModalProps)
 
   function updateField(field: string, value: string) {
     setForm(prev => ({ ...prev, [field]: value }));
-    if (field === 'track' && value === 'optimizer') {
+    if (field === 'track' && value === 'lightning_coder') {
       setForm(prev => ({ 
         ...prev, 
         [field]: value, 
@@ -300,8 +300,8 @@ export default function SubmitModal({ onClose, initialTrack }: SubmitModalProps)
       return;
     }
 
-    // Builder赛道且填写了第二位提交人时，验证第二位
-    if (form.track === 'builder' && form.submitter2_name) {
+    // 填写了第二位提交人时，验证第二位
+    if (form.submitter2_name) {
       if (!selectedUser2) {
         setError('请从下拉列表中选择第二位提交人，或留空');
         return;
@@ -373,7 +373,7 @@ export default function SubmitModal({ onClose, initialTrack }: SubmitModalProps)
         {/* Left Sidebar */}
         <div className="w-[300px] bg-surface-container-low px-10 pb-10 pt-[84px] flex-col hidden md:flex flex-shrink-0">
           <div>
-            <h2 className="font-headline text-[42px] font-bold leading-tight text-on-surface mb-6">提交 Demo</h2>
+            <h2 className="font-headline text-[42px] font-bold leading-tight text-on-surface mb-6">提交 Skill</h2>
             <p className="text-sm text-on-surface-variant/60 leading-relaxed">
               Join the Evolution.<br />
               Stop Talking About the Future.<br />
@@ -390,7 +390,7 @@ export default function SubmitModal({ onClose, initialTrack }: SubmitModalProps)
           {!isSubmissionOpen && (
             <div className="mb-6 flex items-start gap-3 px-4 py-3.5 rounded-xl bg-error/8 border border-error/20 text-error">
               <AlertCircle size={16} className="flex-shrink-0 mt-0.5" />
-              <p className="text-sm font-medium leading-snug">Demo 提交已截止</p>
+              <p className="text-sm font-medium leading-snug">Skill 提交已截止</p>
             </div>
           )}
 
@@ -401,11 +401,11 @@ export default function SubmitModal({ onClose, initialTrack }: SubmitModalProps)
                 <label className="block font-headline text-xl font-bold text-on-surface mb-1">
                   1. Choose Your Track
                 </label>
-                <p className="text-sm text-on-surface-variant/60">选择你的赛道（每人不限制赛道和 Demo 提交次数）</p>
+                <p className="text-sm text-on-surface-variant/60">选择你的赛道（每人不限制赛道和 Skill 提交次数）</p>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <label className={`relative flex flex-col gap-3 p-5 rounded-lg border-2 cursor-pointer transition-all ${
-                  form.track === 'optimizer' 
+                  form.track === 'lightning_coder' 
                     ? 'border-secondary bg-secondary-container/30' 
                     : 'border-outline-variant/30 hover:border-outline'
                 }`}>
@@ -413,22 +413,22 @@ export default function SubmitModal({ onClose, initialTrack }: SubmitModalProps)
                     <input
                       type="radio"
                       name="track"
-                      value="optimizer"
-                      checked={form.track === 'optimizer'}
+                      value="lightning_coder"
+                      checked={form.track === 'lightning_coder'}
                       onChange={e => updateField('track', e.target.value)}
                       className="mt-1"
                     />
                     <div>
                       <div className="flex items-center gap-2 mb-1">
                         <span className="text-lg">⚡️</span>
-                        <span className="font-bold text-on-surface">Optimizer</span>
+                        <span className="font-bold text-on-surface">Lightning Coder</span>
                       </div>
                     </div>
                   </div>
                   <div className="pl-7 space-y-2">
                     <div>
                       <span className="text-xs font-bold text-secondary bg-secondary/10 px-1.5 py-0.5 rounded">原则</span>
-                      <p className="text-sm text-on-surface-variant mt-1.5 leading-relaxed">重构工作流，极致提高效率，用 AI 把自己武装成全能战士</p>
+                      <p className="text-sm text-on-surface-variant mt-1.5 leading-relaxed">极致提高效率，用AI把自己武装成闪电Coder</p>
                     </div>
                     <div>
                       <span className="text-xs font-bold text-secondary bg-secondary/10 px-1.5 py-0.5 rounded">实现形式</span>
@@ -437,7 +437,7 @@ export default function SubmitModal({ onClose, initialTrack }: SubmitModalProps)
                   </div>
                 </label>
                 <label className={`relative flex flex-col gap-3 p-5 rounded-lg border-2 cursor-pointer transition-all ${
-                  form.track === 'builder' 
+                  form.track === 'insighter' 
                     ? 'border-tertiary bg-tertiary-container/30' 
                     : 'border-outline-variant/30 hover:border-outline'
                 }`}>
@@ -445,26 +445,26 @@ export default function SubmitModal({ onClose, initialTrack }: SubmitModalProps)
                     <input
                       type="radio"
                       name="track"
-                      value="builder"
-                      checked={form.track === 'builder'}
+                      value="insighter"
+                      checked={form.track === 'insighter'}
                       onChange={e => updateField('track', e.target.value)}
                       className="mt-1"
                     />
                     <div>
                       <div className="flex items-center gap-2 mb-1">
                         <span className="text-lg">🛠️</span>
-                        <span className="font-bold text-on-surface">Builder</span>
+                        <span className="font-bold text-on-surface">Insighter</span>
                       </div>
                     </div>
                   </div>
                   <div className="pl-7 space-y-2">
                     <div>
                       <span className="text-xs font-bold text-tertiary bg-tertiary/10 px-1.5 py-0.5 rounded">原则</span>
-                      <p className="text-sm text-on-surface-variant mt-1.5 leading-relaxed">设计一个小红书功能，或是有小红书 DNA 的有趣独立产品</p>
+                      <p className="text-sm text-on-surface-variant mt-1.5 leading-relaxed">利用Agent工具发现技术优化点，或提供业务洞察、产品灵感</p>
                     </div>
                     <div>
                       <span className="text-xs font-bold text-tertiary bg-tertiary/10 px-1.5 py-0.5 rounded">实现形式</span>
-                      <p className="text-sm text-on-surface-variant mt-1.5">产品 Demo/概念，或可以落地的产品</p>
+                      <p className="text-sm text-on-surface-variant mt-1.5">AI Skills，鼓励产品化，可以提供你的demo乃至可落地的产品</p>
                     </div>
                   </div>
                 </label>
@@ -478,7 +478,7 @@ export default function SubmitModal({ onClose, initialTrack }: SubmitModalProps)
                   2. Who's the Mastermind
                 </label>
                 <p className="text-sm text-on-surface-variant/60 mb-4">
-                  {!form.track ? '请先选择赛道' : isOptimizer ? 'Optimizer 赛道：仅限单人' : 'Builder 赛道：可单人或组队'}
+                  {!form.track ? '请先选择赛道' : isLightningCoder ? 'Lightning Coder 赛道：可单人或组队' : 'Insighter 赛道：可单人或组队'}
                 </p>
               </div>
               
@@ -502,8 +502,8 @@ export default function SubmitModal({ onClose, initialTrack }: SubmitModalProps)
                 </div>
               </div>
 
-              {/* Member 2 - 仅 Builder 显示 */}
-              {form.track === 'builder' && (
+              {/* Member 2 */}
+              {(form.track === 'lightning_coder' || form.track === 'insighter') && (
                 <div className="space-y-2">
                   <label className="block text-xs font-bold uppercase tracking-[0.12em] text-on-surface-variant">
                     薯名 2（可选）
@@ -621,7 +621,7 @@ export default function SubmitModal({ onClose, initialTrack }: SubmitModalProps)
               
               {/* Keywords - Tag Input */}
               <div className="space-y-2">
-                <label className={`block text-xs font-bold uppercase tracking-[0.12em] ${form.track === 'builder' ? 'text-tertiary' : 'text-primary'}`}>
+                <label className={`block text-xs font-bold uppercase tracking-[0.12em] ${form.track === 'insighter' ? 'text-tertiary' : 'text-primary'}`}>
                   KEY WORDS / 关键词 *
                 </label>
 
@@ -631,13 +631,13 @@ export default function SubmitModal({ onClose, initialTrack }: SubmitModalProps)
                     {keywordTags.map((tag, index) => (
                       <span
                         key={index}
-                        className={`inline-flex items-center gap-1 px-2.5 py-1 text-sm rounded-full group ${form.track === 'builder' ? 'bg-tertiary/10 text-tertiary' : 'bg-secondary/10 text-secondary'}`}
+                        className={`inline-flex items-center gap-1 px-2.5 py-1 text-sm rounded-full group ${form.track === 'insighter' ? 'bg-tertiary/10 text-tertiary' : 'bg-secondary/10 text-secondary'}`}
                       >
                         {tag}
                         <button
                           type="button"
                           onClick={() => removeKeywordTag(tag)}
-                          className={`p-0.5 rounded-full transition-colors ${form.track === 'builder' ? 'hover:bg-tertiary/20' : 'hover:bg-secondary/20'}`}
+                          className={`p-0.5 rounded-full transition-colors ${form.track === 'insighter' ? 'hover:bg-tertiary/20' : 'hover:bg-secondary/20'}`}
                         >
                           <X size={12} />
                         </button>
@@ -650,7 +650,7 @@ export default function SubmitModal({ onClose, initialTrack }: SubmitModalProps)
                 <div className="relative">
                   <input
                     ref={keywordInputRef}
-                    className={`w-full bg-surface-container-low border-0 border-b-2 border-outline focus:ring-0 px-1 py-3 pr-10 text-base transition-colors placeholder:text-outline-variant/50 ${form.track === 'builder' ? 'focus:border-tertiary' : 'focus:border-primary'}`}
+                    className={`w-full bg-surface-container-low border-0 border-b-2 border-outline focus:ring-0 px-1 py-3 pr-10 text-base transition-colors placeholder:text-outline-variant/50 ${form.track === 'insighter' ? 'focus:border-tertiary' : 'focus:border-primary'}`}
                     placeholder={keywordTags.length > 0 ? "继续输入关键词..." : "输入关键词后按回车添加"}
                     value={keywordInput}
                     onChange={e => setKeywordInput(e.target.value)}
@@ -660,7 +660,7 @@ export default function SubmitModal({ onClose, initialTrack }: SubmitModalProps)
                     <button
                       type="button"
                       onClick={addKeywordTag}
-                      className={`absolute right-1 top-1/2 -translate-y-1/2 p-1.5 rounded-full hover:opacity-90 transition-opacity ${form.track === 'builder' ? 'bg-tertiary text-on-tertiary' : 'bg-primary text-on-primary'}`}
+                      className={`absolute right-1 top-1/2 -translate-y-1/2 p-1.5 rounded-full hover:opacity-90 transition-opacity ${form.track === 'insighter' ? 'bg-tertiary text-on-tertiary' : 'bg-primary text-on-primary'}`}
                     >
                       <Plus size={14} />
                     </button>
@@ -680,7 +680,7 @@ export default function SubmitModal({ onClose, initialTrack }: SubmitModalProps)
                 <label className="block font-headline text-xl font-bold text-on-surface mb-1">
                   5. Show Us the Goods
                 </label>
-                <p className="text-sm text-on-surface-variant/60">展示你的作品（Demo、文档、GitHub等），可添加多个链接</p>
+                <p className="text-sm text-on-surface-variant/60">展示你的作品（Skill、文档、GitHub等），可添加多个链接</p>
               </div>
               <div className="space-y-3">
                 {demoLinks.map((link, i) => (

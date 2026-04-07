@@ -6,19 +6,19 @@ export const translations = {
     // 导航
     nav: {
       guide: '信息概览',
-      gallery: 'Demo总览',
-      leaderboard: 'Demo投票',
+      gallery: 'Skill总览',
+      leaderboard: 'Skill投票',
       square: '提问广场',
-      preliminary: 'Demo海选',
-      myDemos: '我的Demo',
-      submit: '提交 Demo',
+      preliminary: 'Skill海选',
+      myDemos: '我的Skill',
+      submit: '提交 Skill',
       login: '登录',
       guest: '游客',
       admin: '管理后台',
     },
     // 登录页
     login: {
-      title: 'AI Demo Day',
+      title: 'Tech Arena',
       subtitle: '小红书战略 / 投资 / 用户研究',
       registration: '登录',
       description: '请输入你的薯名和部门',
@@ -36,32 +36,32 @@ export const translations = {
     // Guide 页
     guide: {
       badge: '2025 春季',
-      title: 'Evolution: AI Demo Day',
+      title: 'Evolution: Tech Arena',
       subtitle: '战略、研究与投资专场',
       status: '报名进行中',
       whyTitle: '为什么叫 Evolution？',
       whyContent1: '别再谈论未来了。开始交付它。',
       whyContent2: 'AI Native 时代不是即将到来，而是已经到来。它正在重写我们思考、工作和创造的方式。作为小红书的"大脑"——战略、用户研究和投资者——我们不只是在这里预测未来，我们在这里构建它。',
       whatTitle: '这是什么？',
-      whatContent: 'AI Demo Day 是一个内部创新展示平台。无论你是用 AI 提效（Optimizer），还是在构建 AI 产品（Builder），这里都是展示你 Evolution 的舞台。',
+      whatContent: 'Tech Arena 是一个内部创新展示平台。无论你是用 AI 提效（Lightning Coder），还是在构建 AI 产品（Insighter），这里都是展示你 Evolution 的舞台。',
       categories: {
-        optimizer: {
-          title: '⚡️ Optimizer',
-          desc: '用 AI 提升工作效率的个体',
+        lightning_coder: {
+          title: '⚡️ Lightning Coder',
+          desc: '用 AI 提升工作效率的个人选手',
         },
-        builder: {
-          title: '🛠️ Builder',
-          desc: '构建 AI 产品的团队',
+        insighter: {
+          title: '🛠️ Insighter',
+          desc: '构建 AI 产品的团队或个人',
         },
       },
     },
     // Gallery 页
     gallery: {
       title: '作品展示',
-      subtitle: '探索所有提交的 Demo 项目',
+      subtitle: '探索所有提交的 Skill 项目',
       search: '搜索项目...',
-      optimizer: 'Optimizer 赛道',
-      builder: 'Builder 赛道',
+      lightning_coder: 'Lightning Coder 赛道',
+      insighter: 'Insighter 赛道',
       noResults: '没有找到匹配的项目',
       items: '个项目',
       viewDemo: '查看演示',

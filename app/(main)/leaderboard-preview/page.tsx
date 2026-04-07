@@ -15,20 +15,20 @@ import { useMobile } from '@/lib/hooks/useMobile';
 // ── Mock data ──────────────────────────────────────────────────────────────────
 
 const MOCK_DEMOS = [
-  { id: 1,  name: 'AI 合同审核助手',      summary: '用 LLM 自动识别合同风险条款，准确率 92%',            track: 'optimizer', submitter1_name: '王小明', submitter1_dept: '法务部', submitter2_name: null,   keywords: '合同,风险,NLP',      vote_count: 18, submitted_by: 99 },
-  { id: 2,  name: '智能排班系统',          summary: '基于约束优化自动生成排班表，减少人工 90%',           track: 'optimizer', submitter1_name: '李思思', submitter1_dept: '运营部', submitter2_name: '陈强',  keywords: '排班,优化,约束',     vote_count: 14, submitted_by: 99 },
-  { id: 3,  name: '多模态产品描述生成',    summary: '输入图片自动生成营销文案，支持多语言',               track: 'optimizer', submitter1_name: '张伟',   submitter1_dept: '市场部', submitter2_name: null,   keywords: '多模态,文案,营销',   vote_count: 11, submitted_by: 99 },
-  { id: 4,  name: '代码 Review Bot',       summary: '接入 CI/CD 流水线，自动发现安全漏洞和代码异味',     track: 'optimizer', submitter1_name: '刘洋',   submitter1_dept: '技术部', submitter2_name: null,   keywords: 'DevOps,安全,CI',     vote_count: 9,  submitted_by: 1  },
-  { id: 5,  name: '客服知识库 RAG',        summary: '基于私有文档构建的检索增强生成客服系统',             track: 'optimizer', submitter1_name: '赵丽',   submitter1_dept: '客服部', submitter2_name: '孙浩',  keywords: 'RAG,客服,知识库',    vote_count: 7,  submitted_by: 99 },
-  { id: 6,  name: '数据看板自然语言查询',  summary: '用中文问问题，自动生成 SQL 并返回图表',             track: 'optimizer', submitter1_name: '吴峰',   submitter1_dept: '数据部', submitter2_name: null,   keywords: 'NL2SQL,BI,数据',     vote_count: 6,  submitted_by: 99 },
-  { id: 7,  name: 'AI 面试官',             summary: '模拟真实面试场景，提供即时反馈和评估报告',           track: 'optimizer', submitter1_name: '郑华',   submitter1_dept: 'HR',     submitter2_name: null,   keywords: '面试,评估,HR',       vote_count: 5,  submitted_by: 99 },
-  { id: 8,  name: '会议纪要自动生成',      summary: '录音 → 转写 → 结构化纪要，支持行动项提取',         track: 'optimizer', submitter1_name: '钱敏',   submitter1_dept: '行政部', submitter2_name: null,   keywords: '会议,转写,提效',     vote_count: 4,  submitted_by: 99 },
-  { id: 9,  name: '供应链异常预警系统',    summary: '实时监控供应链数据，提前预警潜在断供风险',           track: 'optimizer', submitter1_name: '林磊',   submitter1_dept: '供应链', submitter2_name: null,   keywords: '供应链,预警,风控',   vote_count: 3,  submitted_by: 99 },
-  { id: 10, name: '内部知识问答机器人',    summary: '接入公司所有内部文档，秒级回答员工日常问题',         track: 'optimizer', submitter1_name: '陈静',   submitter1_dept: 'IT部',   submitter2_name: '黄涛',  keywords: '知识库,问答,内部',   vote_count: 2,  submitted_by: 99 },
-  { id: 11, name: '广告素材 A/B 测试助手', summary: '自动生成多版本素材并预测点击率，节省人工评审',       track: 'optimizer', submitter1_name: '周杰',   submitter1_dept: '广告部', submitter2_name: null,   keywords: 'A/B测试,广告,CTR',   vote_count: 1,  submitted_by: 99 },
-  { id: 12, name: '财务报表智能解读',      summary: '上传财报 PDF，一键生成摘要与风险提示',               track: 'optimizer', submitter1_name: '许燕',   submitter1_dept: '财务部', submitter2_name: null,   keywords: '财务,PDF,摘要',      vote_count: 1,  submitted_by: 99 },
-  { id: 13, name: '多语言客服翻译中枢',    summary: '实时双向翻译，支持 30 种语言，延迟 < 200ms',        track: 'optimizer', submitter1_name: '韩宇',   submitter1_dept: '国际部', submitter2_name: '吴倩',  keywords: '翻译,多语言,实时',   vote_count: 0,  submitted_by: 99 },
-  { id: 14, name: '电商评论情感分析',      summary: '批量分析用户评论，自动归类正负面并提炼改进点',       track: 'optimizer', submitter1_name: '宋雪',   submitter1_dept: '电商部', submitter2_name: null,   keywords: '情感分析,评论,NLP',  vote_count: 0,  submitted_by: 99 },
+  { id: 1,  name: 'AI 合同审核助手',      summary: '用 LLM 自动识别合同风险条款，准确率 92%',            track: 'lightning_coder', submitter1_name: '王小明', submitter1_dept: '法务部', submitter2_name: null,   keywords: '合同,风险,NLP',      vote_count: 18, submitted_by: 99 },
+  { id: 2,  name: '智能排班系统',          summary: '基于约束优化自动生成排班表，减少人工 90%',           track: 'lightning_coder', submitter1_name: '李思思', submitter1_dept: '运营部', submitter2_name: '陈强',  keywords: '排班,优化,约束',     vote_count: 14, submitted_by: 99 },
+  { id: 3,  name: '多模态产品描述生成',    summary: '输入图片自动生成营销文案，支持多语言',               track: 'lightning_coder', submitter1_name: '张伟',   submitter1_dept: '市场部', submitter2_name: null,   keywords: '多模态,文案,营销',   vote_count: 11, submitted_by: 99 },
+  { id: 4,  name: '代码 Review Bot',       summary: '接入 CI/CD 流水线，自动发现安全漏洞和代码异味',     track: 'lightning_coder', submitter1_name: '刘洋',   submitter1_dept: '技术部', submitter2_name: null,   keywords: 'DevOps,安全,CI',     vote_count: 9,  submitted_by: 1  },
+  { id: 5,  name: '客服知识库 RAG',        summary: '基于私有文档构建的检索增强生成客服系统',             track: 'lightning_coder', submitter1_name: '赵丽',   submitter1_dept: '客服部', submitter2_name: '孙浩',  keywords: 'RAG,客服,知识库',    vote_count: 7,  submitted_by: 99 },
+  { id: 6,  name: '数据看板自然语言查询',  summary: '用中文问问题，自动生成 SQL 并返回图表',             track: 'lightning_coder', submitter1_name: '吴峰',   submitter1_dept: '数据部', submitter2_name: null,   keywords: 'NL2SQL,BI,数据',     vote_count: 6,  submitted_by: 99 },
+  { id: 7,  name: 'AI 面试官',             summary: '模拟真实面试场景，提供即时反馈和评估报告',           track: 'lightning_coder', submitter1_name: '郑华',   submitter1_dept: 'HR',     submitter2_name: null,   keywords: '面试,评估,HR',       vote_count: 5,  submitted_by: 99 },
+  { id: 8,  name: '会议纪要自动生成',      summary: '录音 → 转写 → 结构化纪要，支持行动项提取',         track: 'lightning_coder', submitter1_name: '钱敏',   submitter1_dept: '行政部', submitter2_name: null,   keywords: '会议,转写,提效',     vote_count: 4,  submitted_by: 99 },
+  { id: 9,  name: '供应链异常预警系统',    summary: '实时监控供应链数据，提前预警潜在断供风险',           track: 'lightning_coder', submitter1_name: '林磊',   submitter1_dept: '供应链', submitter2_name: null,   keywords: '供应链,预警,风控',   vote_count: 3,  submitted_by: 99 },
+  { id: 10, name: '内部知识问答机器人',    summary: '接入公司所有内部文档，秒级回答员工日常问题',         track: 'lightning_coder', submitter1_name: '陈静',   submitter1_dept: 'IT部',   submitter2_name: '黄涛',  keywords: '知识库,问答,内部',   vote_count: 2,  submitted_by: 99 },
+  { id: 11, name: '广告素材 A/B 测试助手', summary: '自动生成多版本素材并预测点击率，节省人工评审',       track: 'lightning_coder', submitter1_name: '周杰',   submitter1_dept: '广告部', submitter2_name: null,   keywords: 'A/B测试,广告,CTR',   vote_count: 1,  submitted_by: 99 },
+  { id: 12, name: '财务报表智能解读',      summary: '上传财报 PDF，一键生成摘要与风险提示',               track: 'lightning_coder', submitter1_name: '许燕',   submitter1_dept: '财务部', submitter2_name: null,   keywords: '财务,PDF,摘要',      vote_count: 1,  submitted_by: 99 },
+  { id: 13, name: '多语言客服翻译中枢',    summary: '实时双向翻译，支持 30 种语言，延迟 < 200ms',        track: 'lightning_coder', submitter1_name: '韩宇',   submitter1_dept: '国际部', submitter2_name: '吴倩',  keywords: '翻译,多语言,实时',   vote_count: 0,  submitted_by: 99 },
+  { id: 14, name: '电商评论情感分析',      summary: '批量分析用户评论，自动归类正负面并提炼改进点',       track: 'lightning_coder', submitter1_name: '宋雪',   submitter1_dept: '电商部', submitter2_name: null,   keywords: '情感分析,评论,NLP',  vote_count: 0,  submitted_by: 99 },
 ];
 
 const VOTED_IDS = [1, 3, 5]; // 已投票的 demo id
@@ -120,9 +120,9 @@ export default function LeaderboardPreviewPage() {
 
       {/* ── Header ──────────────────────────────────────────────────────────── */}
       <header className="flex-shrink-0 px-4 md:px-12 pt-4 pb-2">
-        <h2 className="font-headline text-2xl md:text-4xl font-bold text-on-surface">Demo Leaderboard</h2>
+        <h2 className="font-headline text-2xl md:text-4xl font-bold text-on-surface">Skill Leaderboard</h2>
         <p className="text-sm text-on-surface-variant mt-0.5">
-          最佳Demo各赛道 3 票 · 专项奖 1 票 · 评委权重 ×2 · 投后不可修改
+          最佳Skill各赛道 3 票 · 专项奖 1 票 · 评委权重 ×2 · 投后不可修改
         </p>
       </header>
 
@@ -132,11 +132,11 @@ export default function LeaderboardPreviewPage() {
           <span className="text-[11px] font-bold text-on-surface-variant/50 uppercase tracking-wider hidden md:inline">🏆 最佳Demo</span>
           <div className="flex gap-1 p-1 bg-surface-container-low rounded-xl">
             <button className="flex items-center gap-1.5 px-2.5 md:px-4 py-1.5 md:py-2 rounded-lg font-headline text-sm md:text-base font-bold bg-secondary text-on-secondary shadow-sm whitespace-nowrap">
-              ⚡ Optimizer
+              ⚡ Lightning Coder
               {mode === 'after' && <CheckCircle size={11} className="opacity-60" />}
             </button>
             <button className="flex items-center gap-1.5 px-2.5 md:px-4 py-1.5 md:py-2 rounded-lg font-headline text-sm md:text-base font-bold text-on-surface-variant hover:bg-surface-container-high whitespace-nowrap">
-              🛠️ Builder
+              🛠️ Insighter
             </button>
           </div>
         </div>
@@ -345,7 +345,7 @@ export default function LeaderboardPreviewPage() {
             <div>
               <p className="text-xs uppercase tracking-widest text-outline font-bold mb-2">作品链接</p>
               <a href="#" className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline">
-                Demo 演示地址 <ExternalLink size={12} />
+                Skill 演示地址 <ExternalLink size={12} />
               </a>
             </div>
 
@@ -373,7 +373,7 @@ export default function LeaderboardPreviewPage() {
             : 'bg-surface-container text-on-surface border-outline-variant/30'}
         `}>
           <span className={`text-xs font-bold uppercase tracking-wider ${canSubmit ? 'opacity-50' : 'text-on-surface-variant/50'}`}>
-            ⚡ Optimizer
+            ⚡ Lightning Coder
           </span>
           <div className={`w-px h-4 ${canSubmit ? 'bg-surface/20' : 'bg-outline-variant/30'}`} />
 

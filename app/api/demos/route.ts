@@ -65,7 +65,7 @@ export async function POST(request: Request) {
   // 未配置时默认开放；明确配置为 'false' 时关闭
   const isSubmissionOpen = submissionConfig?.value !== 'false';
   if (!isSubmissionOpen) {
-    return NextResponse.json({ error: '提交通道已关闭，不再接受新的 Demo 提交' }, { status: 403 });
+    return NextResponse.json({ error: '提交通道已关闭，不再接受新的 Skill 提交' }, { status: 403 });
   }
 
   const body = await request.json();

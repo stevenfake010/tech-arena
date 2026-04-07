@@ -42,7 +42,7 @@ export const BUILDER_ORDER: string[] = [
   'ootd',
   '为你私藏的微光「角落」',
   '三张地图',
-  'AI Demo Day网站',
+  'Tech Arena网站',
   '展览体温计 — 看展的真实评价，一眼可见',
   'Project Spark：点亮中低活用户的feed',
   '"懂你的好物推荐卡"',
