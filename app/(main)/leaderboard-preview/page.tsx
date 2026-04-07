@@ -60,7 +60,7 @@ export default function LeaderboardPreviewPage() {
   const [showDetail, setShowDetail] = useState(false);
 
   // Simulate state based on mode
-  const myVotes = mode === 'after' ? VOTED_IDS.map(id => ({ demo_id: id, vote_type: 'best_optimizer' })) : [];
+  const myVotes = mode === 'after' ? VOTED_IDS.map(id => ({ demo_id: id, vote_type: 'best_lightning_coder' })) : [];
   const selectedVotes = mode === 'selected' ? [...localSelected] : [];
   const votesUsed = myVotes.length;
   const selectedCount = selectedVotes.length;
@@ -136,7 +136,7 @@ export default function LeaderboardPreviewPage() {
               {mode === 'after' && <CheckCircle size={11} className="opacity-60" />}
             </button>
             <button className="flex items-center gap-1.5 px-2.5 md:px-4 py-1.5 md:py-2 rounded-lg font-headline text-sm md:text-base font-bold text-on-surface-variant hover:bg-surface-container-high whitespace-nowrap">
-              🛠️ Insighter
+              🔮 Insighter
             </button>
           </div>
         </div>

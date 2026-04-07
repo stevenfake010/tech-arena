@@ -80,8 +80,8 @@ export async function POST() {
     return NextResponse.json({ error: '所有用户都已投过票，请先清空海选投票再生成' }, { status: 400 });
   }
 
-  const optimizerDemos = demos.filter((d: any) => d.track === 'optimizer');
-  const builderDemos = demos.filter((d: any) => d.track === 'builder');
+  const optimizerDemos = demos.filter((d: any) => d.track === 'lightning_coder');
+  const builderDemos = demos.filter((d: any) => d.track === 'insighter');
 
   let totalVoters = 0;
   let totalVotes = 0;

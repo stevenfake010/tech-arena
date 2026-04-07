@@ -75,8 +75,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: '请填写必填项' }, { status: 400 });
   }
 
-  if (track === 'optimizer' && submitter2_name) {
-    return NextResponse.json({ error: 'Optimizer 赛道仅允许单人提报' }, { status: 400 });
+  if (track === 'lightning_coder' && submitter2_name) {
+    return NextResponse.json({ error: 'Lightning Coder 赛道仅允许单人提报' }, { status: 400 });
   }
 
   const supabase = getSupabaseAdmin();
@@ -93,9 +93,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: '第一位提交人的姓名和部门不匹配，请从下拉列表中选择' }, { status: 400 });
   }
 
-  // 如果是Builder且有第二位提交人，验证第二位
+  // 如果是Insighter且有第二位提交人，验证第二位
   let submitter2Id = null;
-  if (track === 'builder' && submitter2_name) {
+  if (track === 'insighter' && submitter2_name) {
     const { data: submitter2, error: submitter2Error } = await supabase
       .from('users')
       .select('id, name, department')

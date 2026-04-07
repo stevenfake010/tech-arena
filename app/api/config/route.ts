@@ -53,9 +53,16 @@ export async function GET() {
   const isVotingOpen = configMap['voting_enabled'] === 'true';
   const notice = configMap['voting_notice'] || (isVotingOpen ? '' : '投票暂未开始，敬请期待');
 
-  const DEFAULT_AWARDS = { best_optimizer: false, best_builder: false, special_brain: false, special_infectious: false, special_useful: false };
+  const DEFAULT_AWARDS = { best_lightning_coder: false, best_insighter: false, special_brain: false, special_infectious: false, special_useful: false };
   const votingOpenAwards: Record<string, boolean> = (() => {
-    try { return { ...DEFAULT_AWARDS, ...JSON.parse(configMap['voting_open_awards'] || '{}') }; } catch { return DEFAULT_AWARDS; }
+    try {
+      const stored = JSON.parse(configMap['voting_open_awards'] || '{}');
+      // 兼容旧数据：best_optimizer → best_lightning_coder，best_builder → best_insighter
+      const migrated = { ...DEFAULT_AWARDS };
+      if ('best_optimizer' in stored) migrated.best_lightning_coder = stored.best_optimizer;
+      if ('best_builder' in stored) migrated.best_insighter = stored.best_builder;
+      return { ...migrated, ...stored };
+    } catch { return DEFAULT_AWARDS; }
   })();
 
   const votingAwardNotices: Record<string, string> = (() => {

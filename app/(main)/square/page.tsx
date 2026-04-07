@@ -211,7 +211,7 @@ function DemoPicker({
               {filteredBld.length > 0 && (
                 <section className="mt-1">
                   <div className="px-5 py-2 flex items-center gap-2">
-                    <span className="text-xs font-semibold text-tertiary/60 uppercase tracking-widest">🛠️ Insighter</span>
+                    <span className="text-xs font-semibold text-tertiary/60 uppercase tracking-widest">🔮 Insighter</span>
                     <span className="flex-1 h-px bg-outline-variant/15" />
                   </div>
                   {filteredBld.map(item => (
@@ -282,7 +282,7 @@ function FilterDropdown({
             return (
               <div key={track} className="border-t border-outline-variant/10 py-1">
                 <p className={`px-4 py-1 text-xs font-bold uppercase tracking-wider ${track === 'lightning_coder' ? 'text-secondary/60' : 'text-tertiary/60'}`}>
-                  {track === 'lightning_coder' ? '⚡ Lightning Coder' : '🛠️ Insighter'}
+                  {track === 'lightning_coder' ? '⚡ Lightning Coder' : '🔮 Insighter'}
                 </p>
                 {demos.map(demo => (
                   <button

@@ -85,8 +85,8 @@ export const translations = {
       title: '排行榜',
       subtitle: '实时投票结果',
       myVotes: '我的投票',
-      optimizerAward: '最佳 Optimizer',
-      builderAward: '最佳 Builder',
+      optimizerAward: '最佳 Lightning Coder',
+      builderAward: '最佳 Insighter',
       vote: '投票',
       voted: '已投',
       maxVotes: '最多可投 {max} 票',
@@ -107,7 +107,7 @@ export const translations = {
         namePlaceholder: "输入薯名搜索...",
         deptLabel: "部门 *",
         partnerLabel: "伙伴",
-        partnerDesc: "（Optimizer 无需填写 / Builder 可选）",
+        partnerDesc: "（Lightning Coder 无需填写 / Insighter 可选）",
       },
       step2: {
         title: "2. 起个代号",
@@ -117,8 +117,8 @@ export const translations = {
       step3: {
         title: "3. 选择赛道",
         desc: "选择你的赛道",
-        optimizer: "效率战士（单人）",
-        builder: "产品 visionary（可组队）",
+        optimizer: "效率战士（Lightning Coder 单人）",
+        builder: "产品 visionary（Insighter 可组队）",
       },
       step4: {
         title: "4. 为什么做？",

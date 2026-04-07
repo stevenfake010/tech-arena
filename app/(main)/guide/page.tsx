@@ -175,7 +175,7 @@ export default function GuidePage() {
             <div className="p-4">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
-                  <span className="text-xl">🛠️</span>
+                  <span className="text-xl">🔮</span>
                   <span className="font-headline text-xl font-bold text-on-surface">Insighter</span>
                 </div>
                 <span className="text-xs font-semibold text-tertiary bg-tertiary/10 px-2.5 py-1 rounded-full">≤ 2 人</span>
@@ -277,7 +277,7 @@ export default function GuidePage() {
           {(() => {
             const tracks = [
               { key: 'lightning_coder', icon: '⚡', label: 'Lightning Coder 赛道', color: 'secondary' as const, items: optimizerOrder, crossLabel: 'DI优秀项目展示' },
-              { key: 'insighter',   icon: '🛠️', label: 'Insighter 赛道',   color: 'tertiary'  as const, items: builderOrder,   crossLabel: '财务投资优秀项目展示' },
+              { key: 'insighter',   icon: '🔮', label: 'Insighter 赛道',   color: 'tertiary'  as const, items: builderOrder,   crossLabel: '财务投资优秀项目展示' },
             ];
 
             function renderItem(item: OrderItem, color: 'secondary' | 'tertiary', crossLabel: string, isLast: boolean) {

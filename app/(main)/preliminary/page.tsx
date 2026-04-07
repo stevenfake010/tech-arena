@@ -318,7 +318,7 @@ export default function PreliminaryPage() {
           <div className="flex-shrink-0 flex gap-1 p-1 bg-surface-container-low rounded-t-xl">
             {([
               { track: 'lightning_coder' as const, icon: '⚡', label: 'Lightning Coder', count: config.mode === 'B' ? `${optimizerSelected}/${config.optimizerRequired}` : String(shuffledDemos.filter(d => d.track === 'lightning_coder').length), activeClass: 'bg-secondary text-on-secondary' },
-              { track: 'insighter' as const, icon: '🛠️', label: 'Insighter', count: config.mode === 'B' ? `${builderSelected}/${config.builderRequired}` : String(shuffledDemos.filter(d => d.track === 'insighter').length), activeClass: 'bg-tertiary text-on-tertiary' },
+              { track: 'insighter' as const, icon: '🔮', label: 'Insighter', count: config.mode === 'B' ? `${builderSelected}/${config.builderRequired}` : String(shuffledDemos.filter(d => d.track === 'insighter').length), activeClass: 'bg-tertiary text-on-tertiary' },
             ]).map(({ track, icon, label, count, activeClass }) => (
               <button
                 key={track}
@@ -433,7 +433,7 @@ export default function PreliminaryPage() {
                       <span className={`px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide rounded ${
                         detail.track === 'lightning_coder' ? 'bg-secondary/10 text-secondary' : 'bg-tertiary/10 text-tertiary'
                       }`}>{detail.track}</span>
-                      <span className="text-lg">{detail.track === 'lightning_coder' ? '⚡️' : '🛠️'}</span>
+                      <span className="text-lg">{detail.track === 'lightning_coder' ? '⚡️' : '🔮'}</span>
                     </div>
                     <h1 className="text-2xl font-headline font-bold text-on-surface">{detail.name}</h1>
                     <p className="mt-2 text-sm text-on-surface-variant leading-relaxed">{detail.summary}</p>
@@ -562,7 +562,7 @@ export default function PreliminaryPage() {
             <span className="text-xs font-medium tabular-nums">
               ⚡ <span className="font-bold">{optimizerSelected}</span>/{config.optimizerRequired}
               <span className="mx-1 text-outline-variant/40">·</span>
-              🛠️ <span className="font-bold">{builderSelected}</span>/{config.builderRequired}
+              🔮 <span className="font-bold">{builderSelected}</span>/{config.builderRequired}
             </span>
           )}
         </div>
@@ -597,7 +597,7 @@ export default function PreliminaryPage() {
               </span>
               <span className={canSubmit ? 'opacity-40' : 'text-outline-variant/40'}>·</span>
               <span className={canSubmit ? 'opacity-80' : ''}>
-                🛠️ Insighter <span className="font-bold tabular-nums">{builderSelected}</span>/{config.builderRequired}
+                🔮 Insighter <span className="font-bold tabular-nums">{builderSelected}</span>/{config.builderRequired}
               </span>
             </div>
           )}

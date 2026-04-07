@@ -452,7 +452,7 @@ export default function SubmitModal({ onClose, initialTrack }: SubmitModalProps)
                     />
                     <div>
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="text-lg">🛠️</span>
+                        <span className="text-lg">🔮</span>
                         <span className="font-bold text-on-surface">Insighter</span>
                       </div>
                     </div>

@@ -80,7 +80,7 @@ export async function POST() {
       const demoData: any = {
         name: demo.name,
         summary: demo.summary,
-        track: 'optimizer',
+        track: 'lightning_coder',
         demo_link: `https://demo${i + 1}.example.com`,
         submitter1_name: submitter.name,
         submitter1_dept: submitter.department,
@@ -117,7 +117,7 @@ export async function POST() {
       const demoData: any = {
         name: demo.name,
         summary: demo.summary,
-        track: 'builder',
+        track: 'insighter',
         demo_link: `https://demo${i + 11}.example.com`,
         submitter1_name: submitter1.name,
         submitter1_dept: submitter1.department,

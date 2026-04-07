@@ -38,10 +38,6 @@ export default function AdminPage() {
   const router = useRouter();
   const [user, setUser] = useState<{ name: string; role: string } | null>(null);
   const [loading, setLoading] = useState(true);
-  const [adminAuthed, setAdminAuthed] = useState(false);
-  const [pwInput, setPwInput] = useState('');
-  const [pwError, setPwError] = useState('');
-  const [pwLoading, setPwLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<'demos' | 'messages' | 'settings'>('demos');
 
   // Demos 管理
@@ -74,14 +70,14 @@ export default function AdminPage() {
 
   // 按奖项投票开关
   const AWARD_CONFIGS = [
-    { key: 'best_optimizer',   icon: '⚡', label: 'Lightning Coder 最佳Demo' },
-    { key: 'best_builder',     icon: '🛠️', label: 'Insighter 最佳Demo' },
+    { key: 'best_lightning_coder', icon: '⚡', label: 'Lightning Coder 最佳Skill' },
+    { key: 'best_insighter',      icon: '🔮', label: 'Insighter 最佳Skill' },
     { key: 'special_brain',    icon: '🧠', label: '专项奖 · 最脑洞' },
     { key: 'special_infectious', icon: '🔥', label: '专项奖 · 最感染力' },
     { key: 'special_useful',   icon: '💎', label: '专项奖 · 最实用' },
   ];
   const [votingOpenAwards, setVotingOpenAwards] = useState<Record<string, boolean>>({
-    best_optimizer: false, best_builder: false,
+    best_lightning_coder: false, best_insighter: false,
     special_brain: false, special_infectious: false, special_useful: false,
   });
   const [awardToggleLoading, setAwardToggleLoading] = useState<string | null>(null);
@@ -148,35 +144,15 @@ export default function AdminPage() {
   useEffect(() => {
     Promise.all([
       fetch('/api/auth/me').then(r => r.json()),
-      fetch('/api/admin/verify').then(r => r.json()),
-    ]).then(([authData, verifyData]) => {
+    ]).then(([authData]) => {
       if (!authData.user || authData.user.role !== 'admin') {
         router.push('/');
         return;
       }
       setUser(authData.user);
-      setAdminAuthed(verifyData.ok === true);
       setLoading(false);
     }).catch(() => router.push('/'));
   }, [router]);
-
-  async function handleAdminLogin(e: React.FormEvent) {
-    e.preventDefault();
-    setPwLoading(true);
-    setPwError('');
-    const res = await fetch('/api/admin/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ password: pwInput }),
-    });
-    setPwLoading(false);
-    if (res.ok) {
-      setAdminAuthed(true);
-    } else {
-      setPwError('密码错误，请重试');
-      setPwInput('');
-    }
-  }
 
   // 加载 Demos
   const loadDemos = async () => {
@@ -789,37 +765,6 @@ export default function AdminPage() {
     );
   }
 
-  if (!adminAuthed) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-surface">
-        <form onSubmit={handleAdminLogin} className="bg-surface-container-low rounded-2xl p-10 w-full max-w-sm shadow-lg flex flex-col gap-6">
-          <div className="text-center">
-            <ShieldAlert size={36} className="mx-auto mb-3 text-primary" />
-            <h1 className="font-headline text-2xl font-bold">管理员验证</h1>
-            <p className="text-sm text-on-surface-variant mt-1">请输入管理后台密码</p>
-          </div>
-          <input
-            type="password"
-            value={pwInput}
-            onChange={e => setPwInput(e.target.value)}
-            placeholder="密码"
-            autoFocus
-            className="w-full bg-surface border border-outline-variant rounded-lg px-4 py-3 text-base focus:outline-none focus:border-primary transition-colors"
-          />
-          {pwError && <p className="text-sm text-error -mt-3">{pwError}</p>}
-          <button
-            type="submit"
-            disabled={pwLoading || !pwInput}
-            className="w-full py-3 bg-primary text-on-primary font-bold rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2"
-          >
-            {pwLoading ? <Loader2 size={18} className="animate-spin" /> : null}
-            进入管理后台
-          </button>
-        </form>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-surface">
       {/* Header */}
@@ -1375,7 +1320,7 @@ export default function AdminPage() {
                 {(['lightning_coder', 'insighter'] as const).map(track => (
                   <div key={track}>
                     <p className="text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-2">
-                      {track === 'lightning_coder' ? '⚡ Lightning Coder' : '🛠️ Insighter'}
+                      {track === 'lightning_coder' ? '⚡ Lightning Coder' : '🔮 Insighter'}
                     </p>
                     <div className="space-y-1">
                       {bonusDemos.filter(d => d.track === track).map(d => (
@@ -1653,7 +1598,7 @@ export default function AdminPage() {
                       return (
                         <div key={track}>
                           <h3 className="text-sm font-semibold text-on-surface mb-2">
-                            {track === 'lightning_coder' ? '⚡ Lightning Coder 赛道' : '🛠️ Insighter 赛道'}
+                            {track === 'lightning_coder' ? '⚡ Lightning Coder 赛道' : '🔮 Insighter 赛道'}
                           </h3>
                           <div className="rounded-xl border border-outline-variant/10 overflow-hidden">
                             <table className="w-full">

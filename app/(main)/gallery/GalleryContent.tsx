@@ -260,7 +260,7 @@ export default function GalleryContent() {
                   : 'text-on-surface-variant hover:bg-surface-container-high'
               }`}
             >
-              <span>🛠️</span>
+              <span>🔮</span>
               <span>Insighter</span>
               <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-normal ${
                 activeTrack === 'insighter'
@@ -379,7 +379,7 @@ export default function GalleryContent() {
                   }`}>
                     {selectedDemo.track}
                   </span>
-                  <span className="text-lg">{selectedDemo.track === 'lightning_coder' ? '⚡️' : '🛠️'}</span>
+                  <span className="text-lg">{selectedDemo.track === 'lightning_coder' ? '⚡️' : '🔮'}</span>
                 </div>
                 <h1 className="text-3xl font-headline font-bold text-on-surface">{selectedDemo.name}</h1>
                 <p className="mt-3 text-base text-on-surface-variant leading-relaxed">

@@ -114,7 +114,7 @@ export async function PUT(
 
   // 验证提交人2（如果有）
   let submitter2Id = null;
-  if (track === 'builder' && submitter2_name) {
+  if (track === 'insighter' && submitter2_name) {
     const { data: submitter2, error: submitter2Error } = await supabase
       .from('users')
       .select('id, name, department')

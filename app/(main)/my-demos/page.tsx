@@ -416,7 +416,7 @@ export default function MyDemosPage() {
   }
 
   function getTrackLabel(track: string) {
-    return track === 'lightning_coder' ? '⚡ Lightning Coder' : '🛠️ Insighter';
+    return track === 'lightning_coder' ? '⚡ Lightning Coder' : '🔮 Insighter';
   }
 
   function getTrackColor(track: string) {
@@ -472,7 +472,7 @@ export default function MyDemosPage() {
                 <input
                   type="radio"
                   name="track"
-                  value="optimizer"
+                  value="lightning_coder"
                   checked={form.track === 'lightning_coder'}
                   onChange={e => updateField('track', e.target.value)}
                   className="mt-1"
@@ -486,21 +486,21 @@ export default function MyDemosPage() {
                 </div>
               </label>
               <label className={`relative flex items-start gap-4 p-5 rounded-lg border-2 cursor-pointer transition-all ${
-                form.track === 'insighter' 
-                  ? 'border-tertiary bg-tertiary-container/30' 
+                form.track === 'insighter'
+                  ? 'border-tertiary bg-tertiary-container/30'
                   : 'border-outline-variant/30 hover:border-outline'
               }`}>
                 <input
                   type="radio"
                   name="track"
-                  value="builder"
+                  value="insighter"
                   checked={form.track === 'insighter'}
                   onChange={e => updateField('track', e.target.value)}
                   className="mt-1"
                 />
                 <div>
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-lg">🛠️</span>
+                    <span className="text-lg">🔮</span>
                     <span className="font-bold text-on-surface">Insighter</span>
                   </div>
                   <p className="text-xs text-on-surface-variant/80 leading-relaxed">设计小红书功能，或是有小红书 DNA 的独立产品</p>

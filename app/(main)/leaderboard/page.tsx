@@ -71,7 +71,7 @@ function parseMediaUrls(v: string | string[] | null | undefined): string[] {
 
 const TABS: { id: TabType; icon: string; label: string; group: 'best' | 'special'; voteType: string; maxVotes: number }[] = [
   { id: 'lightning_coder',           icon: '⚡',  label: 'Lightning Coder', group: 'best',    voteType: 'best_lightning_coder', maxVotes: BEST_DEMO_AWARDS.best_lightning_coder.maxVotes },
-  { id: 'insighter',             icon: '🛠️', label: 'Insighter',   group: 'best',    voteType: 'best_insighter',      maxVotes: BEST_DEMO_AWARDS.best_insighter.maxVotes },
+  { id: 'insighter',             icon: '🔮', label: 'Insighter',   group: 'best',    voteType: 'best_insighter',      maxVotes: BEST_DEMO_AWARDS.best_insighter.maxVotes },
   { id: 'special_brain',       icon: '🧠',  label: '最脑洞',    group: 'special', voteType: 'special_brain',     maxVotes: SPECIAL_AWARDS.special_brain.maxVotes },
   { id: 'special_infectious',  icon: '🔥',  label: '最感染力',  group: 'special', voteType: 'special_infectious', maxVotes: SPECIAL_AWARDS.special_infectious.maxVotes },
   { id: 'special_useful',      icon: '💎',  label: '最实用',    group: 'special', voteType: 'special_useful',    maxVotes: SPECIAL_AWARDS.special_useful.maxVotes },
@@ -575,7 +575,7 @@ export default function LeaderboardPage() {
                       </span>
                       <span className="text-lg leading-none">
                         {previewItem.track === 'lightning_coder' ? '⚡️' :
-                         previewItem.track === 'insighter'   ? '🛠️' :
+                         previewItem.track === 'insighter'   ? '🔮' :
                          TABS.find(t => t.voteType === currentVoteType)?.icon ?? '⭐'}
                       </span>
                     </div>
