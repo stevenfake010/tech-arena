@@ -1,17 +1,28 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
- 
+
+// 不需要密码保护的路径
+const PUBLIC_PATHS = ['/password', '/api/auth/verify-password']
+
 export function middleware(request: NextRequest) {
-  // 如果已经是首页，不做处理
-  if (request.nextUrl.pathname === '/') {
+  const { pathname } = request.nextUrl
+
+  // 检查是否是公开路径
+  if (PUBLIC_PATHS.some(path => pathname.startsWith(path))) {
     return NextResponse.next()
   }
-  
-  // 其他所有路由重定向到首页（下线页面）
-  return NextResponse.redirect(new URL('/', request.url))
+
+  // 检查是否已验证（通过 cookie）
+  const isAuthenticated = request.cookies.get('site_auth')?.value === 'true'
+
+  if (!isAuthenticated) {
+    // 未验证，重定向到密码页
+    return NextResponse.redirect(new URL('/password', request.url))
+  }
+
+  return NextResponse.next()
 }
- 
-// 匹配所有路由
+
 export const config = {
   matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.svg$).*)'],
 }

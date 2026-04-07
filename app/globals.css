@@ -1,5 +1,370 @@
-/* Minimal styles for offline page */
+@import "tailwindcss";
+
+@theme inline {
+  /* Surface Hierarchy */
+  --color-surface: #fafaf5;
+  --color-surface-dim: #d5dcd0;
+  --color-surface-bright: #fafaf5;
+  --color-surface-container: #ecefe7;
+  --color-surface-container-low: #f3f4ee;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-high: #e5eae0;
+  --color-surface-container-highest: #dee4da;
+  --color-surface-variant: #dee4da;
+  --color-surface-tint: #5f5e5e;
+
+  /* Primary */
+  --color-primary: #5f5e5e;
+  --color-primary-dim: #535252;
+  --color-primary-container: #e5e2e1;
+  --color-primary-fixed: #e5e2e1;
+  --color-primary-fixed-dim: #d6d4d3;
+  --color-on-primary: #faf7f6;
+  --color-on-primary-container: #525151;
+  --color-on-primary-fixed: #403f3f;
+  --color-on-primary-fixed-variant: #5c5b5b;
+  --color-inverse-primary: #ffffff;
+
+  /* Secondary (Crimson Accent) */
+  --color-secondary: #9d423f;
+  --color-secondary-dim: #8d3734;
+  --color-secondary-container: #ffdad7;
+  --color-secondary-fixed: #ffdad7;
+  --color-secondary-fixed-dim: #ffc7c3;
+  --color-on-secondary: #fff7f6;
+  --color-on-secondary-container: #8c3533;
+  --color-on-secondary-fixed: #732323;
+  --color-on-secondary-fixed-variant: #983f3c;
+
+  /* Tertiary */
+  --color-tertiary: #585d7e;
+  --color-tertiary-dim: #4c5171;
+  --color-tertiary-container: #c8ccf2;
+  --color-tertiary-fixed: #c8ccf2;
+  --color-tertiary-fixed-dim: #babfe4;
+  --color-on-tertiary: #faf8ff;
+  --color-on-tertiary-container: #3f4463;
+  --color-on-tertiary-fixed: #2b304e;
+  --color-on-tertiary-fixed-variant: #484d6c;
+
+  /* Neutral / Surface Text */
+  --color-on-surface: #2e342d;
+  --color-on-surface-variant: #5a6159;
+  --color-on-background: #2e342d;
+  --color-background: #fafaf5;
+  --color-inverse-surface: #0d0f0c;
+  --color-inverse-on-surface: #9c9d99;
+
+  /* Outline */
+  --color-outline: #767c74;
+  --color-outline-variant: #aeb4aa;
+
+  /* Error */
+  --color-error: #9f403d;
+  --color-error-dim: #4e0309;
+  --color-error-container: #fe8983;
+  --color-on-error: #fff7f6;
+  --color-on-error-container: #752121;
+
+  /* Fonts — 通过 next/font CSS 变量引用自托管字体 */
+  --font-headline: var(--font-newsreader), var(--font-noto-serif-sc), "Songti SC", "STSong", "SimSun", serif;
+  --font-body: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  --font-label: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  --font-chinese: var(--font-noto-serif-sc), "Songti SC", "STSong", "PingFang SC", "Microsoft YaHei", sans-serif;
+
+  /* Border Radius */
+  --radius-sm: 0.125rem;
+  --radius-DEFAULT: 0.125rem;
+  --radius-md: 0.25rem;
+  --radius-lg: 0.25rem;
+  --radius-xl: 0.5rem;
+  --radius-2xl: 0.75rem;
+  --radius-full: 0.75rem;
+}
+
+
+/* Serif Numbers */
+.serif-numbers {
+  font-family: var(--font-newsreader), serif;
+  font-variant-numeric: oldstyle-nums;
+}
+
+/* Text Caps */
+.text-xs-caps {
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* Ghost Border */
+.ghost-border {
+  border: 1px solid rgba(174, 180, 170, 0.15);
+}
+
+.ghost-border-bottom {
+  border-bottom: 1px solid rgba(174, 180, 170, 0.15);
+}
+
+.thin-border {
+  border-bottom: 0.5px solid rgba(118, 124, 116, 0.2);
+}
+
+/* Minimal Input */
+.minimal-input {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(118, 124, 116, 0.2);
+  padding: 1rem 0;
+  transition: border-color 0.3s ease;
+}
+.minimal-input:focus {
+  border-bottom-color: #2e342d;
+  box-shadow: none !important;
+  outline: none;
+}
+
+/* Custom Scrollbar - 更明显的滚动条 */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #d5dcd0 transparent;
+}
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #c5ccc0;
+  border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #aeb4aa;
+}
+
+/* No Scrollbar */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Accordion */
+.accordion-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease-out;
+}
+.accordion-open {
+  max-height: 2000px;
+}
+
+/* Base body font with Chinese support */
 body {
-  margin: 0;
+  font-family: var(--font-body);
+  background-color: #fafaf5;
+  color: #2e342d;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Headline font - English serif + Chinese serif */
+.font-headline {
+  font-family: var(--font-headline);
+}
+
+/* Chinese text optimization */
+.chinese-text {
+  font-family: var(--font-chinese);
+  line-height: 1.8;
+}
+
+/* Better Chinese readability for small text */
+.text-sm, .text-xs, .text-\[10px\] {
+  line-height: 1.6;
+}
+
+/* Optimize Chinese font rendering */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+/* Chinese paragraph spacing */
+p {
+  line-height: 1.75;
+}
+
+/* Markdown 内容样式 */
+.markdown-content {
+  line-height: 1.75;
+  color: #2e342d;
+}
+
+.markdown-content p {
+  margin-bottom: 0.75em;
+}
+
+.markdown-content p:last-child {
+  margin-bottom: 0;
+}
+
+/* 无序列表 - 使用 !important 确保不被 Tailwind reset 覆盖 */
+.markdown-content ul {
+  list-style-type: disc !important;
+  padding-left: 1.5em !important;
+  margin-bottom: 0.75em;
+}
+
+.markdown-content ul li {
+  display: list-item !important;
+  list-style-type: disc !important;
+  margin-bottom: 0.25em;
+}
+
+/* 有序列表 */
+.markdown-content ol {
+  list-style-type: decimal !important;
+  padding-left: 1.5em !important;
+  margin-bottom: 0.75em;
+}
+
+.markdown-content ol li {
+  display: list-item !important;
+  list-style-type: decimal !important;
+  margin-bottom: 0.25em;
+}
+
+/* 嵌套列表 */
+.markdown-content ul ul,
+.markdown-content ol ol,
+.markdown-content ul ol,
+.markdown-content ol ul {
+  margin-top: 0.25em;
+  margin-bottom: 0.25em;
+}
+
+/* 标题 */
+.markdown-content h1,
+.markdown-content h2,
+.markdown-content h3,
+.markdown-content h4,
+.markdown-content h5,
+.markdown-content h6 {
+  font-weight: 600;
+  margin-top: 1em;
+  margin-bottom: 0.5em;
+  line-height: 1.4;
+}
+
+.markdown-content h1 { font-size: 1.5em; }
+.markdown-content h2 { font-size: 1.25em; }
+.markdown-content h3 { font-size: 1.125em; }
+.markdown-content h4 { font-size: 1em; }
+
+/* 粗体和斜体 */
+.markdown-content strong {
+  font-weight: 600;
+}
+
+.markdown-content em {
+  font-style: italic;
+}
+
+/* 链接 */
+.markdown-content a {
+  color: #585d7e;
+  text-decoration: underline;
+}
+
+.markdown-content a:hover {
+  opacity: 0.8;
+}
+
+/* 代码 */
+.markdown-content code {
+  background: rgba(118, 124, 116, 0.1);
+  padding: 0.2em 0.4em;
+  border-radius: 3px;
+  font-family: monospace;
+  font-size: 0.9em;
+}
+
+.markdown-content pre {
+  background: rgba(118, 124, 116, 0.1);
+  padding: 1em;
+  border-radius: 6px;
+  overflow-x: auto;
+  margin-bottom: 0.75em;
+}
+
+.markdown-content pre code {
+  background: none;
   padding: 0;
+}
+
+/* 引用 */
+.markdown-content blockquote {
+  border-left: 3px solid #767c74;
+  padding-left: 1em;
+  margin-left: 0;
+  margin-bottom: 0.75em;
+  color: #5a6159;
+}
+
+/* 分隔线 */
+.markdown-content hr {
+  border: none;
+  border-top: 1px solid #aeb4aa;
+  margin: 1em 0;
+}
+
+/* Tiptap 富文本编辑器内样式 */
+.ProseMirror {
+  outline: none;
+}
+.ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  color: rgba(0,0,0,0.3);
+  pointer-events: none;
+  float: left;
+  height: 0;
+}
+.ProseMirror ul {
+  list-style-type: disc !important;
+  padding-left: 1.5em !important;
+  margin: 0.4em 0;
+}
+.ProseMirror ol {
+  list-style-type: decimal !important;
+  padding-left: 1.5em !important;
+  margin: 0.4em 0;
+}
+.ProseMirror li {
+  margin: 0.15em 0;
+}
+.ProseMirror h3 {
+  font-size: 1.1em;
+  font-weight: 600;
+  margin: 0.6em 0 0.3em;
+}
+.ProseMirror strong { font-weight: 600; }
+.ProseMirror em { font-style: italic; }
+.ProseMirror hr {
+  border: none;
+  border-top: 1px solid #aeb4aa;
+  margin: 0.8em 0;
+}
+.ProseMirror p { margin: 0.25em 0; }
+
+/* ── Mobile Utilities ── */
+.safe-area-pb {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Kill 300ms tap delay on mobile */
+button, a, [role="button"] {
+  touch-action: manipulation;
 }
