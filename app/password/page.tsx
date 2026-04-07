@@ -129,6 +129,18 @@ export default function PasswordPage() {
             {loading ? '验证中...' : '进入'}
           </button>
         </form>
+
+        <p
+          style={{
+            fontSize: '12px',
+            color: '#999',
+            textAlign: 'center',
+            marginTop: '20px',
+            marginBottom: '0',
+          }}
+        >
+          最新密码请联系恒宇
+        </p>
       </div>
     </main>
   );

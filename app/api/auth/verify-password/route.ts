@@ -19,11 +19,11 @@ export async function POST(request: Request) {
     if (password === correctPassword) {
       // 设置 cookie，有效期 7 天
       const cookieStore = await cookies();
+      // 使用 session cookie（浏览器关闭即失效），每次访问都需要重新登录
       cookieStore.set('site_auth', 'true', {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
-        maxAge: 60 * 60 * 24 * 7, // 7 days
         path: '/',
       });
 
