@@ -17,7 +17,7 @@ interface Demo {
   id: number;
   name: string;
   summary: string;
-  track: 'optimizer' | 'builder';
+  track: 'lightning_coder' | 'insighter';
   demo_link: string | null;
   submitter1_name: string;
   submitter1_dept: string;
@@ -72,7 +72,7 @@ export default function PreliminaryPage() {
   const { data: prelimData, mutate: mutatePrelim, isLoading: prelimLoading } = useSWR<PrelimState>(
     '/api/preliminary', jsonFetcher, { revalidateOnFocus: false, dedupingInterval: 30000 }
   );
-  const { data: demosData } = useSWR<{ demos: Demo[] }>(
+  const { data: demosData, mutate: mutateDemos } = useSWR<{ demos: Demo[] }>(
     '/api/demos', jsonFetcher, { revalidateOnFocus: false, dedupingInterval: 60000 }
   );
 
@@ -86,7 +86,7 @@ export default function PreliminaryPage() {
   const [localSelections, setLocalSelections] = useState<Set<number>>(new Set());
 
   // Active track tab for mode B (also used for browsing in mode A)
-  const [activeTrack, setActiveTrack] = useState<'optimizer' | 'builder'>('optimizer');
+  const [activeTrack, setActiveTrack] = useState<'lightning_coder' | 'insighter'>('lightning_coder');
 
   // Selected demo for right-pane preview (null = show first item)
   const [previewDemo, setPreviewDemo] = useState<Demo | null>(null);
@@ -108,13 +108,20 @@ export default function PreliminaryPage() {
     }
   }, [shuffledDemos, previewDemo]);
 
+  // 监听删除事件，删除后主动刷新列表
+  useEffect(() => {
+    const handleDemoDeleted = () => mutateDemos();
+    window.addEventListener('demo-deleted', handleDemoDeleted);
+    return () => window.removeEventListener('demo-deleted', handleDemoDeleted);
+  }, [mutateDemos]);
+
   // Derived counts
   const optimizerSelected = useMemo(
-    () => [...localSelections].filter(id => shuffledDemos.find(d => d.id === id)?.track === 'optimizer').length,
+    () => [...localSelections].filter(id => shuffledDemos.find(d => d.id === id)?.track === 'lightning_coder').length,
     [localSelections, shuffledDemos]
   );
   const builderSelected = useMemo(
-    () => [...localSelections].filter(id => shuffledDemos.find(d => d.id === id)?.track === 'builder').length,
+    () => [...localSelections].filter(id => shuffledDemos.find(d => d.id === id)?.track === 'insighter').length,
     [localSelections, shuffledDemos]
   );
 
@@ -131,11 +138,11 @@ export default function PreliminaryPage() {
           if (next.size >= config.totalRequired) return prev;
         } else {
           const demo = shuffledDemos.find(d => d.id === demoId);
-          if (demo?.track === 'optimizer') {
-            const curOpt = [...next].filter(id => shuffledDemos.find(d => d.id === id)?.track === 'optimizer').length;
+          if (demo?.track === 'lightning_coder') {
+            const curOpt = [...next].filter(id => shuffledDemos.find(d => d.id === id)?.track === 'lightning_coder').length;
             if (curOpt >= config.optimizerRequired) return prev;
-          } else if (demo?.track === 'builder') {
-            const curBld = [...next].filter(id => shuffledDemos.find(d => d.id === id)?.track === 'builder').length;
+          } else if (demo?.track === 'insighter') {
+            const curBld = [...next].filter(id => shuffledDemos.find(d => d.id === id)?.track === 'insighter').length;
             if (curBld >= config.builderRequired) return prev;
           }
         }
@@ -151,7 +158,7 @@ export default function PreliminaryPage() {
     const ids = [...localSelections];
     const confirmMsg = config.mode === 'A'
       ? `确认提交 ${ids.length} 个项目吗？\n\n⚠️ 提交后不能修改。`
-      : `确认提交？\nOptimizer：${optimizerSelected} 个 / Builder：${builderSelected} 个\n\n⚠️ 提交后不能修改。`;
+      : `确认提交？\nLightning Coder：${optimizerSelected} 个 / Insighter：${builderSelected} 个\n\n⚠️ 提交后不能修改。`;
     if (!confirm(confirmMsg)) return;
 
     setSubmitting(true);
@@ -277,7 +284,7 @@ export default function PreliminaryPage() {
             <p className="text-on-surface-variant text-sm mt-0.5">
               {config.mode === 'A'
                 ? `从所有项目中选出 ${config.totalRequired} 个最值得晋级的项目`
-                : `分赛道各选：Optimizer ${config.optimizerRequired} 个，Builder ${config.builderRequired} 个`
+                : `分赛道各选：Lightning Coder ${config.optimizerRequired} 个，Insighter ${config.builderRequired} 个`
               }
               <span className="ml-2 text-on-surface-variant/40">· 顺序随机</span>
             </p>
@@ -310,8 +317,8 @@ export default function PreliminaryPage() {
           {/* Track tabs */}
           <div className="flex-shrink-0 flex gap-1 p-1 bg-surface-container-low rounded-t-xl">
             {([
-              { track: 'optimizer' as const, icon: '⚡', label: 'Optimizer', count: config.mode === 'B' ? `${optimizerSelected}/${config.optimizerRequired}` : String(shuffledDemos.filter(d => d.track === 'optimizer').length), activeClass: 'bg-secondary text-on-secondary' },
-              { track: 'builder' as const, icon: '🛠️', label: 'Builder', count: config.mode === 'B' ? `${builderSelected}/${config.builderRequired}` : String(shuffledDemos.filter(d => d.track === 'builder').length), activeClass: 'bg-tertiary text-on-tertiary' },
+              { track: 'lightning_coder' as const, icon: '⚡', label: 'Lightning Coder', count: config.mode === 'B' ? `${optimizerSelected}/${config.optimizerRequired}` : String(shuffledDemos.filter(d => d.track === 'lightning_coder').length), activeClass: 'bg-secondary text-on-secondary' },
+              { track: 'insighter' as const, icon: '🛠️', label: 'Insighter', count: config.mode === 'B' ? `${builderSelected}/${config.builderRequired}` : String(shuffledDemos.filter(d => d.track === 'insighter').length), activeClass: 'bg-tertiary text-on-tertiary' },
             ]).map(({ track, icon, label, count, activeClass }) => (
               <button
                 key={track}
@@ -351,7 +358,7 @@ export default function PreliminaryPage() {
                   className={`
                     flex items-start gap-2.5 px-3 py-2.5 cursor-pointer transition-all
                     ${isPreviewing && !isSelected
-                      ? activeTrack === 'optimizer'
+                      ? activeTrack === 'lightning_coder'
                         ? 'bg-surface-container-lowest border-l-2 border-secondary'
                         : 'bg-surface-container-lowest border-l-2 border-tertiary'
                       : isSelected
@@ -387,7 +394,7 @@ export default function PreliminaryPage() {
                       <div className="flex items-center gap-1 flex-wrap">
                         {keywords.map((kw, i) => (
                           <span key={i} className={`text-xs px-1.5 py-0.5 rounded ${
-                            activeTrack === 'optimizer' ? 'bg-secondary/10 text-secondary' : 'bg-tertiary/10 text-tertiary'
+                            activeTrack === 'lightning_coder' ? 'bg-secondary/10 text-secondary' : 'bg-tertiary/10 text-tertiary'
                           }`}>{kw}</span>
                         ))}
                       </div>
@@ -405,7 +412,7 @@ export default function PreliminaryPage() {
           {detail ? (
             <>
               {/* Track color bar */}
-              <div className={`h-0.5 flex-shrink-0 ${detail.track === 'optimizer' ? 'bg-secondary' : 'bg-tertiary'}`} />
+              <div className={`h-0.5 flex-shrink-0 ${detail.track === 'lightning_coder' ? 'bg-secondary' : 'bg-tertiary'}`} />
 
               {/* Mobile back button */}
               {isMobile && (
@@ -424,9 +431,9 @@ export default function PreliminaryPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-2">
                       <span className={`px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide rounded ${
-                        detail.track === 'optimizer' ? 'bg-secondary/10 text-secondary' : 'bg-tertiary/10 text-tertiary'
+                        detail.track === 'lightning_coder' ? 'bg-secondary/10 text-secondary' : 'bg-tertiary/10 text-tertiary'
                       }`}>{detail.track}</span>
-                      <span className="text-lg">{detail.track === 'optimizer' ? '⚡️' : '🛠️'}</span>
+                      <span className="text-lg">{detail.track === 'lightning_coder' ? '⚡️' : '🛠️'}</span>
                     </div>
                     <h1 className="text-2xl font-headline font-bold text-on-surface">{detail.name}</h1>
                     <p className="mt-2 text-sm text-on-surface-variant leading-relaxed">{detail.summary}</p>
@@ -586,11 +593,11 @@ export default function PreliminaryPage() {
           ) : (
             <div className="flex items-center gap-3 text-sm">
               <span className={canSubmit ? 'opacity-80' : ''}>
-                ⚡ Optimizer <span className="font-bold tabular-nums">{optimizerSelected}</span>/{config.optimizerRequired}
+                ⚡ Lightning Coder <span className="font-bold tabular-nums">{optimizerSelected}</span>/{config.optimizerRequired}
               </span>
               <span className={canSubmit ? 'opacity-40' : 'text-outline-variant/40'}>·</span>
               <span className={canSubmit ? 'opacity-80' : ''}>
-                🛠️ Builder <span className="font-bold tabular-nums">{builderSelected}</span>/{config.builderRequired}
+                🛠️ Insighter <span className="font-bold tabular-nums">{builderSelected}</span>/{config.builderRequired}
               </span>
             </div>
           )}
