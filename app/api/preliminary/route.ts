@@ -102,7 +102,7 @@ export async function POST(request: Request) {
     .in('id', demo_ids) as { data: any[]; error: any };
 
   if (demosError) {
-    return NextResponse.json({ error: demosError.message }, { status: 500 });
+    return NextResponse.json({ error: '加载项目数据失败，请重试' }, { status: 500 });
   }
 
   const validIds = new Set((demos || []).map((d: any) => d.id));
@@ -120,26 +120,39 @@ export async function POST(request: Request) {
     }
   } else {
     const demoMap = new Map((demos || []).map((d: any) => [d.id, d.track]));
-    const optimizerCount = demo_ids.filter((id: number) => demoMap.get(id) === 'optimizer').length;
-    const builderCount = demo_ids.filter((id: number) => demoMap.get(id) === 'builder').length;
+    const optimizerCount = demo_ids.filter((id: number) => demoMap.get(id) === 'lightning_coder').length;
+    const builderCount = demo_ids.filter((id: number) => demoMap.get(id) === 'insighter').length;
     if (optimizerCount !== config.optimizerRequired || builderCount !== config.builderRequired) {
       return NextResponse.json({
-        error: `需选 ${config.optimizerRequired} 个 Optimizer 和 ${config.builderRequired} 个 Builder（当前：Optimizer ${optimizerCount}，Builder ${builderCount}）`,
+        error: `需选 ${config.optimizerRequired} 个 Lightning Coder 和 ${config.builderRequired} 个 Insighter（当前：Lightning Coder ${optimizerCount}，Insighter ${builderCount}）`,
       }, { status: 400 });
     }
   }
 
-  // Batch insert all as submitted
+  // Race-condition fix: use upsert to atomically insert-or-ignore.
+  // If the table or unique constraint doesn't exist, upsert returns a structural error.
+  // This eliminates the check-then-act race window between the two separate operations.
   const rows = demo_ids.map((id: number) => ({ voter_id: user.id, demo_id: id, submitted: true }));
   const { error: insertError } = await supabase
     .from('preliminary_votes')
-    .insert(rows as any);
+    .upsert(rows as any, { onConflict: 'voter_id,demo_id', ignoreDuplicates: true });
 
   if (insertError) {
-    if (insertError.code === '23505') {
-      return NextResponse.json({ error: '你已经提交过海选了' }, { status: 409 });
+    if (insertError.code === '42P01' || insertError.code === 'PGRST200') {
+      return NextResponse.json({ error: '海选功能尚未初始化，请联系管理员运行数据库迁移脚本' }, { status: 503 });
     }
-    return NextResponse.json({ error: insertError.message }, { status: 500 });
+    return NextResponse.json({ error: '提交失败，请重试' }, { status: 500 });
+  }
+
+  // Double-confirm submission succeeded by checking the row count
+  const { data: confirmed, error: confirmError } = await supabase
+    .from('preliminary_votes')
+    .select('id', { count: 'exact', head: true })
+    .eq('voter_id', user.id)
+    .eq('submitted', true) as { data: any; error: any };
+
+  if (confirmError || !confirmed || confirmed.count < demo_ids.length) {
+    return NextResponse.json({ error: '提交失败，请重试' }, { status: 500 });
   }
 
   return NextResponse.json({ success: true });
