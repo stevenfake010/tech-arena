@@ -1,7 +1,14 @@
 import { NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { cookies } from 'next/headers';
+import { createHmac } from 'crypto';
 import bcrypt from 'bcrypt';
+
+function signCookie(userId: number): string {
+  const secret = process.env.COOKIE_SECRET || '';
+  const sig = createHmac('sha256', secret).update(String(userId)).digest('hex');
+  return `${userId}.${sig}`;
+}
 
 export async function POST(request: Request) {
   const { email, password } = await request.json();
@@ -34,9 +41,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: '账号待审核，请联系管理员' }, { status: 403 });
   }
 
-  // Set session cookie
+  // Set session cookie (HMAC signed)
   const cookieStore = await cookies();
-  cookieStore.set('demo_day_user', String(user.id), {
+  cookieStore.set('demo_day_user', signCookie(user.id), {
     httpOnly: true,
     path: '/',
     maxAge: 60 * 60 * 24 * 30, // 30 days
