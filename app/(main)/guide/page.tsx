@@ -380,7 +380,7 @@ export default function GuidePage() {
 
       {/* ── 时间线（横向）── */}
       <section className="mb-12">
-        <SectionTitle>时间线</SectionTitle>
+        <SectionTitle>时间线（仅示意，待最后通知）</SectionTitle>
         <div className="mb-8" />
         <div className="relative flex flex-col md:flex-row">
           <div
