@@ -19,24 +19,33 @@ async function getCurrentUser() {
 
 export async function GET() {
   const supabase = getSupabaseAdmin();
-  
+
+  // Explicitly fetch demos and submitters to avoid PostgREST FK relationship cache issues
   const { data: demos, error } = await supabase
     .from('demos')
-    .select(`
-      *,
-      submitter:submitted_by(name, department)
-    `)
+    .select('*')
     .order('created_at', { ascending: false }) as { data: any[]; error: any };
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
+  // Fetch all submitters in one call
+  const submitterIds = [...new Set((demos || []).map(d => d.submitted_by).filter(Boolean))];
+  let submitters: Record<number, { name: string; department: string }> = {};
+  if (submitterIds.length > 0) {
+    const { data: users } = await supabase
+      .from('users')
+      .select('id, name, department')
+      .in('id', submitterIds) as { data: any[]; error: any };
+    submitters = Object.fromEntries((users || []).map(u => [u.id, u]));
+  }
+
   // 格式化数据以兼容前端
   const formattedDemos = demos?.map(d => ({
     ...d,
-    submitter_name: d.submitter?.name,
-    submitter_department: d.submitter?.department,
+    submitter_name: submitters[d.submitted_by]?.name,
+    submitter_department: submitters[d.submitted_by]?.department,
   })) || [];
 
   return NextResponse.json(

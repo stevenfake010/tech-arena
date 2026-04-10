@@ -50,10 +50,7 @@ export async function GET(
   
   const { data: demo, error } = await supabase
     .from('demos')
-    .select(`
-      *,
-      submitter:submitted_by(name, department)
-    `)
+    .select('*')
     .eq('id', parseInt(id))
     .single() as { data: any; error: any };
 
@@ -61,10 +58,22 @@ export async function GET(
     return NextResponse.json({ error: 'Skill 不存在' }, { status: 404 });
   }
 
+  // Fetch submitter info explicitly
+  let submitter_name = null, submitter_department = null;
+  if (demo.submitted_by) {
+    const { data: submitter } = await supabase
+      .from('users')
+      .select('name, department')
+      .eq('id', demo.submitted_by)
+      .single() as { data: any; error: any };
+    submitter_name = submitter?.name;
+    submitter_department = submitter?.department;
+  }
+
   return NextResponse.json({
     ...demo,
-    submitter_name: demo.submitter?.name,
-    submitter_department: demo.submitter?.department,
+    submitter_name,
+    submitter_department,
   });
 }
 
